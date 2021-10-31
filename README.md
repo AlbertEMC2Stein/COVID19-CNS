@@ -50,7 +50,7 @@
 
 Here's a blank template to get started: To avoid retyping too much info.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<div align="right">(<a href="#top">back to top</a>)</div>
 
 
 
@@ -58,7 +58,7 @@ Here's a blank template to get started: To avoid retyping too much info.
 
 * [Python](https://www.python.org/)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<div align="right">(<a href="#top">back to top</a>)</div>
 
 
 
@@ -68,7 +68,7 @@ Use this space to show useful examples of how a project can be used. Additional 
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<div align="right">(<a href="#top">back to top</a>)</div>
 
 
 
@@ -82,7 +82,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 See the [open issues](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues) for a full list of proposed features (and known issues).
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<div align="right">(<a href="#top">back to top</a>)</div>
 
 
 <!-- LICENSE -->
@@ -90,7 +90,7 @@ See the [open issues](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issue
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<div align="right">(<a href="#top">back to top</a>)</div>
 
 
 
@@ -102,4 +102,4 @@ Tobias Proth - tproth@rhrk.uni-kl.de
 
 Project Link: [https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<div align="right">(<a href="#top">back to top</a>)</div>
