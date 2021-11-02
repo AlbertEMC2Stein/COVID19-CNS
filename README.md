@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/logoV2.png" alt="Logo">
   </a>
 
 <h3 align="center">Spread of diseases in contact networks</h3>
@@ -98,7 +98,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Contact
 
 Tim Prokosch - prokosch@rhrk.uni-kl.de </br>
-Tobias Proth - tproth@rhrk.uni-kl.de
+Tobias Roth - tproth@rhrk.uni-kl.de
 
 Project Link: [https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum)
 
