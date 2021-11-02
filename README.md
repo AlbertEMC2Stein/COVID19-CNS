@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum">
-    <img src="images/logoV2.png" alt="Logo">
+    <img src="images/logoV2.png" alt="Logo" width=50%>
   </a>
 
 <h3 align="center">Spread of diseases in contact networks</h3>
