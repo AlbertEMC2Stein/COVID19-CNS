@@ -16,7 +16,7 @@ class EmpiricDistribution:
         for value in self.__cdf:
             result -= p <= value
 
-        return result
+        return self.keys[result]
 
     def pick(self, **kwargs):
         if 'size' in kwargs.keys():
@@ -24,7 +24,7 @@ class EmpiricDistribution:
         else:
             r = uniform()
 
-        return self.keys[self.quantile(r)]
+        return self.quantile(r)
 
 
 def _normalize(dict_values):
