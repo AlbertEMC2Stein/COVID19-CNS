@@ -1,5 +1,6 @@
 class Individual:
     def __init__(self, properties):
+        self.properties = {}
         for property, value in properties.items():
             self.properties[property] = value
 
