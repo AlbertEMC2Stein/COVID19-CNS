@@ -1,5 +1,8 @@
 import numpy as np
 from os.path import sep
+import csv
+from Individual import Individual
+from Household import Household
 
 
 class Population:
@@ -8,14 +11,36 @@ class Population:
         self.members = np.array([])
         self.households = {}
 
-    def add_member(self, member):
-        self.members = np.append(self.members, member)
-        
 
-    @staticmethod
-    def load_from_csv(file_name, path="src" + sep + "Populations" + sep):
-        data = np.genfromtxt(path + file_name, delimiter=',', dtype=str)
-        return Population(file_name[:-4])
+    def add_member(self, member, from_csv = False):
+        person = member
+        if not type(person) == Individual:
+            person = Individual(person)
+        try:
+            household_id = person.properties["household"]
+        except:
+            if from_csv:
+                raise KeyError("The csv-file is expected to have a \
+                               'household' column.")
+            else:
+                raise KeyError("Every member or person is expected to have a \
+                               'household' key.")
+        if household_id in self.households.keys():
+            self.households[household_id].add_member(person)
+        else:
+            household = Household(household_id)
+            self.households[household_id] = household
+            self.households[household_id].add_member(person)
+        self.members = np.append(self.members, person)
+
+
+    def load_from_csv(self, csv_file):
+        with open(csv_file, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                person = Individual(row)
+                self.add_member(person, from_csv = True)
+
 
     def save_as_csv(self, path="out" + sep + "Simulated" + sep):
         if len(self.members) == 0:
@@ -27,3 +52,4 @@ class Population:
 
             f.write(','.join(headers) + '\n')
             np.savetxt(f, rows, fmt='%d', delimiter=',')
+
