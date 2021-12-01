@@ -3,12 +3,12 @@ from numpy.random import uniform
 
 
 class EmpiricDistribution:
-    def __init__(self, data_dict):
+    def __init__(self, data_dict: dict):
         self.keys = np.array(list(data_dict.keys()))
         self.probabilities = _normalize(data_dict.values())
         self.__cdf = np.cumsum(self.probabilities)
 
-    def quantile(self, p):
+    def quantile(self, p: float):
         if not np.all((0 <= p) & (p <= 1)):
             raise ValueError("Parameter p has to be in [0; 1]")
 

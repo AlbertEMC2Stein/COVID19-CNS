@@ -1,20 +1,24 @@
 import numpy as np
+from .Member import Member
 
 
 class Household:
     internal_reproduction_number = 1
 
-    def __init__(self, id):
+    def __init__(self, id: int):
         self.members = np.array([])
         self.id = id
         self.internal_reproduction_number = 1
 
     def __str__(self):
-        result = "Members:\n"
+        result = "Household " + self.id + ":\n"
         for member in self.members:
             result += str(member) + "\n"
 
-        return result
+        return result[:-1]
 
-    def add_member(self, member):
+    def __len__(self):
+        return self.members.size
+
+    def add_member(self, member: Member):
         self.members = np.append(self.members, member)

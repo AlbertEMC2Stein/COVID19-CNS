@@ -9,7 +9,7 @@ class Counter:
     def get_count(self):
         return self.n
 
-    def step(self, mode, k=1, return_when='after'):
+    def step(self, mode: str, k: int = 1, return_when: str = 'after'):
         if mode not in ["inc", "dec"]:
             raise ValueError(str(mode) + " is not a valid value. Try 'inc' or 'dec'.")
 

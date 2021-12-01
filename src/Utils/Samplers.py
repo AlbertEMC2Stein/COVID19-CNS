@@ -3,7 +3,7 @@ import numpy.random as rnd
 from os.path import sep
 
 
-def generate_population_data_from_samplers(property_samplers, n):
+def generate_population_data_from_samplers(property_samplers: dict, n: int):
     headers = np.array(["id"] + list(property_samplers.keys()))
     rows = np.array([[i] + [sampler() for sampler in property_samplers.values()] for i in range(n)])
     timestamp = str(np.datetime64("now")).replace(':', '-')
