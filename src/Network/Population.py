@@ -8,7 +8,14 @@ from .Household import Household
 
 
 class Population:
+    """
+    TODO Docstring Population
+    """
+
     def __init__(self, name: str):
+        """
+        TODO Docstring Population __init__
+        """
         self.name = name
         self.members = np.array([])
         self.households = {}
@@ -21,6 +28,9 @@ class Population:
         return result[:-1]
 
     def add_member(self, member: Member):
+        """
+        TODO Docstring Population add_member
+        """
         try:
             household_id = member.properties["household"]
         except KeyError:
@@ -40,6 +50,9 @@ class Population:
 
     @staticmethod
     def load_from_csv(file_name: str, path: str = "Populations" + sep):
+        """
+        TODO Docstring Population load_from_csv
+        """
         p = Population(file_name[:-4])
         p.members = []
 
@@ -55,6 +68,9 @@ class Population:
         return p
 
     def save_as_json(self, path: str = ".." + sep + "out" + sep + "Simulated" + sep):
+        """
+        TODO Docstring Population save_as_json
+        """
         if len(self.members) == 0:
             raise ValueError("Population can't be empty.")
 

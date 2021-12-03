@@ -3,9 +3,16 @@ from .Member import Member
 
 
 class Household:
+    """
+    TODO Docstring Household
+    """
+
     internal_reproduction_number = 1
 
     def __init__(self, id: int):
+        """
+        TODO Docstring Household __init__
+        """
         self.members = np.array([])
         self.id = id
         self.internal_reproduction_number = 1
@@ -21,4 +28,7 @@ class Household:
         return self.members.size
 
     def add_member(self, member: Member):
+        """
+        TODO Docstring Household add_member
+        """
         self.members = np.append(self.members, member)
