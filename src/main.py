@@ -2,7 +2,6 @@
 TODO Docstring main
 """
 
-
 from src.Network import Population
 import numpy as np
 

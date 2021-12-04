@@ -2,6 +2,7 @@
 TODO Docstring Network
 """
 
+__all__ = ['Member', 'Household', 'Population']
 
 import numpy as np
 import csv
