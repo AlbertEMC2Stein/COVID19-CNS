@@ -1,5 +1,5 @@
 from unittest import TestCase
-from src.Utils.EmpiricDistribution import EmpiricDistribution
+from src.Utils import EmpiricDistribution
 import numpy as np
 
 

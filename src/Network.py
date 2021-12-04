@@ -1,21 +1,75 @@
+"""
+TODO Docstring Network
+"""
+
+
+import numpy as np
 import csv
 import json
-import numpy as np
 from os.path import sep
-from src.Utils.ProgressBar import ProgressBar
-from .Member import Member
-from .Household import Household
+from src.Utils import ProgressBar
+
+
+class Member:
+    def __init__(self, properties: dict):
+        """
+        TODO Docstring Member __init__
+        """
+
+        self.properties = {}
+        for property, value in properties.items():
+            self.properties[property] = value
+
+    def __str__(self):
+        return str(self.properties)
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class Household:
+    internal_reproduction_number = 1
+
+    def __init__(self, id: int):
+        """
+        TODO Docstring Household __init__
+        """
+
+        self.members = np.array([])
+        self.id = id
+        self.internal_reproduction_number = 1
+
+    def __str__(self):
+        result = "Household " + str(self.id) + ":\n"
+        for member in self.members:
+            result += str(member) + "\n"
+
+        return result[:-1]
+
+    def __len__(self):
+        return self.members.size
+
+    def add_member(self, member: Member):
+        """
+        TODO Docstring Household add_member
+        """
+
+        self.members = np.append(self.members, member)
+
+
+################################################################################################
+################################################################################################
+################################################################################################
 
 
 class Population:
-    """
-    TODO Docstring Population
-    """
-
     def __init__(self, name: str):
         """
         TODO Docstring Population __init__
         """
+
         self.name = name
         self.members = np.array([])
         self.households = {}
@@ -31,6 +85,7 @@ class Population:
         """
         TODO Docstring Population add_member
         """
+
         try:
             household_id = member.properties["household"]
         except KeyError:
@@ -53,15 +108,18 @@ class Population:
         """
         TODO Docstring Population load_from_csv
         """
+
         p = Population(file_name[:-4])
         p.members = []
 
         with open(path + file_name, newline='') as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
+        progress.update(0)
         with open(path + file_name, newline='') as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
+                print(progress.current)
                 p.add_member(Member(m_dict))
 
         p.members = np.array(p.members)
@@ -71,6 +129,7 @@ class Population:
         """
         TODO Docstring Population save_as_json
         """
+
         if len(self.members) == 0:
             raise ValueError("Population can't be empty.")
 
@@ -82,3 +141,6 @@ class Population:
             np.savetxt(f, rows, fmt='%d', delimiter=',')
 
 
+################################################################################################
+################################################################################################
+################################################################################################
