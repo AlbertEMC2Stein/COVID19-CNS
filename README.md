@@ -11,7 +11,7 @@
   <p align="center">
     A project modelling the spread of infectious diseases via contact networks
     <br />
-    <a href="https://example.com"><strong>Explore the docs »</strong></a>
+    <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/-/tree/BaseClasses/docs/src"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="#usage">View Demo</a>
@@ -66,7 +66,7 @@ Here's a blank template to get started: To avoid retyping too much info.
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/-/tree/BaseClasses/docs/src)_
 
 <div align="right">(<a href="#top">back to top</a>)</div>
 
