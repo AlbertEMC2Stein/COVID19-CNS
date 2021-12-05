@@ -34,6 +34,8 @@ TODO Docstring Network
 
 __all__ = [&#39;Member&#39;, &#39;Household&#39;, &#39;Population&#39;]
 
+import textwrap
+
 import numpy as np
 import csv
 import json
@@ -150,7 +152,6 @@ class Population:
         with open(path + file_name, newline=&#39;&#39;) as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
-                print(progress.current)
                 p.add_member(Member(m_dict))
 
         p.members = np.array(p.members)
@@ -164,12 +165,17 @@ class Population:
         if len(self.members) == 0:
             raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
-        with open(path + self.name + &#34;.csv&#34;, &#39;w&#39;) as f:
-            headers = self.members[0].properties.keys()
-            rows = np.array([list(member.properties.values()) for member in self.members], dtype=int)
+        with open(path + self.name + &#34;.json&#34;, &#39;w&#39;) as f:
+            wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
+            inner = &#34;&#34;
+            for member in self.members:
+                json_str = json.dumps(member.properties, indent=4)
+                inner += json_str + &#39;, \n&#39;
 
-            f.write(&#39;,&#39;.join(headers) + &#39;\n&#39;)
-            np.savetxt(f, rows, fmt=&#39;%d&#39;, delimiter=&#39;,&#39;)
+            inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
+
+            f.write(wrapper + inner + &#34;\t]\n}&#34;)
+            f.close()
 
 
 ################################################################################################
@@ -342,7 +348,6 @@ class Population:
         with open(path + file_name, newline=&#39;&#39;) as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
-                print(progress.current)
                 p.add_member(Member(m_dict))
 
         p.members = np.array(p.members)
@@ -356,12 +361,17 @@ class Population:
         if len(self.members) == 0:
             raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
-        with open(path + self.name + &#34;.csv&#34;, &#39;w&#39;) as f:
-            headers = self.members[0].properties.keys()
-            rows = np.array([list(member.properties.values()) for member in self.members], dtype=int)
+        with open(path + self.name + &#34;.json&#34;, &#39;w&#39;) as f:
+            wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
+            inner = &#34;&#34;
+            for member in self.members:
+                json_str = json.dumps(member.properties, indent=4)
+                inner += json_str + &#39;, \n&#39;
 
-            f.write(&#39;,&#39;.join(headers) + &#39;\n&#39;)
-            np.savetxt(f, rows, fmt=&#39;%d&#39;, delimiter=&#39;,&#39;)</code></pre>
+            inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
+
+            f.write(wrapper + inner + &#34;\t]\n}&#34;)
+            f.close()</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
@@ -390,7 +400,6 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     with open(path + file_name, newline=&#39;&#39;) as f:
         for m_dict in csv.DictReader(f):
             progress.update(1)
-            print(progress.current)
             p.add_member(Member(m_dict))
 
     p.members = np.array(p.members)
@@ -449,12 +458,17 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     if len(self.members) == 0:
         raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
-    with open(path + self.name + &#34;.csv&#34;, &#39;w&#39;) as f:
-        headers = self.members[0].properties.keys()
-        rows = np.array([list(member.properties.values()) for member in self.members], dtype=int)
+    with open(path + self.name + &#34;.json&#34;, &#39;w&#39;) as f:
+        wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
+        inner = &#34;&#34;
+        for member in self.members:
+            json_str = json.dumps(member.properties, indent=4)
+            inner += json_str + &#39;, \n&#39;
 
-        f.write(&#39;,&#39;.join(headers) + &#39;\n&#39;)
-        np.savetxt(f, rows, fmt=&#39;%d&#39;, delimiter=&#39;,&#39;)</code></pre>
+        inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
+
+        f.write(wrapper + inner + &#34;\t]\n}&#34;)
+        f.close()</code></pre>
 </details>
 </dd>
 </dl>

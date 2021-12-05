@@ -40,7 +40,7 @@ if __name__ == &#34;__main__&#34;:
     p = Population.load_from_csv(&#34;FromSampler_2021-11-28T13-18-51.csv&#34;)
     mask = np.array([bool(int(m.properties[&#39;infected&#39;])) for m in p.members])
 
-    P = Population()
+    p.save_as_json()
 
     print(*p.members[mask])</code></pre>
 </details>
