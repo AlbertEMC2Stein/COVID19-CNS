@@ -4,6 +4,8 @@ TODO Docstring Network
 
 __all__ = ['Member', 'Household', 'Population']
 
+import textwrap
+
 import numpy as np
 import csv
 import json
@@ -120,7 +122,6 @@ class Population:
         with open(path + file_name, newline='') as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
-                print(progress.current)
                 p.add_member(Member(m_dict))
 
         p.members = np.array(p.members)
@@ -134,12 +135,17 @@ class Population:
         if len(self.members) == 0:
             raise ValueError("Population can't be empty.")
 
-        with open(path + self.name + ".csv", 'w') as f:
-            headers = self.members[0].properties.keys()
-            rows = np.array([list(member.properties.values()) for member in self.members], dtype=int)
+        with open(path + self.name + ".json", 'w') as f:
+            wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"members\": [\n"
+            inner = ""
+            for member in self.members:
+                json_str = json.dumps(member.properties, indent=4)
+                inner += json_str + ', \n'
 
-            f.write(','.join(headers) + '\n')
-            np.savetxt(f, rows, fmt='%d', delimiter=',')
+            inner = textwrap.indent(inner[:-3] + '\n', '\t\t')
+
+            f.write(wrapper + inner + "\t]\n}")
+            f.close()
 
 
 ################################################################################################
