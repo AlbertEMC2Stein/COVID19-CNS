@@ -86,7 +86,25 @@ class Population:
 
     def add_member(self, member: Member):
         """
-        TODO Docstring Population add_member
+        Adds member as a Member to the Population
+        and to its Household within the Population.
+
+        Parameters
+        ----------
+        member : Member
+            The Member to be added to the Population.
+
+        Raises
+        ------
+        KeyError
+            member is expected to have the property 'household'.
+            If member does not meet the expectations,
+            a KeyError will be raised.
+
+        Returns
+        -------
+        None.
+
         """
 
         try:
@@ -107,25 +125,136 @@ class Population:
             self.members += [member]
 
     @staticmethod
-    def load_from_csv(file_name: str, path: str = "Populations" + sep):
+    def load_from_csv(file_name: str,
+                      path: str = "Populations" + sep,
+                      progress: bool = False):
         """
-        TODO Docstring Population load_from_csv
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .csv.
+        path : str, optional
+            The path to the file named file_name.
+            The default is "Populations" + sep.
+        progress : bool, optional
+            Enables or disables the printing of a progress bar.
+            The default is False.
+
+        Returns
+        -------
+        p : Population
+            A Population object containing the data for the given file.
+
         """
 
         p = Population(file_name[:-4])
         p.members = []
 
-        with open(path + file_name, newline='') as f:
-            progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
+        if progress:
+            with open(path + file_name, newline='') as f:
+                progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
-        progress.update(0)
+            progress.update(0)
         with open(path + file_name, newline='') as f:
             for m_dict in csv.DictReader(f):
-                progress.update(1)
+                if progress:
+                    progress.update(1)
                 p.add_member(Member(m_dict))
 
         p.members = np.array(p.members)
         return p
+
+
+    @staticmethod
+    def load_from_json(file_name: str,
+                       path: str = "Populations" + sep,
+                       progress: bool = False):
+        """
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .json.
+        path : str, optional
+            The path to the file named file_name.
+            The default is "Populations" + sep.
+        progress : bool, optional
+            Enables or disables the printing of a progress bar.
+            The default is False.
+
+        Returns
+        -------
+        p : Population
+            A Population object containing the data for the given file.
+
+        """
+
+        p = Population(file_name[:-5])
+        p.members = []
+
+        # TODO adjust the progress bar
+        # with open(path + file_name, "r") as f:
+        #     progress = ProgressBar(1, 1, sum(1 for _ in f) - 1) # the amount
+        #     # of lines in the json file does not match the amount of persons
+        #     # thus the progress update below does not match the actual
+        #     # progress
+
+        # progress.update(0)
+        with open(path + file_name, "r") as f:
+            data = json.load(f)
+            # p.name = data["name"]
+            for member in data["members"]:
+                # progress.update(1) # does not match the actual progress
+                p.add_member(Member(member))
+
+        p.members = np.array(p.members)
+        return p
+
+
+    @staticmethod
+    def load_from_file(file_name: str,
+                       path: str = "Populations" + sep,
+                       progress: bool = False):
+        """
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .csv or .json.
+        path : str, optional
+            The path to the file named file_name.
+            The default is "Populations" + sep.
+        progress : bool, optional
+            Enables or disables the printing of a progress bar.
+            The default is False.
+
+        Raises
+        ------
+        ValueError
+            file_name is expected to end in .csv or .json.
+            If file_name does not meet the expectation,
+            a ValueError will be raised.
+
+        Returns
+        -------
+        Population
+            A Population object containing the data for the given file.
+
+        """
+        if file_name[-4:] == ".csv":
+            return Population.load_from_csv(file_name, path, progress)
+        elif file_name[-5:] == ".json":
+            return Population.load_from_json(file_name, path, progress)
+        else:
+            raise ValueError("file_name must end in .csv or .json.")
+
 
     def save_as_json(self, path: str = ".." + sep + "out" + sep + "Simulated" + sep):
         """
