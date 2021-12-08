@@ -26,6 +26,7 @@ class Member:
     def __str__(self):
         return str(self.properties)
 
+
 ################################################################################################
 ################################################################################################
 ################################################################################################
@@ -144,9 +145,9 @@ class Population:
         p.members = []
         with open(path + file_name, newline='') as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
-            progress.update(0)
 
         print("Loading population data...")
+
         progress.update(0)
         with open(path + file_name, newline='') as f:
             for m_dict in csv.DictReader(f):
@@ -190,6 +191,7 @@ class Population:
             for member in data["members"]:
                 progress.update(1)
                 p.add_member(Member(member))
+
             print("Finished adding members.")
 
         p.members = np.array(p.members)
@@ -229,7 +231,7 @@ class Population:
         else:
             raise ValueError("file_name must end in .csv or .json.")
 
-    def save_as_json(self, path: str = ".." + sep + "out" + sep + "Simulated" + sep):
+    def save_as_json(self, path: str) -> None:
         """
         TODO Docstring Population save_as_json
         """
