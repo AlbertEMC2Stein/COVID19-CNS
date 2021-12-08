@@ -32,8 +32,6 @@ class Member:
 
 
 class Household:
-    internal_reproduction_number = 1
-
     def __init__(self, id: int):
         """
         TODO Docstring Household __init__
