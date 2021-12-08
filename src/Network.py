@@ -26,7 +26,6 @@ class Member:
     def __str__(self):
         return str(self.properties)
 
-
 ################################################################################################
 ################################################################################################
 ################################################################################################
@@ -118,11 +117,14 @@ class Population:
         with open(path + file_name, newline='') as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
+        print("Loading population data...")
         progress.update(0)
         with open(path + file_name, newline='') as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
                 p.add_member(Member(m_dict))
+
+        print("Finished loading.")
 
         p.members = np.array(p.members)
         return p
