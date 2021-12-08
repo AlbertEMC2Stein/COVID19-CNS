@@ -48,13 +48,14 @@ class Simulation:
 if __name__ == "__main__":
     simulation_options = {
         "population_name": "FromSampler_2021-11-28T13-18-51",
-        "infection_probability_heuristic": lambda mem_props: 1 - 1 / (0.05 * mem_props["age"] + 1)
+        "infection_probability_heuristic": lambda mem_props: 1 - 1 / (0.05 * mem_props["age"] + 1),
+        "inner_reproduction_number": 1,
+        "outer_reproduction_number": 3
     }
 
     sim = Simulation(simulation_options)
     sim.start()
     sim.end()
-
 
 
 
