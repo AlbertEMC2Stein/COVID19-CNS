@@ -104,7 +104,6 @@ class Population:
         Returns
         -------
         None.
-
         """
 
         try:
@@ -125,9 +124,7 @@ class Population:
             self.members += [member]
 
     @staticmethod
-    def load_from_csv(file_name: str,
-                      path: str = "Populations" + sep,
-                      progress: bool = False):
+    def load_from_csv(file_name: str, path: str = "Populations" + sep, progress: bool = False):
         """
         Create a Population object according to the data given in file_name.
 
@@ -147,7 +144,6 @@ class Population:
         -------
         p : Population
             A Population object containing the data for the given file.
-
         """
 
         p = Population(file_name[:-4])
@@ -167,11 +163,8 @@ class Population:
         p.members = np.array(p.members)
         return p
 
-
     @staticmethod
-    def load_from_json(file_name: str,
-                       path: str = "Populations" + sep,
-                       progress: bool = False):
+    def load_from_json(file_name: str, path: str = "Populations" + sep, progress: bool = False):
         """
         Create a Population object according to the data given in file_name.
 
@@ -191,35 +184,26 @@ class Population:
         -------
         p : Population
             A Population object containing the data for the given file.
-
         """
 
         p = Population(file_name[:-5])
         p.members = []
-
-        # TODO adjust the progress bar
-        # with open(path + file_name, "r") as f:
-        #     progress = ProgressBar(1, 1, sum(1 for _ in f) - 1) # the amount
-        #     # of lines in the json file does not match the amount of persons
-        #     # thus the progress update below does not match the actual
-        #     # progress
-
-        # progress.update(0)
         with open(path + file_name, "r") as f:
+            print("Load json.")
             data = json.load(f)
-            # p.name = data["name"]
+            print("Finished loading.")
+
+            progress = ProgressBar(1, 1, len(data["members"]))
+            progress.update(0)
             for member in data["members"]:
-                # progress.update(1) # does not match the actual progress
+                progress.update(1)
                 p.add_member(Member(member))
 
         p.members = np.array(p.members)
         return p
 
-
     @staticmethod
-    def load_from_file(file_name: str,
-                       path: str = "Populations" + sep,
-                       progress: bool = False):
+    def load_from_file(file_name: str, path: str = "Populations" + sep, progress: bool = False):
         """
         Create a Population object according to the data given in file_name.
 
@@ -254,7 +238,6 @@ class Population:
             return Population.load_from_json(file_name, path, progress)
         else:
             raise ValueError("file_name must end in .csv or .json.")
-
 
     def save_as_json(self, path: str = ".." + sep + "out" + sep + "Simulated" + sep):
         """
