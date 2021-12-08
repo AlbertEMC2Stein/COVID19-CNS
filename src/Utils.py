@@ -2,11 +2,12 @@
 TODO Docstring Utils
 """
 
-__all__ = ['EmpiricDistribution', 'Samplers', 'ProgressBar', 'Counter']
+__all__ = ['EmpiricDistribution', 'Samplers', 'ProgressBar', 'Counter', 'Standalones']
 
 import numpy as np
 from numpy import clip
 from numpy.random import uniform, randint
+import os
 from os.path import sep
 
 
@@ -165,3 +166,15 @@ class Counter:
 ################################################################################################
 ################################################################################################
 ################################################################################################
+
+
+class Standalones:
+    @staticmethod
+    def get_last_folder(path):
+        """
+        TODO Standalones get_newest
+        """
+
+        folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
+        if not folders: return None
+        return sorted(folders)[-1]
