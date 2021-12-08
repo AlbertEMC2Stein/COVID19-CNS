@@ -26,15 +26,12 @@ class Member:
     def __str__(self):
         return str(self.properties)
 
-
 ################################################################################################
 ################################################################################################
 ################################################################################################
 
 
 class Household:
-    internal_reproduction_number = 1
-
     def __init__(self, id: int):
         """
         TODO Docstring Household __init__
@@ -149,10 +146,14 @@ class Population:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
             progress.update(0)
 
+        print("Loading population data...")
+        progress.update(0)
         with open(path + file_name, newline='') as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
                 p.add_member(Member(m_dict))
+
+        print("Finished loading.")
 
         p.members = np.array(p.members)
         return p

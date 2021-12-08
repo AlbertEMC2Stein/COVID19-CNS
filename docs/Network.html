@@ -56,7 +56,6 @@ class Member:
     def __str__(self):
         return str(self.properties)
 
-
 ################################################################################################
 ################################################################################################
 ################################################################################################
@@ -148,11 +147,14 @@ class Population:
         with open(path + file_name, newline=&#39;&#39;) as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
+        print(&#34;Loading population data...&#34;)
         progress.update(0)
         with open(path + file_name, newline=&#39;&#39;) as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
                 p.add_member(Member(m_dict))
+
+        print(&#34;Finished loading.&#34;)
 
         p.members = np.array(p.members)
         return p
@@ -344,11 +346,14 @@ class Population:
         with open(path + file_name, newline=&#39;&#39;) as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
+        print(&#34;Loading population data...&#34;)
         progress.update(0)
         with open(path + file_name, newline=&#39;&#39;) as f:
             for m_dict in csv.DictReader(f):
                 progress.update(1)
                 p.add_member(Member(m_dict))
+
+        print(&#34;Finished loading.&#34;)
 
         p.members = np.array(p.members)
         return p
@@ -396,11 +401,14 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     with open(path + file_name, newline=&#39;&#39;) as f:
         progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
+    print(&#34;Loading population data...&#34;)
     progress.update(0)
     with open(path + file_name, newline=&#39;&#39;) as f:
         for m_dict in csv.DictReader(f):
             progress.update(1)
             p.add_member(Member(m_dict))
+
+    print(&#34;Finished loading.&#34;)
 
     p.members = np.array(p.members)
     return p</code></pre>
