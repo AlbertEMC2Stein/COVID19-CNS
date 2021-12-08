@@ -4,6 +4,7 @@ TODO Docstring Utils
 
 __all__ = ['EmpiricDistribution', 'Samplers', 'ProgressBar', 'Counter', 'Standalones']
 
+import inspect
 import numpy as np
 from numpy import clip
 from numpy.random import uniform, randint
@@ -170,7 +171,7 @@ class Counter:
 
 class Standalones:
     @staticmethod
-    def get_last_folder(path):
+    def get_last_folder(path: str):
         """
         TODO Standalones get_newest
         """
@@ -178,3 +179,14 @@ class Standalones:
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
         if not folders: return None
         return sorted(folders)[-1]
+
+    @staticmethod
+    def serialize_function(f: callable):
+        """
+        TODO Standalones serialize_function
+        """
+
+        if f.__name__ == '<lambda>':
+            return inspect.getsource(f).replace(" ", "")[50:-3]
+
+        return f.__name__
