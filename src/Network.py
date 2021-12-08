@@ -239,7 +239,7 @@ class Population:
         if len(self.members) == 0:
             raise ValueError("Population can't be empty.")
 
-        with open(path + self.name + ".json", 'w') as f:
+        with open(path + "population.json", 'w') as f:
             wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"members\": [\n"
             inner = ""
             for member in self.members:
