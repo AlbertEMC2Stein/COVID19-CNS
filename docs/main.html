@@ -36,13 +36,54 @@ from src.Network import Population
 import numpy as np
 
 
+class Simulation:
+    def __init__(self, options):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation __init__
+        &#34;&#34;&#34;
+
+        def check(opts):
+            must_haves = [&#34;population_name&#34;, &#34;infection_probability_heuristic&#34;]
+
+            for property in must_haves:
+                if property not in opts.keys():
+                    raise KeyError(&#34;Options have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+            return opts
+
+        self.options = check(options)
+        self.population = None
+
+    def start(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation start
+        &#34;&#34;&#34;
+
+        def println(*args):
+            for arg in args:
+                print(arg)
+
+        self.population = Population.load_from_csv(self.options[&#34;population_name&#34;] + &#34;.csv&#34;)
+        mask = np.array([bool(int(m.properties[&#39;infected&#39;])) for m in self.population.members])
+        println(*self.population.members[mask])
+
+    def end(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation end
+        &#34;&#34;&#34;
+
+        self.population.save_as_json()
+
+
 if __name__ == &#34;__main__&#34;:
-    p = Population.load_from_csv(&#34;FromSampler_2021-11-28T13-18-51.csv&#34;)
-    mask = np.array([bool(int(m.properties[&#39;infected&#39;])) for m in p.members])
+    simulation_options = {
+        &#34;population_name&#34;: &#34;FromSampler_2021-11-28T13-18-51&#34;,
+        &#34;infection_probability_heuristic&#34;: lambda mem_props: 1 - 1 / (0.05 * mem_props[&#34;age&#34;] + 1)
+    }
 
-    p.save_as_json()
-
-    print(*p.members[mask])</code></pre>
+    sim = Simulation(simulation_options)
+    sim.start()
+    sim.end()</code></pre>
 </details>
 </section>
 <section>
@@ -52,6 +93,101 @@ if __name__ == &#34;__main__&#34;:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.main.Simulation"><code class="flex name class">
+<span>class <span class="ident">Simulation</span></span>
+<span>(</span><span>options)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation <strong>init</strong></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Simulation:
+    def __init__(self, options):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation __init__
+        &#34;&#34;&#34;
+
+        def check(opts):
+            must_haves = [&#34;population_name&#34;, &#34;infection_probability_heuristic&#34;]
+
+            for property in must_haves:
+                if property not in opts.keys():
+                    raise KeyError(&#34;Options have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+            return opts
+
+        self.options = check(options)
+        self.population = None
+
+    def start(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation start
+        &#34;&#34;&#34;
+
+        def println(*args):
+            for arg in args:
+                print(arg)
+
+        self.population = Population.load_from_csv(self.options[&#34;population_name&#34;] + &#34;.csv&#34;)
+        mask = np.array([bool(int(m.properties[&#39;infected&#39;])) for m in self.population.members])
+        println(*self.population.members[mask])
+
+    def end(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation end
+        &#34;&#34;&#34;
+
+        self.population.save_as_json()</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="src.main.Simulation.end"><code class="name flex">
+<span>def <span class="ident">end</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation end</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def end(self):
+    &#34;&#34;&#34;
+    TODO Docstring Simulation end
+    &#34;&#34;&#34;
+
+    self.population.save_as_json()</code></pre>
+</details>
+</dd>
+<dt id="src.main.Simulation.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation start</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start(self):
+    &#34;&#34;&#34;
+    TODO Docstring Simulation start
+    &#34;&#34;&#34;
+
+    def println(*args):
+        for arg in args:
+            print(arg)
+
+    self.population = Population.load_from_csv(self.options[&#34;population_name&#34;] + &#34;.csv&#34;)
+    mask = np.array([bool(int(m.properties[&#39;infected&#39;])) for m in self.population.members])
+    println(*self.population.members[mask])</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -63,6 +199,17 @@ if __name__ == &#34;__main__&#34;:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="src" href="index.html">src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.main.Simulation" href="#src.main.Simulation">Simulation</a></code></h4>
+<ul class="">
+<li><code><a title="src.main.Simulation.end" href="#src.main.Simulation.end">end</a></code></li>
+<li><code><a title="src.main.Simulation.start" href="#src.main.Simulation.start">start</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
