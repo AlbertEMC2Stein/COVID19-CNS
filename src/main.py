@@ -7,7 +7,7 @@ __all__ = ['Simulation']
 import json
 import os
 from os.path import sep
-from src.Network import Population
+from src.Network import Group, Population
 from src.Utils import Standalones
 
 
@@ -17,17 +17,18 @@ class Simulation:
         TODO Docstring Simulation __init__
         """
 
-        def check(opts):
+        def check(_settings: dict):
             must_haves = ["population_file", "infection_probability_heuristic"]
 
             for property in must_haves:
-                if property not in opts.keys():
-                    raise KeyError("Options have to contain '" + property + "'.")
+                if property not in _settings.keys():
+                    raise KeyError("Settings have to contain '" + property + "'.")
 
-            return opts
+            return _settings
 
         self.settings = check(settings)
         self.population = Population.load_from_file(self.settings["population_file"])
+        self.groups = [Group("Infected"), Group("Recovered")]
 
     def start_iteration(self):
         """
