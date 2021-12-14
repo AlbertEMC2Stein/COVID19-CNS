@@ -18,7 +18,10 @@ class Simulation:
         """
 
         def check(_settings: dict):
-            must_haves = ["population_file", "infection_probability_heuristic"]
+            must_haves = ["population_file",
+                          "infection_probability_heuristic",
+                          "inner_reproduction_number",
+                          "outer_reproduction_number"]
 
             for property in must_haves:
                 if property not in _settings.keys():
@@ -28,7 +31,8 @@ class Simulation:
 
         self.settings = check(settings)
         self.population = Population.load_from_file(self.settings["population_file"])
-        self.groups = [Group("Infected"), Group("Recovered")]
+        self.groups = {"Infected": Group("Infected"),
+                       "Recovered": Group("Recovered")}
 
     def start_iteration(self):
         """
