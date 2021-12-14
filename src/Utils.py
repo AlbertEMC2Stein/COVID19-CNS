@@ -144,6 +144,18 @@ class Counter:
 
         return self.n
 
+    def _step(self, mode: str, k: int = 1, return_when: str = 'after'):
+        old = self.n
+        self.n = self.n + k if mode == "inc" else max(0, self.n - k)
+        self.history = np.append(self.history, self.n)
+
+        if return_when == 'after':
+            return self.n
+        elif return_when == 'before':
+            return old
+        else:
+            raise ValueError(str(return_when) + " is not a valid value. Try 'after' or 'before'.")
+
     def increment(self, k: int = 1, return_when: str = 'after'):
         """
         TODO Docstring Counter increment
@@ -158,17 +170,12 @@ class Counter:
 
         return self._step('dec', k, return_when)
 
-    def _step(self, mode: str, k: int = 1, return_when: str = 'after'):
-        old = self.n
-        self.n = self.n + k if mode == "inc" else max(0, self.n - k)
-        self.history = np.append(self.history, self.n)
+    def squash_history(self):
+        """
+        TODO Docstring Counter squash
+        """
 
-        if return_when == 'after':
-            return self.n
-        elif return_when == 'before':
-            return old
-        else:
-            raise ValueError(str(return_when) + " is not a valid value. Try 'after' or 'before'.")
+        self.history = self.history[-1:]
 
 
 ################################################################################################
