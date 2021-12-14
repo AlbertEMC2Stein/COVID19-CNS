@@ -189,6 +189,7 @@ class Population(Group):
         print("Finished loading.")
 
         p.members = np.array(p.members)
+        p.counter.squash_history()
         return p
 
     @staticmethod
@@ -227,6 +228,7 @@ class Population(Group):
             print("Finished adding members.")
 
         p.members = np.array(p.members)
+        p.counter.squash_history()
         return p
 
     @staticmethod
