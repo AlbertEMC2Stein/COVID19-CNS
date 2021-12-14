@@ -32,15 +32,19 @@
 TODO Docstring Network
 &#34;&#34;&#34;
 
-__all__ = [&#39;Member&#39;, &#39;Household&#39;, &#39;Population&#39;]
+__all__ = [&#39;Member&#39;, &#39;Household&#39;, &#39;Population&#39;, &#39;Group&#39;]
 
 import textwrap
-
 import numpy as np
 import csv
 import json
 from os.path import sep
-from src.Utils import ProgressBar
+from src.Utils import ProgressBar, Counter
+
+
+################################################################################################
+################################################################################################
+################################################################################################
 
 
 class Member:
@@ -49,46 +53,65 @@ class Member:
         TODO Docstring Member __init__
         &#34;&#34;&#34;
 
-        self.properties = {}
-        for property, value in properties.items():
-            self.properties[property] = value
+        def check(_properties: dict):
+            must_haves = [&#34;id&#34;, &#34;household&#34;]
+
+            for property in must_haves:
+                if property not in _properties.keys():
+                    raise KeyError(&#34;Properties have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+            return _properties
+
+        self.properties = check(properties)
 
     def __str__(self):
         return str(self.properties)
 
+
 ################################################################################################
 ################################################################################################
 ################################################################################################
 
 
-class Household:
-    internal_reproduction_number = 1
-
-    def __init__(self, id: int):
+class Group:
+    def __init__(self, name: str):
         &#34;&#34;&#34;
-        TODO Docstring Household __init__
+        TODO Docstring Group __init__
         &#34;&#34;&#34;
 
+        self.name = name
         self.members = np.array([])
-        self.id = id
-        self.internal_reproduction_number = 1
+        self.counter = Counter(0)
 
     def __str__(self):
-        result = &#34;Household &#34; + str(self.id) + &#34;:\n&#34;
-        for member in self.members:
-            result += str(member) + &#34;\n&#34;
+        result = self.__class__.__name__ + &#34;: &#34; + self.name + &#34;\nMembers: &#34;
+        for member in self:
+            result += str(member) + &#34;\n\t\t &#34;
 
         return result[:-1]
 
-    def __len__(self):
-        return self.members.size
+    def __iter__(self):
+        return iter(self.members)
 
     def add_member(self, member: Member):
         &#34;&#34;&#34;
-        TODO Docstring Household add_member
+        TODO Docstring Group add_member
         &#34;&#34;&#34;
 
         self.members = np.append(self.members, member)
+        self.counter.increment()
+
+    def remove_member(self, member: Member):
+        &#34;&#34;&#34;
+        TODO Docstring Group remove_member
+        &#34;&#34;&#34;
+
+        self.members = self.members[self.members != member]
+        self.counter.decrement()
+
+    @property
+    def history(self):
+        return self.counter.history
 
 
 ################################################################################################
@@ -96,33 +119,56 @@ class Household:
 ################################################################################################
 
 
-class Population:
+class Household(Group):
+    def __init__(self, identifier: int):
+        &#34;&#34;&#34;
+        TODO Docstring Household __init__
+        &#34;&#34;&#34;
+        
+        super().__init__(str(identifier))
+
+    @property
+    def id(self):
+        return self.name
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class Population(Group):
     def __init__(self, name: str):
         &#34;&#34;&#34;
         TODO Docstring Population __init__
         &#34;&#34;&#34;
 
-        self.name = name
-        self.members = np.array([])
+        super().__init__(name)
         self.households = {}
-
-    def __str__(self):
-        result = &#34;Population: &#34; + self.name + &#34;\n&#34;
-        for household in self.households.values():
-            result += str(household) + &#34;\n&#34;
-
-        return result[:-1]
 
     def add_member(self, member: Member):
         &#34;&#34;&#34;
-        TODO Docstring Population add_member
+        Adds member as a Member to the Population
+        and to its Household within the Population.
+
+        Parameters
+        ----------
+        member : Member
+            The Member to be added to the Population.
+
+        Raises
+        ------
+        KeyError
+            member is expected to have the property &#39;household&#39;.
+            If member does not meet the expectations,
+            a KeyError will be raised.
+
+        Returns
+        -------
+        None.
         &#34;&#34;&#34;
 
-        try:
-            household_id = member.properties[&#34;household&#34;]
-        except KeyError:
-            raise KeyError(&#34;Every individual is expected to have a &#39;household&#39; property.&#34;)
-
+        household_id = member.properties[&#34;household&#34;]
         if household_id in self.households.keys():
             self.households[household_id].add_member(member)
         else:
@@ -135,19 +181,35 @@ class Population:
         else:
             self.members += [member]
 
+        self.counter.increment()
+
     @staticmethod
     def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
         &#34;&#34;&#34;
-        TODO Docstring Population load_from_csv
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .csv.
+        path : str, optional
+            The path to the file named file_name.
+            The default is &#34;Populations&#34; + sep.
+
+        Returns
+        -------
+        p : Population
+            A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
         p = Population(file_name[:-4])
         p.members = []
-
         with open(path + file_name, newline=&#39;&#39;) as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
         print(&#34;Loading population data...&#34;)
+
         progress.update(0)
         with open(path + file_name, newline=&#39;&#39;) as f:
             for m_dict in csv.DictReader(f):
@@ -157,9 +219,83 @@ class Population:
         print(&#34;Finished loading.&#34;)
 
         p.members = np.array(p.members)
+        p.counter.squash_history()
         return p
 
-    def save_as_json(self, path: str = &#34;..&#34; + sep + &#34;out&#34; + sep + &#34;Simulated&#34; + sep):
+    @staticmethod
+    def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
+        &#34;&#34;&#34;
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .json.
+        path : str, optional
+            The path to the file named file_name.
+            The default is &#34;Populations&#34; + sep.
+
+        Returns
+        -------
+        p : Population
+            A Population object containing the data for the given file.
+        &#34;&#34;&#34;
+
+        p = Population(file_name[:-5])
+        p.members = []
+        with open(path + file_name, &#34;r&#34;) as f:
+            print(&#34;Load json...&#34;)
+            data = json.load(f)
+            print(&#34;Finished loading.\nAdding members to population...&#34;)
+
+            progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
+            progress.update(0)
+            for member in data[&#34;members&#34;]:
+                progress.update(1)
+                p.add_member(Member(member))
+
+            print(&#34;Finished adding members.&#34;)
+
+        p.members = np.array(p.members)
+        p.counter.squash_history()
+        return p
+
+    @staticmethod
+    def load_from_file(file_name: str, path: str = &#34;Populations&#34; + sep):
+        &#34;&#34;&#34;
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .csv or .json.
+        path : str, optional
+            The path to the file named file_name.
+            The default is &#34;Populations&#34; + sep.
+
+        Raises
+        ------
+        ValueError
+            file_name is expected to end in .csv or .json.
+            If file_name does not meet the expectation,
+            a ValueError will be raised.
+
+        Returns
+        -------
+        Population
+            A Population object containing the data for the given file.
+        &#34;&#34;&#34;
+
+        if file_name[-4:] == &#34;.csv&#34;:
+            return Population.load_from_csv(file_name, path)
+        elif file_name[-5:] == &#34;.json&#34;:
+            return Population.load_from_json(file_name, path)
+        else:
+            raise ValueError(&#34;file_name must end in .csv or .json.&#34;)
+
+    def save_as_json(self, path: str) -&gt; None:
         &#34;&#34;&#34;
         TODO Docstring Population save_as_json
         &#34;&#34;&#34;
@@ -167,10 +303,10 @@ class Population:
         if len(self.members) == 0:
             raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
-        with open(path + self.name + &#34;.json&#34;, &#39;w&#39;) as f:
+        with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
             wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
             inner = &#34;&#34;
-            for member in self.members:
+            for member in self:
                 json_str = json.dumps(member.properties, indent=4)
                 inner += json_str + &#39;, \n&#39;
 
@@ -194,9 +330,119 @@ class Population:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="src.Network.Group"><code class="flex name class">
+<span>class <span class="ident">Group</span></span>
+<span>(</span><span>name: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Group <strong>init</strong></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Group:
+    def __init__(self, name: str):
+        &#34;&#34;&#34;
+        TODO Docstring Group __init__
+        &#34;&#34;&#34;
+
+        self.name = name
+        self.members = np.array([])
+        self.counter = Counter(0)
+
+    def __str__(self):
+        result = self.__class__.__name__ + &#34;: &#34; + self.name + &#34;\nMembers: &#34;
+        for member in self:
+            result += str(member) + &#34;\n\t\t &#34;
+
+        return result[:-1]
+
+    def __iter__(self):
+        return iter(self.members)
+
+    def add_member(self, member: Member):
+        &#34;&#34;&#34;
+        TODO Docstring Group add_member
+        &#34;&#34;&#34;
+
+        self.members = np.append(self.members, member)
+        self.counter.increment()
+
+    def remove_member(self, member: Member):
+        &#34;&#34;&#34;
+        TODO Docstring Group remove_member
+        &#34;&#34;&#34;
+
+        self.members = self.members[self.members != member]
+        self.counter.decrement()
+
+    @property
+    def history(self):
+        return self.counter.history</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.Network.Household" href="#src.Network.Household">Household</a></li>
+<li><a title="src.Network.Population" href="#src.Network.Population">Population</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="src.Network.Group.history"><code class="name">var <span class="ident">history</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def history(self):
+    return self.counter.history</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="src.Network.Group.add_member"><code class="name flex">
+<span>def <span class="ident">add_member</span></span>(<span>self, member: <a title="src.Network.Member" href="#src.Network.Member">Member</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Group add_member</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_member(self, member: Member):
+    &#34;&#34;&#34;
+    TODO Docstring Group add_member
+    &#34;&#34;&#34;
+
+    self.members = np.append(self.members, member)
+    self.counter.increment()</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Group.remove_member"><code class="name flex">
+<span>def <span class="ident">remove_member</span></span>(<span>self, member: <a title="src.Network.Member" href="#src.Network.Member">Member</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Group remove_member</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_member(self, member: Member):
+    &#34;&#34;&#34;
+    TODO Docstring Group remove_member
+    &#34;&#34;&#34;
+
+    self.members = self.members[self.members != member]
+    self.counter.decrement()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="src.Network.Household"><code class="flex name class">
 <span>class <span class="ident">Household</span></span>
-<span>(</span><span>id: int)</span>
+<span>(</span><span>identifier: int)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>TODO Docstring Household <strong>init</strong></p></div>
@@ -204,62 +450,46 @@ class Population:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Household:
-    internal_reproduction_number = 1
-
-    def __init__(self, id: int):
+<pre><code class="python">class Household(Group):
+    def __init__(self, identifier: int):
         &#34;&#34;&#34;
         TODO Docstring Household __init__
         &#34;&#34;&#34;
+        
+        super().__init__(str(identifier))
 
-        self.members = np.array([])
-        self.id = id
-        self.internal_reproduction_number = 1
-
-    def __str__(self):
-        result = &#34;Household &#34; + str(self.id) + &#34;:\n&#34;
-        for member in self.members:
-            result += str(member) + &#34;\n&#34;
-
-        return result[:-1]
-
-    def __len__(self):
-        return self.members.size
-
-    def add_member(self, member: Member):
-        &#34;&#34;&#34;
-        TODO Docstring Household add_member
-        &#34;&#34;&#34;
-
-        self.members = np.append(self.members, member)</code></pre>
+    @property
+    def id(self):
+        return self.name</code></pre>
 </details>
-<h3>Class variables</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.Network.Group" href="#src.Network.Group">Group</a></li>
+</ul>
+<h3>Instance variables</h3>
 <dl>
-<dt id="src.Network.Household.internal_reproduction_number"><code class="name">var <span class="ident">internal_reproduction_number</span></code></dt>
+<dt id="src.Network.Household.id"><code class="name">var <span class="ident">id</span></code></dt>
 <dd>
 <div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="src.Network.Household.add_member"><code class="name flex">
-<span>def <span class="ident">add_member</span></span>(<span>self, member: <a title="src.Network.Member" href="#src.Network.Member">Member</a>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>TODO Docstring Household add_member</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_member(self, member: Member):
-    &#34;&#34;&#34;
-    TODO Docstring Household add_member
-    &#34;&#34;&#34;
-
-    self.members = np.append(self.members, member)</code></pre>
+<pre><code class="python">@property
+def id(self):
+    return self.name</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.Network.Group" href="#src.Network.Group">Group</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.Network.Group.add_member" href="#src.Network.Group.add_member">add_member</a></code></li>
+<li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="src.Network.Member"><code class="flex name class">
 <span>class <span class="ident">Member</span></span>
@@ -277,9 +507,16 @@ class Population:
         TODO Docstring Member __init__
         &#34;&#34;&#34;
 
-        self.properties = {}
-        for property, value in properties.items():
-            self.properties[property] = value
+        def check(_properties: dict):
+            must_haves = [&#34;id&#34;, &#34;household&#34;]
+
+            for property in must_haves:
+                if property not in _properties.keys():
+                    raise KeyError(&#34;Properties have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+            return _properties
+
+        self.properties = check(properties)
 
     def __str__(self):
         return str(self.properties)</code></pre>
@@ -295,33 +532,38 @@ class Population:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Population:
+<pre><code class="python">class Population(Group):
     def __init__(self, name: str):
         &#34;&#34;&#34;
         TODO Docstring Population __init__
         &#34;&#34;&#34;
 
-        self.name = name
-        self.members = np.array([])
+        super().__init__(name)
         self.households = {}
-
-    def __str__(self):
-        result = &#34;Population: &#34; + self.name + &#34;\n&#34;
-        for household in self.households.values():
-            result += str(household) + &#34;\n&#34;
-
-        return result[:-1]
 
     def add_member(self, member: Member):
         &#34;&#34;&#34;
-        TODO Docstring Population add_member
+        Adds member as a Member to the Population
+        and to its Household within the Population.
+
+        Parameters
+        ----------
+        member : Member
+            The Member to be added to the Population.
+
+        Raises
+        ------
+        KeyError
+            member is expected to have the property &#39;household&#39;.
+            If member does not meet the expectations,
+            a KeyError will be raised.
+
+        Returns
+        -------
+        None.
         &#34;&#34;&#34;
 
-        try:
-            household_id = member.properties[&#34;household&#34;]
-        except KeyError:
-            raise KeyError(&#34;Every individual is expected to have a &#39;household&#39; property.&#34;)
-
+        household_id = member.properties[&#34;household&#34;]
         if household_id in self.households.keys():
             self.households[household_id].add_member(member)
         else:
@@ -334,19 +576,35 @@ class Population:
         else:
             self.members += [member]
 
+        self.counter.increment()
+
     @staticmethod
     def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
         &#34;&#34;&#34;
-        TODO Docstring Population load_from_csv
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .csv.
+        path : str, optional
+            The path to the file named file_name.
+            The default is &#34;Populations&#34; + sep.
+
+        Returns
+        -------
+        p : Population
+            A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
         p = Population(file_name[:-4])
         p.members = []
-
         with open(path + file_name, newline=&#39;&#39;) as f:
             progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
         print(&#34;Loading population data...&#34;)
+
         progress.update(0)
         with open(path + file_name, newline=&#39;&#39;) as f:
             for m_dict in csv.DictReader(f):
@@ -356,9 +614,83 @@ class Population:
         print(&#34;Finished loading.&#34;)
 
         p.members = np.array(p.members)
+        p.counter.squash_history()
         return p
 
-    def save_as_json(self, path: str = &#34;..&#34; + sep + &#34;out&#34; + sep + &#34;Simulated&#34; + sep):
+    @staticmethod
+    def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
+        &#34;&#34;&#34;
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .json.
+        path : str, optional
+            The path to the file named file_name.
+            The default is &#34;Populations&#34; + sep.
+
+        Returns
+        -------
+        p : Population
+            A Population object containing the data for the given file.
+        &#34;&#34;&#34;
+
+        p = Population(file_name[:-5])
+        p.members = []
+        with open(path + file_name, &#34;r&#34;) as f:
+            print(&#34;Load json...&#34;)
+            data = json.load(f)
+            print(&#34;Finished loading.\nAdding members to population...&#34;)
+
+            progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
+            progress.update(0)
+            for member in data[&#34;members&#34;]:
+                progress.update(1)
+                p.add_member(Member(member))
+
+            print(&#34;Finished adding members.&#34;)
+
+        p.members = np.array(p.members)
+        p.counter.squash_history()
+        return p
+
+    @staticmethod
+    def load_from_file(file_name: str, path: str = &#34;Populations&#34; + sep):
+        &#34;&#34;&#34;
+        Create a Population object according to the data given in file_name.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the data of the population.
+            Expected to end in .csv or .json.
+        path : str, optional
+            The path to the file named file_name.
+            The default is &#34;Populations&#34; + sep.
+
+        Raises
+        ------
+        ValueError
+            file_name is expected to end in .csv or .json.
+            If file_name does not meet the expectation,
+            a ValueError will be raised.
+
+        Returns
+        -------
+        Population
+            A Population object containing the data for the given file.
+        &#34;&#34;&#34;
+
+        if file_name[-4:] == &#34;.csv&#34;:
+            return Population.load_from_csv(file_name, path)
+        elif file_name[-5:] == &#34;.json&#34;:
+            return Population.load_from_json(file_name, path)
+        else:
+            raise ValueError(&#34;file_name must end in .csv or .json.&#34;)
+
+    def save_as_json(self, path: str) -&gt; None:
         &#34;&#34;&#34;
         TODO Docstring Population save_as_json
         &#34;&#34;&#34;
@@ -366,10 +698,10 @@ class Population:
         if len(self.members) == 0:
             raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
-        with open(path + self.name + &#34;.json&#34;, &#39;w&#39;) as f:
+        with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
             wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
             inner = &#34;&#34;
-            for member in self.members:
+            for member in self:
                 json_str = json.dumps(member.properties, indent=4)
                 inner += json_str + &#39;, \n&#39;
 
@@ -378,13 +710,31 @@ class Population:
             f.write(wrapper + inner + &#34;\t]\n}&#34;)
             f.close()</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.Network.Group" href="#src.Network.Group">Group</a></li>
+</ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="src.Network.Population.load_from_csv"><code class="name flex">
 <span>def <span class="ident">load_from_csv</span></span>(<span>file_name: str, path: str = 'Populations/')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Population load_from_csv</p></div>
+<div class="desc"><p>Create a Population object according to the data given in file_name.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>The name of the file containing the data of the population.
+Expected to end in .csv.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The path to the file named file_name.
+The default is "Populations" + sep.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>p</code></strong> :&ensp;<code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
+<dd>A Population object containing the data for the given file.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -392,16 +742,30 @@ class Population:
 <pre><code class="python">@staticmethod
 def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     &#34;&#34;&#34;
-    TODO Docstring Population load_from_csv
+    Create a Population object according to the data given in file_name.
+
+    Parameters
+    ----------
+    file_name : str
+        The name of the file containing the data of the population.
+        Expected to end in .csv.
+    path : str, optional
+        The path to the file named file_name.
+        The default is &#34;Populations&#34; + sep.
+
+    Returns
+    -------
+    p : Population
+        A Population object containing the data for the given file.
     &#34;&#34;&#34;
 
     p = Population(file_name[:-4])
     p.members = []
-
     with open(path + file_name, newline=&#39;&#39;) as f:
         progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
 
     print(&#34;Loading population data...&#34;)
+
     progress.update(0)
     with open(path + file_name, newline=&#39;&#39;) as f:
         for m_dict in csv.DictReader(f):
@@ -411,6 +775,135 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     print(&#34;Finished loading.&#34;)
 
     p.members = np.array(p.members)
+    p.counter.squash_history()
+    return p</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Population.load_from_file"><code class="name flex">
+<span>def <span class="ident">load_from_file</span></span>(<span>file_name: str, path: str = 'Populations/')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a Population object according to the data given in file_name.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>The name of the file containing the data of the population.
+Expected to end in .csv or .json.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The path to the file named file_name.
+The default is "Populations" + sep.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>file_name is expected to end in .csv or .json.
+If file_name does not meet the expectation,
+a ValueError will be raised.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
+<dd>A Population object containing the data for the given file.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def load_from_file(file_name: str, path: str = &#34;Populations&#34; + sep):
+    &#34;&#34;&#34;
+    Create a Population object according to the data given in file_name.
+
+    Parameters
+    ----------
+    file_name : str
+        The name of the file containing the data of the population.
+        Expected to end in .csv or .json.
+    path : str, optional
+        The path to the file named file_name.
+        The default is &#34;Populations&#34; + sep.
+
+    Raises
+    ------
+    ValueError
+        file_name is expected to end in .csv or .json.
+        If file_name does not meet the expectation,
+        a ValueError will be raised.
+
+    Returns
+    -------
+    Population
+        A Population object containing the data for the given file.
+    &#34;&#34;&#34;
+
+    if file_name[-4:] == &#34;.csv&#34;:
+        return Population.load_from_csv(file_name, path)
+    elif file_name[-5:] == &#34;.json&#34;:
+        return Population.load_from_json(file_name, path)
+    else:
+        raise ValueError(&#34;file_name must end in .csv or .json.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Population.load_from_json"><code class="name flex">
+<span>def <span class="ident">load_from_json</span></span>(<span>file_name: str, path: str = 'Populations/')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a Population object according to the data given in file_name.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>The name of the file containing the data of the population.
+Expected to end in .json.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The path to the file named file_name.
+The default is "Populations" + sep.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>p</code></strong> :&ensp;<code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
+<dd>A Population object containing the data for the given file.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
+    &#34;&#34;&#34;
+    Create a Population object according to the data given in file_name.
+
+    Parameters
+    ----------
+    file_name : str
+        The name of the file containing the data of the population.
+        Expected to end in .json.
+    path : str, optional
+        The path to the file named file_name.
+        The default is &#34;Populations&#34; + sep.
+
+    Returns
+    -------
+    p : Population
+        A Population object containing the data for the given file.
+    &#34;&#34;&#34;
+
+    p = Population(file_name[:-5])
+    p.members = []
+    with open(path + file_name, &#34;r&#34;) as f:
+        print(&#34;Load json...&#34;)
+        data = json.load(f)
+        print(&#34;Finished loading.\nAdding members to population...&#34;)
+
+        progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
+        progress.update(0)
+        for member in data[&#34;members&#34;]:
+            progress.update(1)
+            p.add_member(Member(member))
+
+        print(&#34;Finished adding members.&#34;)
+
+    p.members = np.array(p.members)
+    p.counter.squash_history()
     return p</code></pre>
 </details>
 </dd>
@@ -421,21 +914,49 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
 <span>def <span class="ident">add_member</span></span>(<span>self, member: <a title="src.Network.Member" href="#src.Network.Member">Member</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Population add_member</p></div>
+<div class="desc"><p>Adds member as a Member to the Population
+and to its Household within the Population.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>member</code></strong> :&ensp;<code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></dt>
+<dd>The Member to be added to the Population.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>member is expected to have the property 'household'.
+If member does not meet the expectations,
+a KeyError will be raised.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_member(self, member: Member):
     &#34;&#34;&#34;
-    TODO Docstring Population add_member
+    Adds member as a Member to the Population
+    and to its Household within the Population.
+
+    Parameters
+    ----------
+    member : Member
+        The Member to be added to the Population.
+
+    Raises
+    ------
+    KeyError
+        member is expected to have the property &#39;household&#39;.
+        If member does not meet the expectations,
+        a KeyError will be raised.
+
+    Returns
+    -------
+    None.
     &#34;&#34;&#34;
 
-    try:
-        household_id = member.properties[&#34;household&#34;]
-    except KeyError:
-        raise KeyError(&#34;Every individual is expected to have a &#39;household&#39; property.&#34;)
-
+    household_id = member.properties[&#34;household&#34;]
     if household_id in self.households.keys():
         self.households[household_id].add_member(member)
     else:
@@ -446,11 +967,13 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     if type(self.members) == np.ndarray:
         self.members = np.append(self.members, member)
     else:
-        self.members += [member]</code></pre>
+        self.members += [member]
+
+    self.counter.increment()</code></pre>
 </details>
 </dd>
 <dt id="src.Network.Population.save_as_json"><code class="name flex">
-<span>def <span class="ident">save_as_json</span></span>(<span>self, path: str = '../out/Simulated/')</span>
+<span>def <span class="ident">save_as_json</span></span>(<span>self, path: str) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>TODO Docstring Population save_as_json</p></div>
@@ -458,7 +981,7 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def save_as_json(self, path: str = &#34;..&#34; + sep + &#34;out&#34; + sep + &#34;Simulated&#34; + sep):
+<pre><code class="python">def save_as_json(self, path: str) -&gt; None:
     &#34;&#34;&#34;
     TODO Docstring Population save_as_json
     &#34;&#34;&#34;
@@ -466,10 +989,10 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     if len(self.members) == 0:
         raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
-    with open(path + self.name + &#34;.json&#34;, &#39;w&#39;) as f:
+    with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
         wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
         inner = &#34;&#34;
-        for member in self.members:
+        for member in self:
             json_str = json.dumps(member.properties, indent=4)
             inner += json_str + &#39;, \n&#39;
 
@@ -480,6 +1003,14 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.Network.Group" href="#src.Network.Group">Group</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -498,10 +1029,17 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="src.Network.Group" href="#src.Network.Group">Group</a></code></h4>
+<ul class="">
+<li><code><a title="src.Network.Group.add_member" href="#src.Network.Group.add_member">add_member</a></code></li>
+<li><code><a title="src.Network.Group.history" href="#src.Network.Group.history">history</a></code></li>
+<li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="src.Network.Household" href="#src.Network.Household">Household</a></code></h4>
 <ul class="">
-<li><code><a title="src.Network.Household.add_member" href="#src.Network.Household.add_member">add_member</a></code></li>
-<li><code><a title="src.Network.Household.internal_reproduction_number" href="#src.Network.Household.internal_reproduction_number">internal_reproduction_number</a></code></li>
+<li><code><a title="src.Network.Household.id" href="#src.Network.Household.id">id</a></code></li>
 </ul>
 </li>
 <li>
@@ -512,6 +1050,8 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
 <ul class="">
 <li><code><a title="src.Network.Population.add_member" href="#src.Network.Population.add_member">add_member</a></code></li>
 <li><code><a title="src.Network.Population.load_from_csv" href="#src.Network.Population.load_from_csv">load_from_csv</a></code></li>
+<li><code><a title="src.Network.Population.load_from_file" href="#src.Network.Population.load_from_file">load_from_file</a></code></li>
+<li><code><a title="src.Network.Population.load_from_json" href="#src.Network.Population.load_from_json">load_from_json</a></code></li>
 <li><code><a title="src.Network.Population.save_as_json" href="#src.Network.Population.save_as_json">save_as_json</a></code></li>
 </ul>
 </li>

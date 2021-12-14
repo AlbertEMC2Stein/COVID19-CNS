@@ -32,11 +32,13 @@
 TODO Docstring Utils
 &#34;&#34;&#34;
 
-__all__ = [&#39;EmpiricDistribution&#39;, &#39;Samplers&#39;, &#39;ProgressBar&#39;, &#39;Counter&#39;]
+__all__ = [&#39;EmpiricDistribution&#39;, &#39;Samplers&#39;, &#39;ProgressBar&#39;, &#39;Counter&#39;, &#39;Standalones&#39;]
 
+import inspect
 import numpy as np
 from numpy import clip
 from numpy.random import uniform, randint
+import os
 from os.path import sep
 
 
@@ -172,14 +174,7 @@ class Counter:
 
         return self.n
 
-    def step(self, mode: str, k: int = 1, return_when: str = &#39;after&#39;):
-        &#34;&#34;&#34;
-        TODO Docstring Counter step
-        &#34;&#34;&#34;
-
-        if mode not in [&#34;inc&#34;, &#34;dec&#34;]:
-            raise ValueError(str(mode) + &#34; is not a valid value. Try &#39;inc&#39; or &#39;dec&#39;.&#34;)
-
+    def _step(self, mode: str, k: int = 1, return_when: str = &#39;after&#39;):
         old = self.n
         self.n = self.n + k if mode == &#34;inc&#34; else max(0, self.n - k)
         self.history = np.append(self.history, self.n)
@@ -191,10 +186,54 @@ class Counter:
         else:
             raise ValueError(str(return_when) + &#34; is not a valid value. Try &#39;after&#39; or &#39;before&#39;.&#34;)
 
+    def increment(self, k: int = 1, return_when: str = &#39;after&#39;):
+        &#34;&#34;&#34;
+        TODO Docstring Counter increment
+        &#34;&#34;&#34;
+
+        return self._step(&#39;inc&#39;, k, return_when)
+
+    def decrement(self, k: int = 1, return_when: str = &#39;after&#39;):
+        &#34;&#34;&#34;
+        TODO Docstring Counter decrement
+        &#34;&#34;&#34;
+
+        return self._step(&#39;dec&#39;, k, return_when)
+
+    def squash_history(self):
+        &#34;&#34;&#34;
+        TODO Docstring Counter squash
+        &#34;&#34;&#34;
+
+        self.history = self.history[-1:]
+
 
 ################################################################################################
 ################################################################################################
-################################################################################################</code></pre>
+################################################################################################
+
+
+class Standalones:
+    @staticmethod
+    def get_last_folder(path: str):
+        &#34;&#34;&#34;
+        TODO Standalones get_newest
+        &#34;&#34;&#34;
+
+        folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
+        if not folders: return None
+        return sorted(folders)[-1]
+
+    @staticmethod
+    def serialize_function(f: callable):
+        &#34;&#34;&#34;
+        TODO Standalones serialize_function
+        &#34;&#34;&#34;
+
+        if f.__name__ == &#39;&lt;lambda&gt;&#39;:
+            return inspect.getsource(f).replace(&#34; &#34;, &#34;&#34;)[50:-3]
+
+        return f.__name__</code></pre>
 </details>
 </section>
 <section>
@@ -232,14 +271,7 @@ class Counter:
 
         return self.n
 
-    def step(self, mode: str, k: int = 1, return_when: str = &#39;after&#39;):
-        &#34;&#34;&#34;
-        TODO Docstring Counter step
-        &#34;&#34;&#34;
-
-        if mode not in [&#34;inc&#34;, &#34;dec&#34;]:
-            raise ValueError(str(mode) + &#34; is not a valid value. Try &#39;inc&#39; or &#39;dec&#39;.&#34;)
-
+    def _step(self, mode: str, k: int = 1, return_when: str = &#39;after&#39;):
         old = self.n
         self.n = self.n + k if mode == &#34;inc&#34; else max(0, self.n - k)
         self.history = np.append(self.history, self.n)
@@ -249,10 +281,48 @@ class Counter:
         elif return_when == &#39;before&#39;:
             return old
         else:
-            raise ValueError(str(return_when) + &#34; is not a valid value. Try &#39;after&#39; or &#39;before&#39;.&#34;)</code></pre>
+            raise ValueError(str(return_when) + &#34; is not a valid value. Try &#39;after&#39; or &#39;before&#39;.&#34;)
+
+    def increment(self, k: int = 1, return_when: str = &#39;after&#39;):
+        &#34;&#34;&#34;
+        TODO Docstring Counter increment
+        &#34;&#34;&#34;
+
+        return self._step(&#39;inc&#39;, k, return_when)
+
+    def decrement(self, k: int = 1, return_when: str = &#39;after&#39;):
+        &#34;&#34;&#34;
+        TODO Docstring Counter decrement
+        &#34;&#34;&#34;
+
+        return self._step(&#39;dec&#39;, k, return_when)
+
+    def squash_history(self):
+        &#34;&#34;&#34;
+        TODO Docstring Counter squash
+        &#34;&#34;&#34;
+
+        self.history = self.history[-1:]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="src.Utils.Counter.decrement"><code class="name flex">
+<span>def <span class="ident">decrement</span></span>(<span>self, k: int = 1, return_when: str = 'after')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Counter decrement</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def decrement(self, k: int = 1, return_when: str = &#39;after&#39;):
+    &#34;&#34;&#34;
+    TODO Docstring Counter decrement
+    &#34;&#34;&#34;
+
+    return self._step(&#39;dec&#39;, k, return_when)</code></pre>
+</details>
+</dd>
 <dt id="src.Utils.Counter.get_count"><code class="name flex">
 <span>def <span class="ident">get_count</span></span>(<span>self)</span>
 </code></dt>
@@ -270,33 +340,38 @@ class Counter:
     return self.n</code></pre>
 </details>
 </dd>
-<dt id="src.Utils.Counter.step"><code class="name flex">
-<span>def <span class="ident">step</span></span>(<span>self, mode: str, k: int = 1, return_when: str = 'after')</span>
+<dt id="src.Utils.Counter.increment"><code class="name flex">
+<span>def <span class="ident">increment</span></span>(<span>self, k: int = 1, return_when: str = 'after')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter step</p></div>
+<div class="desc"><p>TODO Docstring Counter increment</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def step(self, mode: str, k: int = 1, return_when: str = &#39;after&#39;):
+<pre><code class="python">def increment(self, k: int = 1, return_when: str = &#39;after&#39;):
     &#34;&#34;&#34;
-    TODO Docstring Counter step
+    TODO Docstring Counter increment
     &#34;&#34;&#34;
 
-    if mode not in [&#34;inc&#34;, &#34;dec&#34;]:
-        raise ValueError(str(mode) + &#34; is not a valid value. Try &#39;inc&#39; or &#39;dec&#39;.&#34;)
+    return self._step(&#39;inc&#39;, k, return_when)</code></pre>
+</details>
+</dd>
+<dt id="src.Utils.Counter.squash_history"><code class="name flex">
+<span>def <span class="ident">squash_history</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Counter squash</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def squash_history(self):
+    &#34;&#34;&#34;
+    TODO Docstring Counter squash
+    &#34;&#34;&#34;
 
-    old = self.n
-    self.n = self.n + k if mode == &#34;inc&#34; else max(0, self.n - k)
-    self.history = np.append(self.history, self.n)
-
-    if return_when == &#39;after&#39;:
-        return self.n
-    elif return_when == &#39;before&#39;:
-        return old
-    else:
-        raise ValueError(str(return_when) + &#34; is not a valid value. Try &#39;after&#39; or &#39;before&#39;.&#34;)</code></pre>
+    self.history = self.history[-1:]</code></pre>
 </details>
 </dd>
 </dl>
@@ -546,6 +621,82 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 </dd>
 </dl>
 </dd>
+<dt id="src.Utils.Standalones"><code class="flex name class">
+<span>class <span class="ident">Standalones</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Standalones:
+    @staticmethod
+    def get_last_folder(path: str):
+        &#34;&#34;&#34;
+        TODO Standalones get_newest
+        &#34;&#34;&#34;
+
+        folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
+        if not folders: return None
+        return sorted(folders)[-1]
+
+    @staticmethod
+    def serialize_function(f: callable):
+        &#34;&#34;&#34;
+        TODO Standalones serialize_function
+        &#34;&#34;&#34;
+
+        if f.__name__ == &#39;&lt;lambda&gt;&#39;:
+            return inspect.getsource(f).replace(&#34; &#34;, &#34;&#34;)[50:-3]
+
+        return f.__name__</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.Utils.Standalones.get_last_folder"><code class="name flex">
+<span>def <span class="ident">get_last_folder</span></span>(<span>path: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Standalones get_newest</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def get_last_folder(path: str):
+    &#34;&#34;&#34;
+    TODO Standalones get_newest
+    &#34;&#34;&#34;
+
+    folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
+    if not folders: return None
+    return sorted(folders)[-1]</code></pre>
+</details>
+</dd>
+<dt id="src.Utils.Standalones.serialize_function"><code class="name flex">
+<span>def <span class="ident">serialize_function</span></span>(<span>f: <built-in function callable>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Standalones serialize_function</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def serialize_function(f: callable):
+    &#34;&#34;&#34;
+    TODO Standalones serialize_function
+    &#34;&#34;&#34;
+
+    if f.__name__ == &#39;&lt;lambda&gt;&#39;:
+        return inspect.getsource(f).replace(&#34; &#34;, &#34;&#34;)[50:-3]
+
+    return f.__name__</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -565,8 +716,10 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <li>
 <h4><code><a title="src.Utils.Counter" href="#src.Utils.Counter">Counter</a></code></h4>
 <ul class="">
+<li><code><a title="src.Utils.Counter.decrement" href="#src.Utils.Counter.decrement">decrement</a></code></li>
 <li><code><a title="src.Utils.Counter.get_count" href="#src.Utils.Counter.get_count">get_count</a></code></li>
-<li><code><a title="src.Utils.Counter.step" href="#src.Utils.Counter.step">step</a></code></li>
+<li><code><a title="src.Utils.Counter.increment" href="#src.Utils.Counter.increment">increment</a></code></li>
+<li><code><a title="src.Utils.Counter.squash_history" href="#src.Utils.Counter.squash_history">squash_history</a></code></li>
 </ul>
 </li>
 <li>
@@ -587,6 +740,13 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <ul class="">
 <li><code><a title="src.Utils.Samplers.basic_sampler" href="#src.Utils.Samplers.basic_sampler">basic_sampler</a></code></li>
 <li><code><a title="src.Utils.Samplers.generate_population_data_from_samplers" href="#src.Utils.Samplers.generate_population_data_from_samplers">generate_population_data_from_samplers</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.Utils.Standalones" href="#src.Utils.Standalones">Standalones</a></code></h4>
+<ul class="">
+<li><code><a title="src.Utils.Standalones.get_last_folder" href="#src.Utils.Standalones.get_last_folder">get_last_folder</a></code></li>
+<li><code><a title="src.Utils.Standalones.serialize_function" href="#src.Utils.Standalones.serialize_function">serialize_function</a></code></li>
 </ul>
 </li>
 </ul>
