@@ -144,14 +144,21 @@ class Counter:
 
         return self.n
 
-    def step(self, mode: str, k: int = 1, return_when: str = 'after'):
+    def increment(self, k: int = 1, return_when: str = 'after'):
         """
-        TODO Docstring Counter step
+        TODO Docstring Counter increment
         """
 
-        if mode not in ["inc", "dec"]:
-            raise ValueError(str(mode) + " is not a valid value. Try 'inc' or 'dec'.")
+        return self._step('inc', k, return_when)
 
+    def decrement(self, k: int = 1, return_when: str = 'after'):
+        """
+        TODO Docstring Counter decrement
+        """
+
+        return self._step('dec', k, return_when)
+
+    def _step(self, mode: str, k: int = 1, return_when: str = 'after'):
         old = self.n
         self.n = self.n + k if mode == "inc" else max(0, self.n - k)
         self.history = np.append(self.history, self.n)
