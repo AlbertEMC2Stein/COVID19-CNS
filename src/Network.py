@@ -2,15 +2,19 @@
 TODO Docstring Network
 """
 
-__all__ = ['Member', 'Household', 'Population']
+__all__ = ['Member', 'Household', 'Population', 'Group']
 
 import textwrap
-
 import numpy as np
 import csv
 import json
 from os.path import sep
-from src.Utils import ProgressBar
+from src.Utils import ProgressBar, Counter
+
+
+################################################################################################
+################################################################################################
+################################################################################################
 
 
 class Member:
@@ -19,9 +23,16 @@ class Member:
         TODO Docstring Member __init__
         """
 
-        self.properties = {}
-        for property, value in properties.items():
-            self.properties[property] = value
+        def check(_properties: dict):
+            must_haves = ["is", "household"]
+
+            for property in must_haves:
+                if property not in _properties.keys():
+                    raise KeyError("Properties have to contain '" + property + "'.")
+
+            return _properties
+
+        self.properties = check(properties)
 
     def __str__(self):
         return str(self.properties)
@@ -32,32 +43,45 @@ class Member:
 ################################################################################################
 
 
-class Household:
-    def __init__(self, id: int):
+class Group:
+    def __init__(self, name: str):
         """
-        TODO Docstring Household __init__
+        TODO Docstring Group __init__
         """
 
+        self.name = name
         self.members = np.array([])
-        self.id = id
-        self.internal_reproduction_number = 1
+        self.counter = Counter(0)
 
     def __str__(self):
-        result = "Household " + str(self.id) + ":\n"
-        for member in self.members:
+        result = self.__class__.__name__ + ": " + self.name + "\n"
+        for member in self:
             result += str(member) + "\n"
 
         return result[:-1]
 
-    def __len__(self):
-        return self.members.size
+    def __iter__(self):
+        return iter(self.members)
 
     def add_member(self, member: Member):
         """
-        TODO Docstring Household add_member
+        TODO Docstring Group add_member
         """
 
         self.members = np.append(self.members, member)
+        self.counter.increment()
+
+    def remove_member(self, member: Member):
+        """
+        TODO Docstring Group remove_member
+        """
+
+        self.members = self.members[self.members != member]
+        self.counter.decrement()
+
+    @property
+    def history(self):
+        return self.counter.history
 
 
 ################################################################################################
@@ -65,22 +89,32 @@ class Household:
 ################################################################################################
 
 
-class Population:
+class Household(Group):
+    def __init__(self, identifier: int):
+        """
+        TODO Docstring Household __init__
+        """
+        
+        super().__init__(str(identifier))
+
+    @property
+    def id(self):
+        return self.name
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class Population(Group):
     def __init__(self, name: str):
         """
         TODO Docstring Population __init__
         """
 
-        self.name = name
-        self.members = np.array([])
+        super().__init__(name)
         self.households = {}
-
-    def __str__(self):
-        result = "Population: " + self.name + "\n"
-        for household in self.households.values():
-            result += str(household) + "\n"
-
-        return result[:-1]
 
     def add_member(self, member: Member):
         """
@@ -104,11 +138,7 @@ class Population:
         None.
         """
 
-        try:
-            household_id = member.properties["household"]
-        except KeyError:
-            raise KeyError("Every individual is expected to have a 'household' property.")
-
+        household_id = member.properties["household"]
         if household_id in self.households.keys():
             self.households[household_id].add_member(member)
         else:
@@ -242,7 +272,7 @@ class Population:
         with open(path + "population.json", 'w') as f:
             wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"members\": [\n"
             inner = ""
-            for member in self.members:
+            for member in self:
                 json_str = json.dumps(member.properties, indent=4)
                 inner += json_str + ', \n'
 
