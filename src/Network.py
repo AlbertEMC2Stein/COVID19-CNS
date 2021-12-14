@@ -24,7 +24,7 @@ class Member:
         """
 
         def check(_properties: dict):
-            must_haves = ["is", "household"]
+            must_haves = ["id", "household"]
 
             for property in must_haves:
                 if property not in _properties.keys():
@@ -54,9 +54,9 @@ class Group:
         self.counter = Counter(0)
 
     def __str__(self):
-        result = self.__class__.__name__ + ": " + self.name + "\n"
+        result = self.__class__.__name__ + ": " + self.name + "\nMembers: "
         for member in self:
-            result += str(member) + "\n"
+            result += str(member) + "\n\t\t "
 
         return result[:-1]
 
@@ -150,6 +150,8 @@ class Population(Group):
             self.members = np.append(self.members, member)
         else:
             self.members += [member]
+
+        self.counter.increment()
 
     @staticmethod
     def load_from_csv(file_name: str, path: str = "Populations" + sep):
