@@ -39,6 +39,18 @@ class Simulation:
         TODO Docstring Simulation start_iteration
         """
 
+        tick = 0
+
+        # start infection
+
+        # spread infection
+        #   - inside household
+        #   - outside household
+
+        # (possibly) recover
+
+        # repeat till no more infectious people
+
         pass
 
     def end_iteration(self):
