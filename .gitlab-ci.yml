@@ -1,0 +1,3 @@
+makedocs:
+  script:
+    - 'python docs/makedocs.py'
