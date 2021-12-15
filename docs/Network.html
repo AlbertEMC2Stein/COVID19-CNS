@@ -113,6 +113,10 @@ class Group:
     def history(self):
         return self.counter.history
 
+    @property
+    def size(self):
+        return self.members.size
+
 
 ################################################################################################
 ################################################################################################
@@ -378,7 +382,11 @@ class Population(Group):
 
     @property
     def history(self):
-        return self.counter.history</code></pre>
+        return self.counter.history
+
+    @property
+    def size(self):
+        return self.members.size</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -397,6 +405,18 @@ class Population(Group):
 <pre><code class="python">@property
 def history(self):
     return self.counter.history</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Group.size"><code class="name">var <span class="ident">size</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def size(self):
+    return self.members.size</code></pre>
 </details>
 </dd>
 </dl>
@@ -1034,6 +1054,7 @@ a KeyError will be raised.</dd>
 <li><code><a title="src.Network.Group.add_member" href="#src.Network.Group.add_member">add_member</a></code></li>
 <li><code><a title="src.Network.Group.history" href="#src.Network.Group.history">history</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+<li><code><a title="src.Network.Group.size" href="#src.Network.Group.size">size</a></code></li>
 </ul>
 </li>
 <li>
