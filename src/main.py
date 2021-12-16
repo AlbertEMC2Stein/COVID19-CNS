@@ -64,8 +64,8 @@ class Simulation:
                 n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
                 household = self.population.households[member.properties["household"]]
-                newly_infected += household.infect_many(member, n_inner, heuristic, tick)
-                newly_infected += self.population.infect_many(member, n_outer, heuristic, tick)
+                newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
+                newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
 
                 # (possibly) recover
                 if member.make_tick():

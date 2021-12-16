@@ -117,9 +117,9 @@ class Group:
         self.members = self.members[self.members != member]
         self.counter.decrement(old_size - self.members.size)
 
-    def infect_many(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
         """
-        TODO Docstring Group infect_many
+        TODO Docstring Group spread_disease
         """
 
         result = []
