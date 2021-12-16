@@ -33,9 +33,46 @@ class Member:
             return _properties
 
         self.properties = check(properties)
+        self.infected = 0
+        self._recovers_in = -1
 
     def __str__(self):
         return str(self.properties)
+
+    def infect(self, period: int, infectant: 'Member', timestamp: int):
+        """
+        TODO Docstring Member infect
+        """
+
+        if "immune" in self.properties.keys() and self.properties["immune"] or self.infected:
+            return False
+
+        shared_household = self.properties["household"] == infectant.properties["household"]
+        infection_data = [(infectant.properties["id"], shared_household, timestamp)]
+
+        if "infections" not in self.properties.keys():
+            self.properties["infections"] = infection_data
+        else:
+            self.properties["infections"] += infection_data
+
+        self.infected = True
+        self._recovers_in = period
+        return True
+
+    def make_tick(self):
+        """
+        TODO Docstring Member make_tick
+        """
+
+        if self.infected:
+            self._recovers_in -= 1
+            if self._recovers_in == 0:
+                self._recovers_in = -1
+                self.infected = False
+                self.properties["immune"] = True
+                return True
+
+        return False
 
 
 ################################################################################################
@@ -76,8 +113,32 @@ class Group:
         TODO Docstring Group remove_member
         """
 
+        old_size = self.members.size
         self.members = self.members[self.members != member]
-        self.counter.decrement()
+        self.counter.decrement(old_size - self.members.size)
+
+    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+        """
+        TODO Docstring Group spread_disease
+        """
+
+        result = []
+        for other in np.random.choice(self.members, n):
+            if np.random.uniform() < heuristic(other.properties):
+                if other.infect(14, infectant, timestamp):
+                    result += [other]
+
+        return result
+
+    @staticmethod
+    def move(members: np.ndarray, origin: 'Group', destination: 'Group'):
+        """
+        TODO docstring Group move
+        """
+
+        for member in members:
+            origin.remove_member(member)
+            destination.add_member(member)
 
     @property
     def history(self):
@@ -120,7 +181,7 @@ class Population(Group):
         super().__init__(name)
         self.households = {}
 
-    def add_member(self, member: Member):
+    def add_member(self, member: Member, count: int = True):
         """
         Adds member as a Member to the Population
         and to its Household within the Population.
@@ -129,6 +190,8 @@ class Population(Group):
         ----------
         member : Member
             The Member to be added to the Population.
+        count :
+            Option whether to increase population counter or not.
 
         Raises
         ------

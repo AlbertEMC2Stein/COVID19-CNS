@@ -66,10 +66,9 @@ class Samplers:
     basic_sampler = {
         "household": lambda: randint(21),
         "age": lambda: randint(0, 90),
-        "infected": lambda: uniform() < 0.1,
     }
     """
-    TODO Docstring Samplers
+    TODO Docstring basic_Sampler
     """
 
     @staticmethod
@@ -134,23 +133,18 @@ class Counter:
         TODO Docstring Counter __init__
         """
 
-        self.n = start
+        self.count = start
         self.history = np.array([start])
 
-    def get_count(self):
-        """
-        TODO Docstring Counter get_count
-        """
-
-        return self.n
-
     def _step(self, mode: str, k: int = 1, return_when: str = 'after'):
-        old = self.n
-        self.n = self.n + k if mode == "inc" else max(0, self.n - k)
-        self.history = np.append(self.history, self.n)
+        old = self.count
+        self.count = self.count + k if mode == "inc" else max(0, self.count - k)
+
+        if k < 0:
+            raise ValueError("k has to be non-negative.")
 
         if return_when == 'after':
-            return self.n
+            return self.count
         elif return_when == 'before':
             return old
         else:
@@ -169,6 +163,9 @@ class Counter:
         """
 
         return self._step('dec', k, return_when)
+
+    def save_count(self):
+        self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         """
