@@ -36,6 +36,8 @@ __all__ = [&#39;Simulation&#39;]
 
 import json
 import os
+import numpy as np
+import matplotlib.pylab as plt
 from os.path import sep
 from src.Network import Group, Population
 from src.Utils import Standalones
@@ -70,45 +72,83 @@ class Simulation:
         &#34;&#34;&#34;
 
         tick = 0
+        heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
+        c_inner = self.settings[&#34;inner_reproduction_number&#34;]
+        c_outer = self.settings[&#34;outer_reproduction_number&#34;]
 
         # start infection
+        seed = np.random.choice(self.population.members)
+        seed.infect(14, seed, 0)
+        self.groups[&#34;Infected&#34;].add_member(seed)
+        self.groups[&#34;Infected&#34;].counter.save_count()
+        self.groups[&#34;Infected&#34;].counter.squash_history()
 
-        # spread infection
-        #   - inside household
-        #   - outside household
+        while True:
+            tick += 1
 
-        # (possibly) recover
+            # spread infection
+            #   - inside household
+            #   - outside household
+            newly_infected, newly_recovered = [], []
+            for member in self.groups[&#34;Infected&#34;]:
+                n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
-        # repeat till no more infectious people
+                household = self.population.households[member.properties[&#34;household&#34;]]
+                newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
+                newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
 
-        pass
+                # (possibly) recover
+                if member.make_tick():
+                    newly_recovered += [member]
+
+            Group.move(newly_recovered, self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
+            for member in newly_infected:
+                self.groups[&#34;Infected&#34;].add_member(member)
+
+            for group in self.groups.values():
+                group.counter.save_count()
+
+            # repeat till no more infectious people
+            print(&#34;Day: %d, #Infected: %d&#34; % (tick, self.groups[&#34;Infected&#34;].size))
+            if self.groups[&#34;Infected&#34;].size == 0:
+                break
 
     def end_iteration(self):
         &#34;&#34;&#34;
         TODO Docstring Simulation end_iteration
         &#34;&#34;&#34;
 
-        out_path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
-        if not os.path.exists(out_path):
-            os.mkdir(out_path)
+        def set_out_path():
+            path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
+            if not os.path.exists(path):
+                os.mkdir(path)
 
-        newest_iteration = Standalones.get_last_folder(out_path)
-        override = self.settings[&#34;override_newest&#34;] \
-            if &#34;override_newest&#34; in self.settings.keys() \
-            else newest_iteration == &#34;9999&#34;
+            newest_iteration = Standalones.get_last_folder(path)
+            override = self.settings[&#34;override_newest&#34;] \
+                if &#34;override_newest&#34; in self.settings.keys() \
+                else newest_iteration == &#34;9999&#34;
 
-        if not newest_iteration:
-            out_path += &#34;0000&#34; + sep
-            os.mkdir(out_path)
-        else:
-            if override:
-                out_path += newest_iteration + sep
+            if not newest_iteration:
+                path += &#34;0000&#34; + sep
+                os.mkdir(path)
             else:
-                out_path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
-                os.mkdir(out_path)
+                if override:
+                    path += newest_iteration + sep
+                else:
+                    path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
+                    os.mkdir(path)
 
+            return path
+
+        def save_group_histories(path):
+            header = &#34;,&#34;.join([group.name for group in self.groups.values()])
+            rows = np.array([group.history for group in self.groups.values()]).T
+            np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+
+        out_path = set_out_path()
         self.save_options(out_path)
         self.population.save_as_json(out_path)
+        save_group_histories(out_path)
 
     def change_options(self, settings):
         &#34;&#34;&#34;
@@ -136,8 +176,8 @@ class Simulation:
 
 if __name__ == &#34;__main__&#34;:
     simulation_settings = {
-        &#34;population_file&#34;: &#34;FromSampler_2021-11-28T13-18-51.csv&#34;,
-        &#34;infection_probability_heuristic&#34;: lambda mem_props: 1 - 1 / (0.05 * mem_props[&#34;age&#34;] + 1),
+        &#34;population_file&#34;: &#34;DE_03_KLLand.csv&#34;,
+        &#34;infection_probability_heuristic&#34;: lambda mem_props: 1 - 1 / (0.001 * float(mem_props[&#34;age&#34;]) + 1),
         &#34;inner_reproduction_number&#34;: 1,
         &#34;outer_reproduction_number&#34;: 3,
         &#34;override_newest&#34;: True
@@ -145,7 +185,15 @@ if __name__ == &#34;__main__&#34;:
 
     sim = Simulation(simulation_settings)
     sim.start_iteration()
-    sim.end_iteration()</code></pre>
+    sim.end_iteration()
+
+    sim_path = &#34;..&#34; + sep + &#34;out&#34; + sep + &#34;DE_03_KLLand&#34; + sep
+    latest = Standalones.get_last_folder(sim_path)
+    data = np.genfromtxt(sim_path + latest + sep + &#34;progression.csv&#34;, delimiter=&#39;,&#39;, skip_header=1)
+    plt.plot(106463 - data[:, 0] - data[:, 1], color=&#39;green&#39;)
+    plt.plot(data[:, 0], color=&#39;red&#39;)
+    plt.plot(data[:, 1], color=&#39;blue&#39;)
+    plt.show()</code></pre>
 </details>
 </section>
 <section>
@@ -196,45 +244,83 @@ if __name__ == &#34;__main__&#34;:
         &#34;&#34;&#34;
 
         tick = 0
+        heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
+        c_inner = self.settings[&#34;inner_reproduction_number&#34;]
+        c_outer = self.settings[&#34;outer_reproduction_number&#34;]
 
         # start infection
+        seed = np.random.choice(self.population.members)
+        seed.infect(14, seed, 0)
+        self.groups[&#34;Infected&#34;].add_member(seed)
+        self.groups[&#34;Infected&#34;].counter.save_count()
+        self.groups[&#34;Infected&#34;].counter.squash_history()
 
-        # spread infection
-        #   - inside household
-        #   - outside household
+        while True:
+            tick += 1
 
-        # (possibly) recover
+            # spread infection
+            #   - inside household
+            #   - outside household
+            newly_infected, newly_recovered = [], []
+            for member in self.groups[&#34;Infected&#34;]:
+                n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
-        # repeat till no more infectious people
+                household = self.population.households[member.properties[&#34;household&#34;]]
+                newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
+                newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
 
-        pass
+                # (possibly) recover
+                if member.make_tick():
+                    newly_recovered += [member]
+
+            Group.move(newly_recovered, self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
+            for member in newly_infected:
+                self.groups[&#34;Infected&#34;].add_member(member)
+
+            for group in self.groups.values():
+                group.counter.save_count()
+
+            # repeat till no more infectious people
+            print(&#34;Day: %d, #Infected: %d&#34; % (tick, self.groups[&#34;Infected&#34;].size))
+            if self.groups[&#34;Infected&#34;].size == 0:
+                break
 
     def end_iteration(self):
         &#34;&#34;&#34;
         TODO Docstring Simulation end_iteration
         &#34;&#34;&#34;
 
-        out_path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
-        if not os.path.exists(out_path):
-            os.mkdir(out_path)
+        def set_out_path():
+            path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
+            if not os.path.exists(path):
+                os.mkdir(path)
 
-        newest_iteration = Standalones.get_last_folder(out_path)
-        override = self.settings[&#34;override_newest&#34;] \
-            if &#34;override_newest&#34; in self.settings.keys() \
-            else newest_iteration == &#34;9999&#34;
+            newest_iteration = Standalones.get_last_folder(path)
+            override = self.settings[&#34;override_newest&#34;] \
+                if &#34;override_newest&#34; in self.settings.keys() \
+                else newest_iteration == &#34;9999&#34;
 
-        if not newest_iteration:
-            out_path += &#34;0000&#34; + sep
-            os.mkdir(out_path)
-        else:
-            if override:
-                out_path += newest_iteration + sep
+            if not newest_iteration:
+                path += &#34;0000&#34; + sep
+                os.mkdir(path)
             else:
-                out_path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
-                os.mkdir(out_path)
+                if override:
+                    path += newest_iteration + sep
+                else:
+                    path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
+                    os.mkdir(path)
 
+            return path
+
+        def save_group_histories(path):
+            header = &#34;,&#34;.join([group.name for group in self.groups.values()])
+            rows = np.array([group.history for group in self.groups.values()]).T
+            np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+
+        out_path = set_out_path()
         self.save_options(out_path)
         self.population.save_as_json(out_path)
+        save_group_histories(out_path)
 
     def change_options(self, settings):
         &#34;&#34;&#34;
@@ -295,27 +381,37 @@ if __name__ == &#34;__main__&#34;:
     TODO Docstring Simulation end_iteration
     &#34;&#34;&#34;
 
-    out_path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
-    if not os.path.exists(out_path):
-        os.mkdir(out_path)
+    def set_out_path():
+        path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
+        if not os.path.exists(path):
+            os.mkdir(path)
 
-    newest_iteration = Standalones.get_last_folder(out_path)
-    override = self.settings[&#34;override_newest&#34;] \
-        if &#34;override_newest&#34; in self.settings.keys() \
-        else newest_iteration == &#34;9999&#34;
+        newest_iteration = Standalones.get_last_folder(path)
+        override = self.settings[&#34;override_newest&#34;] \
+            if &#34;override_newest&#34; in self.settings.keys() \
+            else newest_iteration == &#34;9999&#34;
 
-    if not newest_iteration:
-        out_path += &#34;0000&#34; + sep
-        os.mkdir(out_path)
-    else:
-        if override:
-            out_path += newest_iteration + sep
+        if not newest_iteration:
+            path += &#34;0000&#34; + sep
+            os.mkdir(path)
         else:
-            out_path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
-            os.mkdir(out_path)
+            if override:
+                path += newest_iteration + sep
+            else:
+                path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
+                os.mkdir(path)
 
+        return path
+
+    def save_group_histories(path):
+        header = &#34;,&#34;.join([group.name for group in self.groups.values()])
+        rows = np.array([group.history for group in self.groups.values()]).T
+        np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+
+    out_path = set_out_path()
     self.save_options(out_path)
-    self.population.save_as_json(out_path)</code></pre>
+    self.population.save_as_json(out_path)
+    save_group_histories(out_path)</code></pre>
 </details>
 </dd>
 <dt id="src.main.Simulation.save_options"><code class="name flex">
@@ -356,18 +452,46 @@ if __name__ == &#34;__main__&#34;:
     &#34;&#34;&#34;
 
     tick = 0
+    heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
+    c_inner = self.settings[&#34;inner_reproduction_number&#34;]
+    c_outer = self.settings[&#34;outer_reproduction_number&#34;]
 
     # start infection
+    seed = np.random.choice(self.population.members)
+    seed.infect(14, seed, 0)
+    self.groups[&#34;Infected&#34;].add_member(seed)
+    self.groups[&#34;Infected&#34;].counter.save_count()
+    self.groups[&#34;Infected&#34;].counter.squash_history()
 
-    # spread infection
-    #   - inside household
-    #   - outside household
+    while True:
+        tick += 1
 
-    # (possibly) recover
+        # spread infection
+        #   - inside household
+        #   - outside household
+        newly_infected, newly_recovered = [], []
+        for member in self.groups[&#34;Infected&#34;]:
+            n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
-    # repeat till no more infectious people
+            household = self.population.households[member.properties[&#34;household&#34;]]
+            newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
+            newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
 
-    pass</code></pre>
+            # (possibly) recover
+            if member.make_tick():
+                newly_recovered += [member]
+
+        Group.move(newly_recovered, self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
+        for member in newly_infected:
+            self.groups[&#34;Infected&#34;].add_member(member)
+
+        for group in self.groups.values():
+            group.counter.save_count()
+
+        # repeat till no more infectious people
+        print(&#34;Day: %d, #Infected: %d&#34; % (tick, self.groups[&#34;Infected&#34;].size))
+        if self.groups[&#34;Infected&#34;].size == 0:
+            break</code></pre>
 </details>
 </dd>
 </dl>

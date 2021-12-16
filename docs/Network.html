@@ -63,9 +63,46 @@ class Member:
             return _properties
 
         self.properties = check(properties)
+        self.infected = 0
+        self._recovers_in = -1
 
     def __str__(self):
         return str(self.properties)
+
+    def infect(self, period: int, infectant: &#39;Member&#39;, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member infect
+        &#34;&#34;&#34;
+
+        if &#34;immune&#34; in self.properties.keys() and self.properties[&#34;immune&#34;] or self.infected:
+            return False
+
+        shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
+        infection_data = [(infectant.properties[&#34;id&#34;], shared_household, timestamp)]
+
+        if &#34;infections&#34; not in self.properties.keys():
+            self.properties[&#34;infections&#34;] = infection_data
+        else:
+            self.properties[&#34;infections&#34;] += infection_data
+
+        self.infected = True
+        self._recovers_in = period
+        return True
+
+    def make_tick(self):
+        &#34;&#34;&#34;
+        TODO Docstring Member make_tick
+        &#34;&#34;&#34;
+
+        if self.infected:
+            self._recovers_in -= 1
+            if self._recovers_in == 0:
+                self._recovers_in = -1
+                self.infected = False
+                self.properties[&#34;immune&#34;] = True
+                return True
+
+        return False
 
 
 ################################################################################################
@@ -106,8 +143,32 @@ class Group:
         TODO Docstring Group remove_member
         &#34;&#34;&#34;
 
+        old_size = self.members.size
         self.members = self.members[self.members != member]
-        self.counter.decrement()
+        self.counter.decrement(old_size - self.members.size)
+
+    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Group spread_disease
+        &#34;&#34;&#34;
+
+        result = []
+        for other in np.random.choice(self.members, n):
+            if np.random.uniform() &lt; heuristic(other.properties):
+                if other.infect(14, infectant, timestamp):
+                    result += [other]
+
+        return result
+
+    @staticmethod
+    def move(members: np.ndarray, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+        &#34;&#34;&#34;
+        TODO docstring Group move
+        &#34;&#34;&#34;
+
+        for member in members:
+            origin.remove_member(member)
+            destination.add_member(member)
 
     @property
     def history(self):
@@ -150,7 +211,7 @@ class Population(Group):
         super().__init__(name)
         self.households = {}
 
-    def add_member(self, member: Member):
+    def add_member(self, member: Member, count: int = True):
         &#34;&#34;&#34;
         Adds member as a Member to the Population
         and to its Household within the Population.
@@ -159,6 +220,8 @@ class Population(Group):
         ----------
         member : Member
             The Member to be added to the Population.
+        count :
+            Option whether to increase population counter or not.
 
         Raises
         ------
@@ -377,8 +440,32 @@ class Population(Group):
         TODO Docstring Group remove_member
         &#34;&#34;&#34;
 
+        old_size = self.members.size
         self.members = self.members[self.members != member]
-        self.counter.decrement()
+        self.counter.decrement(old_size - self.members.size)
+
+    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Group spread_disease
+        &#34;&#34;&#34;
+
+        result = []
+        for other in np.random.choice(self.members, n):
+            if np.random.uniform() &lt; heuristic(other.properties):
+                if other.infect(14, infectant, timestamp):
+                    result += [other]
+
+        return result
+
+    @staticmethod
+    def move(members: np.ndarray, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+        &#34;&#34;&#34;
+        TODO docstring Group move
+        &#34;&#34;&#34;
+
+        for member in members:
+            origin.remove_member(member)
+            destination.add_member(member)
 
     @property
     def history(self):
@@ -393,6 +480,29 @@ class Population(Group):
 <li><a title="src.Network.Household" href="#src.Network.Household">Household</a></li>
 <li><a title="src.Network.Population" href="#src.Network.Population">Population</a></li>
 </ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.Network.Group.move"><code class="name flex">
+<span>def <span class="ident">move</span></span>(<span>members: numpy.ndarray, origin: <a title="src.Network.Group" href="#src.Network.Group">Group</a>, destination: <a title="src.Network.Group" href="#src.Network.Group">Group</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO docstring Group move</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def move(members: np.ndarray, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+    &#34;&#34;&#34;
+    TODO docstring Group move
+    &#34;&#34;&#34;
+
+    for member in members:
+        origin.remove_member(member)
+        destination.add_member(member)</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Instance variables</h3>
 <dl>
 <dt id="src.Network.Group.history"><code class="name">var <span class="ident">history</span></code></dt>
@@ -454,8 +564,32 @@ def size(self):
     TODO Docstring Group remove_member
     &#34;&#34;&#34;
 
+    old_size = self.members.size
     self.members = self.members[self.members != member]
-    self.counter.decrement()</code></pre>
+    self.counter.decrement(old_size - self.members.size)</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Group.spread_disease"><code class="name flex">
+<span>def <span class="ident">spread_disease</span></span>(<span>self, infectant: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, n: int, heuristic: <built-in function callable>, timestamp: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Group spread_disease</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+    &#34;&#34;&#34;
+    TODO Docstring Group spread_disease
+    &#34;&#34;&#34;
+
+    result = []
+    for other in np.random.choice(self.members, n):
+        if np.random.uniform() &lt; heuristic(other.properties):
+            if other.infect(14, infectant, timestamp):
+                result += [other]
+
+    return result</code></pre>
 </details>
 </dd>
 </dl>
@@ -506,7 +640,9 @@ def id(self):
 <li><code><b><a title="src.Network.Group" href="#src.Network.Group">Group</a></b></code>:
 <ul class="hlist">
 <li><code><a title="src.Network.Group.add_member" href="#src.Network.Group.add_member">add_member</a></code></li>
+<li><code><a title="src.Network.Group.move" href="#src.Network.Group.move">move</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+<li><code><a title="src.Network.Group.spread_disease" href="#src.Network.Group.spread_disease">spread_disease</a></code></li>
 </ul>
 </li>
 </ul>
@@ -537,10 +673,105 @@ def id(self):
             return _properties
 
         self.properties = check(properties)
+        self.infected = 0
+        self._recovers_in = -1
 
     def __str__(self):
-        return str(self.properties)</code></pre>
+        return str(self.properties)
+
+    def infect(self, period: int, infectant: &#39;Member&#39;, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member infect
+        &#34;&#34;&#34;
+
+        if &#34;immune&#34; in self.properties.keys() and self.properties[&#34;immune&#34;] or self.infected:
+            return False
+
+        shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
+        infection_data = [(infectant.properties[&#34;id&#34;], shared_household, timestamp)]
+
+        if &#34;infections&#34; not in self.properties.keys():
+            self.properties[&#34;infections&#34;] = infection_data
+        else:
+            self.properties[&#34;infections&#34;] += infection_data
+
+        self.infected = True
+        self._recovers_in = period
+        return True
+
+    def make_tick(self):
+        &#34;&#34;&#34;
+        TODO Docstring Member make_tick
+        &#34;&#34;&#34;
+
+        if self.infected:
+            self._recovers_in -= 1
+            if self._recovers_in == 0:
+                self._recovers_in = -1
+                self.infected = False
+                self.properties[&#34;immune&#34;] = True
+                return True
+
+        return False</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="src.Network.Member.infect"><code class="name flex">
+<span>def <span class="ident">infect</span></span>(<span>self, period: int, infectant: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, timestamp: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member infect</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def infect(self, period: int, infectant: &#39;Member&#39;, timestamp: int):
+    &#34;&#34;&#34;
+    TODO Docstring Member infect
+    &#34;&#34;&#34;
+
+    if &#34;immune&#34; in self.properties.keys() and self.properties[&#34;immune&#34;] or self.infected:
+        return False
+
+    shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
+    infection_data = [(infectant.properties[&#34;id&#34;], shared_household, timestamp)]
+
+    if &#34;infections&#34; not in self.properties.keys():
+        self.properties[&#34;infections&#34;] = infection_data
+    else:
+        self.properties[&#34;infections&#34;] += infection_data
+
+    self.infected = True
+    self._recovers_in = period
+    return True</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Member.make_tick"><code class="name flex">
+<span>def <span class="ident">make_tick</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member make_tick</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_tick(self):
+    &#34;&#34;&#34;
+    TODO Docstring Member make_tick
+    &#34;&#34;&#34;
+
+    if self.infected:
+        self._recovers_in -= 1
+        if self._recovers_in == 0:
+            self._recovers_in = -1
+            self.infected = False
+            self.properties[&#34;immune&#34;] = True
+            return True
+
+    return False</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="src.Network.Population"><code class="flex name class">
 <span>class <span class="ident">Population</span></span>
@@ -561,7 +792,7 @@ def id(self):
         super().__init__(name)
         self.households = {}
 
-    def add_member(self, member: Member):
+    def add_member(self, member: Member, count: int = True):
         &#34;&#34;&#34;
         Adds member as a Member to the Population
         and to its Household within the Population.
@@ -570,6 +801,8 @@ def id(self):
         ----------
         member : Member
             The Member to be added to the Population.
+        count :
+            Option whether to increase population counter or not.
 
         Raises
         ------
@@ -931,7 +1164,7 @@ def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
 <h3>Methods</h3>
 <dl>
 <dt id="src.Network.Population.add_member"><code class="name flex">
-<span>def <span class="ident">add_member</span></span>(<span>self, member: <a title="src.Network.Member" href="#src.Network.Member">Member</a>)</span>
+<span>def <span class="ident">add_member</span></span>(<span>self, member: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, count: int = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Adds member as a Member to the Population
@@ -941,6 +1174,8 @@ and to its Household within the Population.</p>
 <dt><strong><code>member</code></strong> :&ensp;<code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></dt>
 <dd>The Member to be added to the Population.</dd>
 </dl>
+<p>count :
+Option whether to increase population counter or not.</p>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>KeyError</code></dt>
@@ -954,7 +1189,7 @@ a KeyError will be raised.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_member(self, member: Member):
+<pre><code class="python">def add_member(self, member: Member, count: int = True):
     &#34;&#34;&#34;
     Adds member as a Member to the Population
     and to its Household within the Population.
@@ -963,6 +1198,8 @@ a KeyError will be raised.</dd>
     ----------
     member : Member
         The Member to be added to the Population.
+    count :
+        Option whether to increase population counter or not.
 
     Raises
     ------
@@ -1027,7 +1264,9 @@ a KeyError will be raised.</dd>
 <ul class="hlist">
 <li><code><b><a title="src.Network.Group" href="#src.Network.Group">Group</a></b></code>:
 <ul class="hlist">
+<li><code><a title="src.Network.Group.move" href="#src.Network.Group.move">move</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+<li><code><a title="src.Network.Group.spread_disease" href="#src.Network.Group.spread_disease">spread_disease</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1050,11 +1289,13 @@ a KeyError will be raised.</dd>
 <ul>
 <li>
 <h4><code><a title="src.Network.Group" href="#src.Network.Group">Group</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="src.Network.Group.add_member" href="#src.Network.Group.add_member">add_member</a></code></li>
 <li><code><a title="src.Network.Group.history" href="#src.Network.Group.history">history</a></code></li>
+<li><code><a title="src.Network.Group.move" href="#src.Network.Group.move">move</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
 <li><code><a title="src.Network.Group.size" href="#src.Network.Group.size">size</a></code></li>
+<li><code><a title="src.Network.Group.spread_disease" href="#src.Network.Group.spread_disease">spread_disease</a></code></li>
 </ul>
 </li>
 <li>
@@ -1065,6 +1306,10 @@ a KeyError will be raised.</dd>
 </li>
 <li>
 <h4><code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></h4>
+<ul class="">
+<li><code><a title="src.Network.Member.infect" href="#src.Network.Member.infect">infect</a></code></li>
+<li><code><a title="src.Network.Member.make_tick" href="#src.Network.Member.make_tick">make_tick</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></h4>

@@ -157,9 +157,9 @@ if __name__ == "__main__":
     sim.start_iteration()
     sim.end_iteration()
 
-    path = ".." + sep + "out" + sep + "DE_03_KLLand" + sep
-    latest = Standalones.get_last_folder(path)
-    data = np.genfromtxt(path + latest + sep + "progression.csv", delimiter=',', skip_header=1)
+    sim_path = ".." + sep + "out" + sep + "DE_03_KLLand" + sep
+    latest = Standalones.get_last_folder(sim_path)
+    data = np.genfromtxt(sim_path + latest + sep + "progression.csv", delimiter=',', skip_header=1)
     plt.plot(106463 - data[:, 0] - data[:, 1], color='green')
     plt.plot(data[:, 0], color='red')
     plt.plot(data[:, 1], color='blue')
