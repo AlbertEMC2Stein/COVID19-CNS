@@ -139,7 +139,6 @@ class Counter:
     def _step(self, mode: str, k: int = 1, return_when: str = 'after'):
         old = self.count
         self.count = self.count + k if mode == "inc" else max(0, self.count - k)
-        self.history = np.append(self.history, self.count)
 
         if k < 0:
             raise ValueError("k has to be non-negative.")
@@ -164,6 +163,9 @@ class Counter:
         """
 
         return self._step('dec', k, return_when)
+
+    def save_count(self):
+        self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         """
