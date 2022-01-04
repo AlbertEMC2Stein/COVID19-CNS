@@ -203,7 +203,7 @@ class Simulation:
             if len(self.stats["#new_infected"]) >= 7:
                 self.stats["seven_day_incidence"] += [round(sum(self.stats["#new_infected"][-7:])*100000/tau)]
             else:
-                self.stats["seven_day_incidence"] += [round(sum(self.stats["#new_infected"])*100000/tau)]
+                self.stats["seven_day_incidence"] += [round(sum(self.stats["#new_infected"])*7/len(self.stats["#new_infected"])*100000/tau)]
             
             self.stats["stats_string"] += "\n%d,%d,%d,%d,%d,%d,%d,%d" % (tick,
                                                                 self.stats["#infected"][-1],
