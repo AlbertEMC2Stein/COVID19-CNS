@@ -133,7 +133,7 @@ class Member:
             if "immune" in self.properties.keys() and self.properties["immune"]:
                 self._immune_in = 0
                 self._susceptible_in = max(t_immunity, self._susceptible_in)
-                return True
+
             else:
                 self._immune_in = t_vac_effect
                 self._susceptible_in = t_immunity
@@ -200,8 +200,8 @@ class Group:
         result = []
         for other in np.random.choice(self.members, n):
             if np.random.uniform() < heuristic(other.properties):
-                if other.infect(t_infection, infectant, timestamp, t_immunity = t_immunity,
-                                t_incubation = t_incubation):
+                if other.infect(t_infection, infectant, timestamp, t_immunity=t_immunity,
+                                t_incubation=t_incubation):
                     result += [other]
 
         return result
