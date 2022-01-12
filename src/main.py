@@ -270,8 +270,8 @@ class Simulation:
                 plt.xlabel("t")
                 plt.ylabel("#")
                 plt.title(title)
-                plt.show()
                 plt.savefig(path + "Plots" + sep + plotname)
+                plt.show()
 
             if not os.path.exists(path + "Plots"):
                 os.mkdir(path + "Plots")
@@ -338,21 +338,21 @@ if __name__ == "__main__":
 
 
     simulation_settings = {
-        "population_file": "FromSampler_2021-12-15T12-43-56.csv",  # "DE_03_KLLand.csv",
+        "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_heuristic,
         "inner_reproduction_number": 1,
         "outer_reproduction_number": 3,
-        "override_newest": True,
+        "override_newest": False,
         "incubation_time": 7,
         "infection_time": 14,
         "vaccination_takes_effect_time": 14,
         "immunity_time": 180,
-        "number_of_initially_infected": 10,
+        "number_of_initially_infected": 100,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
-        "vaccinations_per_day": 5,
+        "vaccinations_per_day": 100,
         "vaccination_immunity_time": 180,
-        "waiting_time_vaccination_until_new_vaccination": 90,
+        "waiting_time_vaccination_until_new_vaccination": 180,
         "waiting_time_recovered_until_vaccination": 180,
         "maximal_simulation_time_interval": 2*365
     }
