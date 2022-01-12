@@ -27,7 +27,7 @@ class Simulation:
                           "incubation_time",
                           "infection_time",
                           "vaccination_takes_effect_time",
-                          "immunity_time",
+                          "recovered_immunity_time",
                           "number_of_initially_infected",
                           "number_of_initially_recovered",
                           "number_of_initially_vaccinated",
@@ -48,71 +48,92 @@ class Simulation:
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated")}
-        self.stats = {"#new_infected": [],
-                      "#infected": [],
-                      "#recovered": [],
-                      "#new_recovered": [],
-                      "#new_susceptible": [],
-                      "#new_vaccinated": [],
-                      "seven_day_incidence": [],
-                      "stats_string": "Day,Infected,"
-                                      + "Newly_Infected,Recovered,Newly_Recovered,"
-                                      + "Newly_Susceptible,Newly_Vaccinated,"
-                                      + "Seven_Day_Incidence"}
+        self.stats = {"#new_infected": [0],
+                      "#new_recovered": [0],
+                      "#new_susceptible": [0],
+                      "#new_vaccinated": [0],
+                      "seven_day_incidence": [0]
+                      }
 
     def start_iteration(self):
         """
         TODO Docstring Simulation start_iteration
         """
+
+        def initialize_groups():
+            def put_inits_in_respective_group():
+                for ini_inf in ini_infs:
+                    ini_inf.infect(np.random.poisson(c_infection), ini_inf, 0, t_immunity=np.random.poisson(c_immunity),
+                                   t_incubation=-1)
+                    self.groups["Infected"].add_member(ini_inf)
+
+                for ini_rec in ini_recs:
+                    ini_rec.make_immune(np.random.poisson(c_immunity))
+                    self.groups["Recovered"].add_member(ini_rec)
+                    ini_rec.recovered = True
+
+                for ini_vac in ini_vacs:
+                    ini_vac.make_immune(np.random.poisson(c_vac_immunity))
+                    self.groups["Vaccinated"].add_member(ini_vac)
+                    ini_vac.vaccinated = True
+
+                for group in self.groups.values():
+                    group.counter.save_count()
+                    group.counter.squash_history()
+
+            infs_recs_vacs = np.random.choice(self.population.members,
+                                              size=n_ini_inf + n_ini_recs + n_ini_vacs,
+                                              replace=False)
+
+            ini_infs = infs_recs_vacs[:n_ini_inf]
+            ini_recs = infs_recs_vacs[n_ini_inf:n_ini_inf + n_ini_recs]
+            ini_vacs = infs_recs_vacs[n_ini_inf + n_ini_recs:]
+
+            put_inits_in_respective_group()
+
+        def update_stats():
+            def calc_7di():
+                new_inf = self.stats["#new_infected"]
+                if len(self.stats["#new_infected"]) >= 7:
+                    return round(sum(new_inf[-7:]) * 100000 / self.population.size)
+                else:
+                    return round(sum(new_inf) * 7 / len(new_inf) * 100000 / self.population.size)
+
+            self.stats["#new_infected"] += [len(newly_infected)]
+            self.stats["#new_recovered"] += [len(newly_recovered)]
+            self.stats["#new_susceptible"] += [len(newly_susceptible)]
+            self.stats["#new_vaccinated"] += [n_vacs]
+            self.stats["seven_day_incidence"] += [calc_7di()]
+
+        def print_stats():
+            print("Day: %d, #Infected: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
+                  % (tick, self.groups["Infected"].size,
+                     self.stats["#new_infected"][-1],
+                     self.stats["#new_recovered"][-1],
+                     self.stats["#new_vaccinated"][-1],
+                     self.stats["seven_day_incidence"][-1]))
+
         print("Initializing simulation...")
         tick = 0
+        # c -> put into poisson, n -> fixed value
         heuristic = self.settings["infection_probability_heuristic"]
         c_inner = self.settings["inner_reproduction_number"]
         c_outer = self.settings["outer_reproduction_number"]
-        c_incubation = self.settings["incubation_time"]
-        c_infection = self.settings["infection_time"]
-        c_immunity = self.settings["immunity_time"]
-        c_vac_effect = self.settings["vaccination_takes_effect_time"]
-        c_vac_immunity = self.settings["vaccination_immunity_time"]
-        n_seeds = self.settings["number_of_initially_infected"]
+        n_ini_inf = self.settings["number_of_initially_infected"]
         n_ini_recs = self.settings["number_of_initially_recovered"]
         n_ini_vacs = self.settings["number_of_initially_vaccinated"]
+        c_incubation = self.settings["incubation_time"]
+        c_infection = self.settings["infection_time"]
+        c_immunity = self.settings["recovered_immunity_time"]
+        c_vac_effect = self.settings["vaccination_takes_effect_time"]
+        c_vac_immunity = self.settings["vaccination_immunity_time"]
         c_vacs = self.settings["vaccinations_per_day"]
         t_wait_vac = self.settings["waiting_time_vaccination_until_new_vaccination"]
         t_wait_rec = self.settings["waiting_time_recovered_until_vaccination"]
         max_t = self.settings["maximal_simulation_time_interval"]
-        tau = len(self.population.members)
 
         # start infection
-        seeds_recs_vacs = np.random.choice(self.population.members,
-                                           size=n_seeds + n_ini_recs + n_ini_vacs, replace=False)
-        seeds = seeds_recs_vacs[:n_seeds]
-        ini_recs = seeds_recs_vacs[n_seeds:n_seeds + n_ini_recs]
-        ini_vacs = seeds_recs_vacs[n_seeds + n_ini_recs:]
-        for seed in seeds:
-            seed.infect(np.random.poisson(c_infection), seed, 0, t_immunity=np.random.poisson(c_immunity),
-                        t_incubation=-1)
-            self.groups["Infected"].add_member(seed)
-
-        for ini_rec in ini_recs:
-            ini_rec.make_immune(np.random.poisson(c_immunity))
-            self.groups["Recovered"].add_member(ini_rec)
-            ini_rec.recovered = True
-
-        for ini_vac in ini_vacs:
-            ini_vac.make_immune(np.random.poisson(c_vac_immunity))
-            self.groups["Vaccinated"].add_member(ini_vac)
-            ini_vac.vaccinated = True
-            ini_vac._immune_in = -1
-
-        self.groups["Infected"].counter.save_count()
-        self.groups["Infected"].counter.squash_history()
-
-        self.groups["Recovered"].counter.save_count()
-        self.groups["Recovered"].counter.squash_history()
-
-        self.groups["Vaccinated"].counter.save_count()
-        self.groups["Vaccinated"].counter.squash_history()
+        initialize_groups()
 
         print("Finished initializing simulation.")
         print("Starting simulation...")
@@ -124,6 +145,8 @@ class Simulation:
             # spread infection
             #   - inside household
             #   - outside household
+            # TODO refactor till ######################################################################
+            
             newly_infected, newly_recovered = [], []
             for member in self.groups["Infected"]:
                 if member._infectious_in <= 0:
@@ -170,8 +193,8 @@ class Simulation:
                     self.groups["Vaccinated"].remove_member(member)
 
             # vaccinations
-            n_vacs = np.random.poisson(c_vacs)
-            new_vacs_indices = np.random.choice(range(tau), size=n_vacs, replace=False)
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size)
+            new_vacs_indices = np.random.choice(range(self.population.size), size=n_vacs, replace=False)
             newly_vaccinated = [self.population.members[i] for i in new_vacs_indices]
             no_vacs = []
             for new_vac in newly_vaccinated:
@@ -193,33 +216,12 @@ class Simulation:
             for group in self.groups.values():
                 group.counter.save_count()
 
-            self.stats["#new_infected"] += [len(newly_infected)]
-            self.stats["#infected"] += [self.groups["Infected"].size]
-            self.stats["#recovered"] += [self.groups["Recovered"].size]
-            self.stats["#new_recovered"] += [len(newly_recovered)]
-            self.stats["#new_susceptible"] += [len(newly_susceptible)]
-            self.stats["#new_vaccinated"] += [n_vacs]
-            if len(self.stats["#new_infected"]) >= 7:
-                self.stats["seven_day_incidence"] += [round(sum(self.stats["#new_infected"][-7:]) * 100000 / tau)]
-            else:
-                self.stats["seven_day_incidence"] += [round(sum(self.stats["#new_infected"])*7/len(self.stats["#new_infected"])*100000/tau)]
-            
-            self.stats["stats_string"] += "\n%d,%d,%d,%d,%d,%d,%d,%d" % (tick,
-                                                                         self.stats["#infected"][-1],
-                                                                         self.stats["#new_infected"][-1],
-                                                                         self.stats["#recovered"][-1],
-                                                                         self.stats["#new_recovered"][-1],
-                                                                         self.stats["#new_susceptible"][-1],
-                                                                         self.stats["#new_vaccinated"][-1],
-                                                                         self.stats["seven_day_incidence"][-1])
+            # TODO here ###########################################################################
+
+            update_stats()
+            print_stats()
 
             # repeat till no more infectious people or max_t has passed
-            print("Day: %d, #Infected: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
-                  % (tick, self.groups["Infected"].size,
-                     self.stats["#new_infected"][-1],
-                     self.stats["#new_recovered"][-1],
-                     self.stats["#new_vaccinated"][-1],
-                     self.stats["seven_day_incidence"][-1]))
             if self.groups["Infected"].size == 0 or tick > max_t:
                 break
 
@@ -252,15 +254,12 @@ class Simulation:
 
             return path
 
-        def save_group_histories(path):
-            header = ",".join([group.name for group in self.groups.values()])
-            rows = np.array([group.history for group in self.groups.values()]).T
-            np.savetxt(path + "progression.csv", rows, fmt='%d', delimiter=",", header=header, comments='')
+        def save_disease_progression(path):
+            header = ",".join([group.name for group in self.groups.values()] + list(self.stats.keys()))
+            rows = np.array([group.history for group in self.groups.values()] +
+                            [np.array(stat_values) for stat_values in self.stats.values()]).T
 
-        def save_stats(path: str):
-            with open(path + "stats.csv", "w") as f:
-                f.write(self.stats["stats_string"])
-                f.close()
+            np.savetxt(path + "progression.csv", rows, fmt='%d', delimiter=",", header=header, comments='')
 
         def save_plots(path: str):
             def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
@@ -314,8 +313,7 @@ class Simulation:
 
         out_path = set_out_path()
         self.population.save_as_json(out_path)
-        save_group_histories(out_path)
-        save_stats(out_path)
+        save_disease_progression(out_path)
         save_plots(out_path)
         save_options(out_path)
 
@@ -340,21 +338,21 @@ if __name__ == "__main__":
     simulation_settings = {
         "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_heuristic,
-        "inner_reproduction_number": 1,
-        "outer_reproduction_number": 3,
-        "override_newest": False,
-        "incubation_time": 7,
-        "infection_time": 14,
-        "vaccination_takes_effect_time": 14,
-        "immunity_time": 180,
-        "number_of_initially_infected": 100,
+        "number_of_initially_infected": 10,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
+        "inner_reproduction_number": 1,
+        "outer_reproduction_number": 3,
+        "override_newest": True,
+        "incubation_time": 7,
+        "infection_time": 14,
+        "recovered_immunity_time": 180,
+        "vaccination_takes_effect_time": 14,
         "vaccinations_per_day": 100,
         "vaccination_immunity_time": 180,
         "waiting_time_vaccination_until_new_vaccination": 180,
         "waiting_time_recovered_until_vaccination": 180,
-        "maximal_simulation_time_interval": 2*365
+        "maximal_simulation_time_interval": 365
     }
 
     sim = Simulation(simulation_settings)
