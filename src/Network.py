@@ -101,6 +101,7 @@ class Member:
         TODO Docstring Member make_immune
         """
         if self.infected:
+            raise RuntimeError
             self.infected = False
             self._infectious_in = -1
             self._recovers_in = -1
@@ -207,7 +208,7 @@ class Group:
         return result
 
     @staticmethod
-    def move(members: np.ndarray, origin: 'Group', destination: 'Group'):
+    def move(members: iter, origin: 'Group', destination: 'Group'):
         """
         TODO docstring Group move
         """
