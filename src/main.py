@@ -192,7 +192,7 @@ class Simulation:
             }
 
             for group in self.groups.values():
-                update_group(group, new_members)
+                update_group(group)
 
             for member in new_members["newly_susceptible_rec"]:
                 self.groups["Recovered"].remove_member(member)
