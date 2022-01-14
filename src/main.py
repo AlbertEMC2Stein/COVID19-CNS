@@ -62,9 +62,14 @@ class Simulation:
 
         def initialize_groups():
             def put_inits_in_respective_group():
+                gen_params = lambda: {
+                    "incubation_period": -1,
+                    "infection_period": np.random.poisson(c_infection),
+                    "immunity_period": np.random.poisson(c_immunity)
+                }
+
                 for ini_inf in ini_infs:
-                    ini_inf.infect(np.random.poisson(c_infection), ini_inf, 0, t_immunity=np.random.poisson(c_immunity),
-                                   t_incubation=-1)
+                    ini_inf.infect(ini_inf, 0, gen_params())
                     self.groups["Infected"].add_member(ini_inf)
 
                 for ini_rec in ini_recs:
@@ -90,6 +95,9 @@ class Simulation:
             ini_vacs = infs_recs_vacs[n_ini_inf + n_ini_recs:]
 
             put_inits_in_respective_group()
+
+        def update_groups():
+            ...
 
         def update_stats():
             def calc_7di():
@@ -146,44 +154,50 @@ class Simulation:
             #   - inside household
             #   - outside household
             # TODO refactor till ######################################################################
-            
+
             newly_infected, newly_recovered = [], []
+            newly_susceptible_rec, newly_susceptible_vac = [], []
+            update_groups()
             for member in self.groups["Infected"]:
-                if member._infectious_in <= 0:
+                if member.make_tick("infectious"):
                     n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
+                    gen_params = lambda: {
+                        "heuristic": heuristic,
+                        "incubation_period": np.random.poisson(c_incubation),
+                        "infection_period": np.random.poisson(c_infection),
+                        "immunity_period": np.random.poisson(c_immunity)
+                    }
+
                     household = self.population.households[member.properties["household"]]
-                    newly_infected += household.spread_disease(member, n_inner, heuristic, tick,
-                                                               t_infection=np.random.poisson(c_infection),
-                                                               t_incubation=np.random.poisson(c_incubation))
-                    newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick,
-                                                                     t_infection=np.random.poisson(c_infection),
-                                                                     t_incubation=np.random.poisson(c_incubation))
+                    newly_infected += household.spread_disease(member, n_inner, tick, gen_params())
+                    newly_infected += self.population.spread_disease(member, n_outer, tick, gen_params())
 
                     # (possibly) recover
-                    if member.make_tick():
+                    if member.make_tick("default"):
                         newly_recovered += [member]
                         member.recovered = True
-                else:
-                    member._infectious_in -= 1
 
             # possible gain/loss of immunity
-            newly_susceptible_rec, newly_susceptible_vac = [], []
             for member in self.groups["Recovered"]:
-                if member.make_tick_immunity():
+                if member.make_tick("immunity"):
                     newly_susceptible_rec += [member]
+
             for member in self.groups["Vaccinated"]:
-                if member._immune_in <= 0:
-                    if member.make_tick_immunity():
-                        newly_susceptible_vac += [member]
+                if member.make_tick("immunity"):
+                    newly_susceptible_vac += [member]
+
                 elif not member.infected:
-                    member.make_tick_vac_effect()
+                    member.make_tick("vaccine")
+
             for member in newly_susceptible_rec:
                 self.groups["Recovered"].remove_member(member)
                 member.recovered = False
+
             for member in newly_susceptible_vac:
                 self.groups["Vaccinated"].remove_member(member)
                 member.vaccinated = False
+
             newly_susceptible = newly_susceptible_rec + newly_susceptible_vac
 
             Group.move(newly_recovered, self.groups["Infected"], self.groups["Recovered"])
@@ -194,23 +208,26 @@ class Simulation:
 
             # vaccinations
             n_vacs = min(np.random.poisson(c_vacs), self.population.size)
-            new_vacs_indices = np.random.choice(range(self.population.size), size=n_vacs, replace=False)
-            newly_vaccinated = [self.population.members[i] for i in new_vacs_indices]
+            new_vacs = np.random.choice(self.population.members, size=n_vacs, replace=False)
             no_vacs = []
-            for new_vac in newly_vaccinated:
+            for new_vac in new_vacs:
                 if new_vac.vaccinate(tick, t_vac_effect=np.random.poisson(c_vac_effect),
                                      t_immunity=np.random.poisson(c_vac_immunity),
                                      t_wait_vac=t_wait_vac, t_wait_rec=t_wait_rec):
+
                     if new_vac.recovered:
                         self.groups["Recovered"].remove_member(new_vac)
                         new_vac.recovered = False
                         self.groups["Vaccinated"].add_member(new_vac)
                         new_vac.vaccinated = True
+
                     elif not new_vac.vaccinated:
                         self.groups["Vaccinated"].add_member(new_vac)
                         new_vac.vaccinated = True
+
                 else:
                     no_vacs += [new_vac]
+
             n_vacs = n_vacs - len(no_vacs)
 
             for group in self.groups.values():
