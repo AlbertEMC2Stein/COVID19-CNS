@@ -97,10 +97,10 @@ class Member:
         """
 
         vaccine_unavailable = self.infected or \
-                            "vaccinations" in self.properties.keys() and \
-                            timestamp - self.properties["vaccinations"][-1][1] < vaccine_parameters["t_wait_vac"] or \
-                            "infections" in self.properties.keys() and \
-                            timestamp - self.properties["infections"][-1][4] < vaccine_parameters["t_wait_rec"]
+                              "vaccinations" in self.properties.keys() and \
+                              timestamp < self.properties["vaccinations"][-1][1] + vaccine_parameters["t_wait_vac"] or \
+                              "infections" in self.properties.keys() and \
+                              timestamp < self.properties["infections"][-1][4] + vaccine_parameters["t_wait_rec"]
         if vaccine_unavailable:
             return False
 
