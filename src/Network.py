@@ -91,29 +91,37 @@ class Member:
             self.properties["immune"] = True
             return False
 
-    def vaccinate(self, timestamp: int, t_vac_effect: int = 14, t_immunity: int = 180,
-                  t_wait_vac: int = 180, t_wait_rec: int = 180):
+    def vaccinate(self, timestamp: int, vaccine_parameters: dict):
         """
         TODO Docstring Member vaccinate
         """
-        if self.infected or "vaccinations" in self.properties.keys() and \
-            timestamp - self.properties["vaccinations"][-1][1] < t_wait_vac or \
-            "infections" in self.properties.keys() and \
-            timestamp - self.properties["infections"][-1][4] < t_wait_rec:
+
+        vaccine_unavailable = self.infected or \
+                            "vaccinations" in self.properties.keys() and \
+                            timestamp - self.properties["vaccinations"][-1][1] < vaccine_parameters["t_wait_vac"] or \
+                            "infections" in self.properties.keys() and \
+                            timestamp - self.properties["infections"][-1][4] < vaccine_parameters["t_wait_rec"]
+        if vaccine_unavailable:
             return False
+
         else:
+            vaccination_data = [(timestamp,
+                                 timestamp + vaccine_parameters["t_vac_effect"],
+                                 timestamp + vaccine_parameters["t_immunity"])]
+
             if "vaccinations" in self.properties.keys():
-                self.properties["vaccinations"] += [(timestamp, timestamp + t_vac_effect, timestamp + t_immunity)]
+                self.properties["vaccinations"] += vaccination_data
+
             else:
-                self.properties["vaccinations"] = [(timestamp, timestamp + t_vac_effect, timestamp + t_immunity)]
+                self.properties["vaccinations"] = vaccination_data
 
             if "immune" in self.properties.keys() and self.properties["immune"]:
                 self._immune_in = 0
-                self._susceptible_in = max(t_immunity, self._susceptible_in)
+                self._susceptible_in = max(vaccine_parameters["t_immunity"], self._susceptible_in)
 
             else:
-                self._immune_in = t_vac_effect
-                self._susceptible_in = t_immunity
+                self._immune_in = vaccine_parameters["t_vac_effect"]
+                self._susceptible_in = vaccine_parameters["t_immunity"]
 
             return True
 
@@ -239,7 +247,7 @@ class Household(Group):
         """
         TODO Docstring Household __init__
         """
-        
+
         super().__init__(str(identifier))
 
     @property
@@ -431,7 +439,6 @@ class Population(Group):
 
             f.write(wrapper + inner + "\t]\n}")
             f.close()
-
 
 ################################################################################################
 ################################################################################################
