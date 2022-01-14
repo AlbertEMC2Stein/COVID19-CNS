@@ -44,8 +44,7 @@ class Member:
     def __str__(self):
         return str(self.properties)
 
-    def infect(self, t_infection: int, infectant: 'Member', timestamp: int,
-               t_immunity: int = 180, t_incubation: int = 7):
+    def infect(self, infectant: 'Member', timestamp: int, disease_parameters: dict):
         """
         TODO Docstring Member infect
         """
@@ -53,9 +52,14 @@ class Member:
         if "immune" in self.properties.keys() and self.properties["immune"] or self.infected:
             return False
 
+        n_incubation = disease_parameters["incubation_period"]
+        n_infection = disease_parameters["infection_period"]
         shared_household = self.properties["household"] == infectant.properties["household"]
-        infection_data = [(infectant.properties["id"], shared_household, timestamp,
-                           timestamp + t_incubation, timestamp + t_incubation + t_infection)]
+        infection_data = [(infectant.properties["id"],
+                           shared_household,
+                           timestamp,
+                           timestamp + n_incubation,
+                           timestamp + n_incubation + n_infection)]
 
         if "infections" not in self.properties.keys():
             self.properties["infections"] = infection_data
@@ -63,40 +67,12 @@ class Member:
             self.properties["infections"] += infection_data
 
         self.infected = True
-        self._infectious_in = t_incubation
-        self._recovers_in = t_infection
-        self._susceptible_in = t_immunity
+        self._infectious_in = n_incubation
+        self._recovers_in = n_infection
+        self._susceptible_in = disease_parameters["immunity_period"]
         return True
 
-    def make_tick(self):
-        """
-        TODO Docstring Member make_tick
-        """
-
-        if self.infected:
-            self._recovers_in -= 1
-            if self._recovers_in == 0:
-                self._recovers_in = -1
-                self.infected = False
-                self.properties["immune"] = True
-                return True
-
-        return False
-
-    def make_tick_immunity(self):
-        """
-        TODO Docstring Member make_tick_immunity
-        """
-
-        self._susceptible_in -= 1
-        if self._susceptible_in == 0:
-            self._susceptible_in = -1
-            self.properties["immune"] = False
-            return True
-
-        return False
-
-    def make_immune(self, t_immunity: int = 180):
+    def make_immune(self, immunity_duration: int):
         """
         TODO Docstring Member make_immune
         """
@@ -105,13 +81,13 @@ class Member:
             self.infected = False
             self._infectious_in = -1
             self._recovers_in = -1
-            self._susceptible_in = t_immunity
+            self._susceptible_in = immunity_duration
             self.properties["immune"] = True
             return True
         else:
             self._infectious_in = -1
             self._recovers_in = -1
-            self._susceptible_in = t_immunity
+            self._susceptible_in = immunity_duration
             self.properties["immune"] = True
             return False
 
@@ -141,13 +117,42 @@ class Member:
 
             return True
 
-    def make_tick_vac_effect(self):
-        """
-        TODO Docstring Member make_tick_vac_effect
-        """
-        self._immune_in -= 1
-        if self._immune_in == 0:
-            self.properties["immune"] = True
+    def make_tick(self, option: str):
+        if option == "infectious":
+            result = self._infectious_in <= 0
+            if self._infectious_in > 0:
+                self._infectious_in -= 1
+
+            return result
+
+        elif option == "immunity":
+            if self._immune_in <= 0:
+                self._susceptible_in -= 1
+                if self._susceptible_in == 0:
+                    self._susceptible_in = -1
+                    self.properties["immune"] = False
+                    return True
+
+            return False
+
+        elif option == "vaccine":
+            self._immune_in -= 1
+            if self._immune_in == 0:
+                self.properties["immune"] = True
+
+        elif option == "default":
+            if self.infected:
+                self._recovers_in -= 1
+                if self._recovers_in == 0:
+                    self._recovers_in = -1
+                    self.infected = False
+                    self.properties["immune"] = True
+                    return True
+
+            return False
+
+        else:
+            raise ValueError("option not supported")
 
 
 ################################################################################################
@@ -192,17 +197,15 @@ class Group:
         self.members = self.members[self.members != member]
         self.counter.decrement(old_size - self.members.size)
 
-    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int,
-                       t_incubation: int = 7, t_infection: int = 14, t_immunity: int = 180):
+    def spread_disease(self, infectant: Member, n: int, timestamp: int, disease_parameters: dict):
         """
         TODO Docstring Group spread_disease
         """
 
         result = []
         for other in np.random.choice(self.members, n):
-            if np.random.uniform() < heuristic(other.properties):
-                if other.infect(t_infection, infectant, timestamp, t_immunity=t_immunity,
-                                t_incubation=t_incubation):
+            if np.random.uniform() < disease_parameters["heuristic"](other.properties):
+                if other.infect(infectant, timestamp, disease_parameters):
                     result += [other]
 
         return result
