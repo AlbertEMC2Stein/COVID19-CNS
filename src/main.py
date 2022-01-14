@@ -150,7 +150,7 @@ class Simulation:
                 if member.vaccinated:
                     self.groups["Vaccinated"].remove_member(member)
 
-        def simulate_vaccination():
+        def simulate_vaccinations():
             for member in new_members["staged_vaccinated"]:
                 gen_params = lambda: {
                     "t_vac_effect": np.random.poisson(c_vac_effect),
@@ -237,7 +237,7 @@ class Simulation:
                 simulate_group(group)
 
             move_members_to_new_groups()
-            simulate_vaccination()
+            simulate_vaccinations()
 
             for group in self.groups.values():
                 group.counter.save_count()
@@ -356,7 +356,6 @@ class Simulation:
 if __name__ == "__main__":
     def basic_heuristic(mem_props):
         return 1 - 1 / (0.001 * float(mem_props["age"]) + 1)
-
 
     simulation_settings = {
         "population_file": "DE_03_KLLand.csv",
