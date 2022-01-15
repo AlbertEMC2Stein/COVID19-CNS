@@ -45,7 +45,7 @@ class Simulation:
 
         self.settings = check(settings)
         self.population = Population.load_from_file(self.settings["population_file"])
-        self.population_init = Population.copy(self.population)
+        self._population_init = self.population.copy()
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated")}
@@ -352,6 +352,15 @@ class Simulation:
             self.population = Population.load_from_file(self.settings["population_file"])
 
         self.settings = settings
+
+    def reset_population(self):
+        self.population = self._population_init.copy()
+
+        for group in self.groups.values():
+            group.reset()
+
+        for stat in self.stats.keys():
+            self.stats[stat] = [0]
 
 
 if __name__ == "__main__":
