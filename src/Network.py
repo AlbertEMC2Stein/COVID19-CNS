@@ -228,6 +228,14 @@ class Group:
             origin.remove_member(member)
             destination.add_member(member)
 
+    @staticmethod
+    def copy(group: 'Group'):
+        g = Group(group.name)
+        g.members = np.copy(group.members)
+        g.counter = group.counter.copy()
+
+        return g
+
     @property
     def history(self):
         return self.counter.history
