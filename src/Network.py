@@ -232,7 +232,7 @@ class Group:
     def copy(group: 'Group'):
         g = Group(group.name)
         g.members = np.copy(group.members)
-        g.counter = group.counter.copy()
+        g.counter = Counter.copy(group.counter.copy)
 
         return g
 
