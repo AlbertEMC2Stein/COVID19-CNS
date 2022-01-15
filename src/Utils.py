@@ -174,6 +174,14 @@ class Counter:
 
         self.history = self.history[-1:]
 
+    @staticmethod
+    def copy(counter: 'Counter'):
+        c = Counter(0)
+        c.count = counter.count
+        c.history = counter.history.copy()
+
+        return c
+
 
 ################################################################################################
 ################################################################################################
