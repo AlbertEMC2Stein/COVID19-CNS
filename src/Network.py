@@ -218,6 +218,10 @@ class Group:
 
         return result
 
+    def reset(self):
+        self.members = np.array([])
+        self.counter = Counter(0)
+
     @staticmethod
     def move(members: iter, origin: 'Group', destination: 'Group'):
         """
