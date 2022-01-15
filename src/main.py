@@ -45,6 +45,7 @@ class Simulation:
 
         self.settings = check(settings)
         self.population = Population.load_from_file(self.settings["population_file"])
+        self.population_init = Population.copy(self.population)
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated")}
@@ -304,7 +305,7 @@ class Simulation:
                       ['green', 'red', 'blue', 'cyan'])
 
             make_plot("NewI.png", "New Infections",
-                      [sim.stats["#new_infected"]],
+                      [self.stats["#new_infected"]],
                       ['red'])
 
             make_plot("IR.png", "Infected & Recovered",
@@ -320,7 +321,7 @@ class Simulation:
                       ['cyan'])
 
             make_plot("7DI.png", "Seven Day Incidence",
-                      [sim.stats["seven_day_incidence"]],
+                      [self.stats["seven_day_incidence"]],
                       ['red'])
 
         def save_options(path: str):
