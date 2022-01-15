@@ -222,6 +222,13 @@ class Group:
         self.members = np.array([])
         self.counter = Counter(0)
 
+    def copy(self):
+        g = Group(self.name)
+        g.members = np.copy(self.members)
+        g.counter = self.counter.copy()
+
+        return g
+
     @staticmethod
     def move(members: iter, origin: 'Group', destination: 'Group'):
         """
@@ -231,14 +238,6 @@ class Group:
         for member in members:
             origin.remove_member(member)
             destination.add_member(member)
-
-    @staticmethod
-    def copy(group: 'Group'):
-        g = Group(group.name)
-        g.members = np.copy(group.members)
-        g.counter = Counter.copy(group.counter)
-
-        return g
 
     @property
     def history(self):

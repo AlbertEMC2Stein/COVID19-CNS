@@ -174,11 +174,10 @@ class Counter:
 
         self.history = self.history[-1:]
 
-    @staticmethod
-    def copy(counter: 'Counter'):
+    def copy(self):
         c = Counter(0)
-        c.count = counter.count
-        c.history = counter.history.copy()
+        c.count = self.count
+        c.history = self.history.copy()
 
         return c
 
