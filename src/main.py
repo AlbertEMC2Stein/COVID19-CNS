@@ -354,10 +354,10 @@ class Simulation:
 
             return settings
 
+        self.settings = check_settings()
+
         if self.settings["population_file"] != settings["population_file"]:
             self.population = Population.load_from_file(self.settings["population_file"])
-
-        self.settings = check_settings()
 
     def reset(self):
         self.population = self._population_init.copy()
