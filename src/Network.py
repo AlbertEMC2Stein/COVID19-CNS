@@ -319,6 +319,34 @@ class Population(Group):
 
         self.counter.increment()
 
+    def save_as_json(self, path: str) -> None:
+        """
+        TODO Docstring Population save_as_json
+        """
+
+        if len(self.members) == 0:
+            raise ValueError("Population can't be empty.")
+
+        with open(path + "population.json", 'w') as f:
+            wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"members\": [\n"
+            inner = ""
+            for member in self:
+                json_str = json.dumps(member.properties, indent=4)
+                inner += json_str + ', \n'
+
+            inner = textwrap.indent(inner[:-3] + '\n', '\t\t')
+
+            f.write(wrapper + inner + "\t]\n}")
+            f.close()
+
+    def copy(self):
+        p = Population(self.name)
+        p.members = np.copy(self.members)
+        p.counter = self.counter.copy()
+        p.households = self.households.copy()
+
+        return p
+
     @staticmethod
     def load_from_csv(file_name: str, path: str = "Populations" + sep):
         """
@@ -430,26 +458,6 @@ class Population(Group):
             return Population.load_from_json(file_name, path)
         else:
             raise ValueError("file_name must end in .csv or .json.")
-
-    def save_as_json(self, path: str) -> None:
-        """
-        TODO Docstring Population save_as_json
-        """
-
-        if len(self.members) == 0:
-            raise ValueError("Population can't be empty.")
-
-        with open(path + "population.json", 'w') as f:
-            wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"members\": [\n"
-            inner = ""
-            for member in self:
-                json_str = json.dumps(member.properties, indent=4)
-                inner += json_str + ', \n'
-
-            inner = textwrap.indent(inner[:-3] + '\n', '\t\t')
-
-            f.write(wrapper + inner + "\t]\n}")
-            f.close()
 
 ################################################################################################
 ################################################################################################
