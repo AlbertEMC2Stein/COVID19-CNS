@@ -323,9 +323,9 @@ class Simulation:
 
         print("Finished saving simulation data.")
 
-    def change_options(self, settings):
+    def change_settings(self, settings):
         """
-        TODO Docstring Simulation change_options
+        TODO Docstring Simulation change_settings
         """
 
         if self.settings["population_file"] != settings["population_file"]:
