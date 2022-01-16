@@ -20,7 +20,9 @@ class Simulation:
         TODO Docstring Simulation __init__
         """
 
-        self.settings = self._check_settings(settings)
+        self.settings = {"population_file": None}
+        self.change_settings(settings)
+
         self.population = Population.load_from_file(self.settings["population_file"])
         self._population_init = self.population.copy()
         self.groups = {"Infected": Group("Infected"),
@@ -328,12 +330,36 @@ class Simulation:
         TODO Docstring Simulation change_settings
         """
 
+        def check_settings():
+            must_haves = ["population_file",
+                          "infection_probability_heuristic",
+                          "inner_reproduction_number",
+                          "outer_reproduction_number",
+                          "incubation_time",
+                          "infection_time",
+                          "vaccination_takes_effect_time",
+                          "recovered_immunity_time",
+                          "number_of_initially_infected",
+                          "number_of_initially_recovered",
+                          "number_of_initially_vaccinated",
+                          "vaccinations_per_day",
+                          "vaccination_immunity_time",
+                          "waiting_time_vaccination_until_new_vaccination",
+                          "waiting_time_recovered_until_vaccination",
+                          "maximal_simulation_time_interval"]
+
+            for property in must_haves:
+                if property not in settings.keys():
+                    raise KeyError("Settings have to contain '" + property + "'.")
+
+            return settings
+
         if self.settings["population_file"] != settings["population_file"]:
             self.population = Population.load_from_file(self.settings["population_file"])
 
-        self.settings = self._check_settings(settings)
+        self.settings = check_settings()
 
-    def reset_population(self):
+    def reset(self):
         self.population = self._population_init.copy()
 
         for group in self.groups.values():
@@ -342,45 +368,20 @@ class Simulation:
         for stat in self.stats.keys():
             self.stats[stat] = [0]
 
-    @staticmethod
-    def _check_settings(settings):
-        must_haves = ["population_file",
-                      "infection_probability_heuristic",
-                      "inner_reproduction_number",
-                      "outer_reproduction_number",
-                      "incubation_time",
-                      "infection_time",
-                      "vaccination_takes_effect_time",
-                      "recovered_immunity_time",
-                      "number_of_initially_infected",
-                      "number_of_initially_recovered",
-                      "number_of_initially_vaccinated",
-                      "vaccinations_per_day",
-                      "vaccination_immunity_time",
-                      "waiting_time_vaccination_until_new_vaccination",
-                      "waiting_time_recovered_until_vaccination",
-                      "maximal_simulation_time_interval"]
-
-        for property in must_haves:
-            if property not in settings.keys():
-                raise KeyError("Settings have to contain '" + property + "'.")
-
-        return settings
-
 
 if __name__ == "__main__":
     def basic_heuristic(mem_props):
         return 1 - 1 / (0.001 * float(mem_props["age"]) + 1)
 
 
-    simulation_settings = {
-        "population_file": "TestPop.csv",  # "DE_03_KLLand.csv",
+    simulation_settings = lambda inner, outer: {
+        "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_heuristic,
         "number_of_initially_infected": 10,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
-        "inner_reproduction_number": 1,
-        "outer_reproduction_number": 3,
+        "inner_reproduction_number": inner,
+        "outer_reproduction_number": outer,
         "override_newest": True,
         "incubation_time": 7,
         "infection_time": 14,
@@ -390,9 +391,56 @@ if __name__ == "__main__":
         "vaccination_immunity_time": 90,
         "waiting_time_vaccination_until_new_vaccination": 90,
         "waiting_time_recovered_until_vaccination": 90,
-        "maximal_simulation_time_interval": 364
+        "maximal_simulation_time_interval": 365
     }
 
-    sim = Simulation(simulation_settings)
-    sim.start_iteration()
-    sim.end_iteration()
+    # from matplotlib.colors import LinearSegmentedColormap, LogNorm
+    # custom = LinearSegmentedColormap.from_list('custom', ['g', 'yellow', 'r'], N=255)
+    #
+    # n = 11
+    # sim = Simulation(simulation_settings(-1, -1))
+    # max_infection_values = np.zeros(shape=(n, n))
+    # for x, c_i in enumerate(np.linspace(0, 5, n)):
+    #     for y, c_o in enumerate(np.linspace(0, 5, n)):
+    #         sim.reset_population()
+    #         sim.change_settings(simulation_settings(c_i, c_o))
+    #         sim.start_iteration()
+    #
+    #         max_infection_values[y, x] = max(sim.groups["Infected"].history)
+    #
+    # fig = plt.figure(figsize=(10, 10))
+    # plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
+    # plt.title("Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$", pad=10)
+    # plt.xlabel("$c_{inner}$")
+    # plt.ylabel("$c_{outer}$")
+    # plt.xticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
+    # plt.yticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
+    #
+    # for (j, i), label in np.ndenumerate(max_infection_values):
+    #     plt.text(i, j, int(label), ha='center', va='center')
+    #
+    # plt.show()
+    #
+    # print(max_infection_values)
+
+    n = 16
+    sim = Simulation(simulation_settings(-1, -1))
+    mitigation_interval = np.zeros(n)
+    for run in range(1, 2):
+        print("\n" * 25 + "Run %d" % run)
+        for i, c_i in enumerate(np.linspace(1.5, 3, n)):
+            sim.reset_population()
+            sim.change_settings(simulation_settings(c_i, 1.5))
+            sim.start_iteration()
+
+            mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+                                     + 1 / run * max(sim.groups["Infected"].history)
+
+    plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
+    plt.title("Maximal infection numbers in relation to $c_{inner}$.")
+    plt.xlabel("$c_{inner}$")
+    plt.ylabel("maximal infections")
+    plt.xticks(ticks=np.linspace(1.5, 3, n))
+    plt.xlim([1.5, 3])
+    plt.grid()
+    plt.show()
