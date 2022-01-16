@@ -171,7 +171,7 @@ class Member:
         TODO Docstring Member copy
         """
 
-        m = Member(self.properties)
+        m = Member(self.properties.copy())
         m.infected = self.infected
         m.recovered = self.recovered
         m.vaccinated = self.vaccinated
@@ -181,7 +181,6 @@ class Member:
         m._immune_in = self._immune_in
 
         return m
-
 
 ################################################################################################
 ################################################################################################
