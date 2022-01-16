@@ -126,6 +126,10 @@ class Member:
             return True
 
     def make_tick(self, option: str):
+        """
+        TODO Docstring Member make_tick
+        """
+
         if option == "infectious":
             result = self._infectious_in <= 0
             if self._infectious_in > 0:
@@ -161,6 +165,22 @@ class Member:
 
         else:
             raise ValueError("option not supported")
+
+    def copy(self):
+        """
+        TODO Docstring Member copy
+        """
+
+        m = Member(self.properties)
+        m.infected = self.infected
+        m.recovered = self.recovered
+        m.vaccinated = self.vaccinated
+        m._susceptible_in = self._susceptible_in
+        m._recovers_in = self._recovers_in
+        m._infectious_in = self._infectious_in
+        m._immune_in = self._immune_in
+
+        return m
 
 
 ################################################################################################
@@ -219,12 +239,20 @@ class Group:
         return result
 
     def reset(self):
+        """
+        TODO Docstring Group reset
+        """
+
         self.members = np.array([])
         self.counter = Counter(0)
 
     def copy(self):
+        """
+        TODO Docstring Group copy
+        """
+
         g = Group(self.name)
-        g.members = np.copy(self.members)
+        g.members = np.array([member.copy() for member in self.members])
         g.counter = self.counter.copy()
 
         return g
@@ -340,8 +368,12 @@ class Population(Group):
             f.close()
 
     def copy(self):
+        """
+        TODO Docstring Population copy
+        """
+
         p = Population(self.name)
-        p.members = np.copy(self.members)
+        p.members = np.array([member.copy() for member in self.members])
         p.counter = self.counter.copy()
         p.households = self.households.copy()
 
