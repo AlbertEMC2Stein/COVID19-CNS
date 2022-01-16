@@ -6,9 +6,10 @@ __all__ = ['Simulation']
 
 import json
 import os
-import numpy as np
-import matplotlib.pylab as plt
 from os.path import sep
+
+import matplotlib.pylab as plt
+import numpy as np
 from Network import Group, Population
 from Utils import Standalones
 
@@ -19,31 +20,7 @@ class Simulation:
         TODO Docstring Simulation __init__
         """
 
-        def check(_settings: dict):
-            must_haves = ["population_file",
-                          "infection_probability_heuristic",
-                          "inner_reproduction_number",
-                          "outer_reproduction_number",
-                          "incubation_time",
-                          "infection_time",
-                          "vaccination_takes_effect_time",
-                          "recovered_immunity_time",
-                          "number_of_initially_infected",
-                          "number_of_initially_recovered",
-                          "number_of_initially_vaccinated",
-                          "vaccinations_per_day",
-                          "vaccination_immunity_time",
-                          "waiting_time_vaccination_until_new_vaccination",
-                          "waiting_time_recovered_until_vaccination",
-                          "maximal_simulation_time_interval"]
-
-            for property in must_haves:
-                if property not in _settings.keys():
-                    raise KeyError("Settings have to contain '" + property + "'.")
-
-            return _settings
-
-        self.settings = check(settings)
+        self.settings = self._check_settings(settings)
         self.population = Population.load_from_file(self.settings["population_file"])
         self._population_init = self.population.copy()
         self.groups = {"Infected": Group("Infected"),
@@ -112,7 +89,8 @@ class Simulation:
 
                         household = self.population.households[member.properties["household"]]
                         new_members["newly_infected"] += household.spread_disease(member, n_inner, tick, gen_params())
-                        new_members["newly_infected"] += self.population.spread_disease(member, n_outer, tick, gen_params())
+                        new_members["newly_infected"] += self.population.spread_disease(member, n_outer, tick,
+                                                                                        gen_params())
 
                         if member.make_tick("default"):
                             new_members["newly_recovered"] += [member]
@@ -220,6 +198,8 @@ class Simulation:
         print("Finished initializing simulation.")
         print("Starting simulation...")
 
+        print_stats()
+
         while True:
             tick += 1
             n_vacs = min(np.random.poisson(c_vacs), self.population.size)
@@ -246,7 +226,7 @@ class Simulation:
             update_stats()
             print_stats()
 
-            if self.groups["Infected"].size == 0 or tick > max_t:
+            if self.groups["Infected"].size == 0 or tick >= max_t:
                 break
 
         print("Finished simulation.")
@@ -351,7 +331,7 @@ class Simulation:
         if self.settings["population_file"] != settings["population_file"]:
             self.population = Population.load_from_file(self.settings["population_file"])
 
-        self.settings = settings
+        self.settings = self._check_settings(settings)
 
     def reset_population(self):
         self.population = self._population_init.copy()
@@ -362,13 +342,39 @@ class Simulation:
         for stat in self.stats.keys():
             self.stats[stat] = [0]
 
+    @staticmethod
+    def _check_settings(settings):
+        must_haves = ["population_file",
+                      "infection_probability_heuristic",
+                      "inner_reproduction_number",
+                      "outer_reproduction_number",
+                      "incubation_time",
+                      "infection_time",
+                      "vaccination_takes_effect_time",
+                      "recovered_immunity_time",
+                      "number_of_initially_infected",
+                      "number_of_initially_recovered",
+                      "number_of_initially_vaccinated",
+                      "vaccinations_per_day",
+                      "vaccination_immunity_time",
+                      "waiting_time_vaccination_until_new_vaccination",
+                      "waiting_time_recovered_until_vaccination",
+                      "maximal_simulation_time_interval"]
+
+        for property in must_haves:
+            if property not in settings.keys():
+                raise KeyError("Settings have to contain '" + property + "'.")
+
+        return settings
+
 
 if __name__ == "__main__":
     def basic_heuristic(mem_props):
         return 1 - 1 / (0.001 * float(mem_props["age"]) + 1)
 
+
     simulation_settings = {
-        "population_file": "DE_03_KLLand.csv",
+        "population_file": "TestPop.csv",  # "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_heuristic,
         "number_of_initially_infected": 10,
         "number_of_initially_recovered": 0,
@@ -378,13 +384,13 @@ if __name__ == "__main__":
         "override_newest": True,
         "incubation_time": 7,
         "infection_time": 14,
-        "recovered_immunity_time": 180,
+        "recovered_immunity_time": 90,
         "vaccination_takes_effect_time": 14,
         "vaccinations_per_day": 100,
-        "vaccination_immunity_time": 180,
-        "waiting_time_vaccination_until_new_vaccination": 180,
-        "waiting_time_recovered_until_vaccination": 180,
-        "maximal_simulation_time_interval": 365
+        "vaccination_immunity_time": 90,
+        "waiting_time_vaccination_until_new_vaccination": 90,
+        "waiting_time_recovered_until_vaccination": 90,
+        "maximal_simulation_time_interval": 364
     }
 
     sim = Simulation(simulation_settings)
