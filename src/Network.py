@@ -242,8 +242,7 @@ class Group:
         TODO Docstring Group reset
         """
 
-        self.members = np.array([])
-        self.counter = Counter(0)
+        self = Group(self.name)
 
     def copy(self):
         """
@@ -371,6 +370,7 @@ class Population(Group):
         TODO Docstring Population copy
         """
 
+        # FIX fix strange copying bug..
         p = Population(self.name)
         p.members = np.array([member.copy() for member in self.members])
         p.counter = self.counter.copy()
