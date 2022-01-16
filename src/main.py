@@ -24,7 +24,7 @@ class Simulation:
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings["population_file"])
-        self._population_init = self.population.copy()
+        # self._population_init = self.population.copy() FIX
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated")}
@@ -360,7 +360,8 @@ class Simulation:
             self.population = Population.load_from_file(self.settings["population_file"])
 
     def reset(self):
-        self.population = self._population_init.copy()
+        # self.population = self._population_init.copy() FIX
+        self.population = Population.load_from_file(self.settings["population_file"])
 
         for group in self.groups.values():
             group.reset()
@@ -429,7 +430,7 @@ if __name__ == "__main__":
     for run in range(1, 2):
         print("\n" * 25 + "Run %d" % run)
         for i, c_i in enumerate(np.linspace(1.5, 3, n)):
-            sim.reset_population()
+            sim.reset()
             sim.change_settings(simulation_settings(c_i, 1.5))
             sim.start_iteration()
 
