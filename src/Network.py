@@ -242,7 +242,8 @@ class Group:
         TODO Docstring Group reset
         """
 
-        self = Group(self.name)
+        self.members = np.array([])
+        self.counter = Counter(0)
 
     def copy(self):
         """
