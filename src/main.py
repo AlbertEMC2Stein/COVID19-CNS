@@ -24,7 +24,7 @@ class Simulation:
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings["population_file"])
-        # self._population_init = self.population.copy() FIX
+        self._population_init = self.population.copy()
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated")}
@@ -424,24 +424,35 @@ if __name__ == "__main__":
     #
     # print(max_infection_values)
 
-    n = 16
-    sim = Simulation(simulation_settings(-1, -1))
-    mitigation_interval = np.zeros(n)
-    for run in range(1, 2):
-        print("\n" * 25 + "Run %d" % run)
-        for i, c_i in enumerate(np.linspace(1.5, 3, n)):
-            sim.reset()
-            sim.change_settings(simulation_settings(c_i, 1.5))
-            sim.start_iteration()
+    # n = 16
+    # sim = Simulation(simulation_settings(-1, -1))
+    # mitigation_interval = np.zeros(n)
+    # for run in range(1, 2):
+    #     print("\n" * 25 + "Run %d" % run)
+    #     for i, c_i in enumerate(np.linspace(1.5, 3, n)):
+    #         sim.reset()
+    #         sim.change_settings(simulation_settings(c_i, 1.5))
+    #         sim.start_iteration()
 
-            mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
-                                     + 1 / run * max(sim.groups["Infected"].history)
+    #         mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+    #                                  + 1 / run * max(sim.groups["Infected"].history)
 
-    plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
-    plt.title("Maximal infection numbers in relation to $c_{inner}$.")
-    plt.xlabel("$c_{inner}$")
-    plt.ylabel("maximal infections")
-    plt.xticks(ticks=np.linspace(1.5, 3, n))
-    plt.xlim([1.5, 3])
-    plt.grid()
-    plt.show()
+    # plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
+    # plt.title("Maximal infection numbers in relation to $c_{inner}$.")
+    # plt.xlabel("$c_{inner}$")
+    # plt.ylabel("maximal infections")
+    # plt.xticks(ticks=np.linspace(1.5, 3, n))
+    # plt.xlim([1.5, 3])
+    # plt.grid()
+    # plt.show()
+
+    sim1 = Simulation(simulation_settings(1.5, 1.5))
+    sim2 = Simulation(simulation_settings(1.5, 1.5))
+    sim2.population = sim2.population.copy()
+    
+    sim1.start_iteration()
+    sim1.end_iteration()
+    
+    sim2.start_iteration()
+    sim2.end_iteration()
+

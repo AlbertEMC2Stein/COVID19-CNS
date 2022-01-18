@@ -166,21 +166,21 @@ class Member:
         else:
             raise ValueError("option not supported")
 
-    def copy(self):
-        """
-        TODO Docstring Member copy
-        """
+    # def copy(self):
+    #     """
+    #     TODO Docstring Member copy
+    #     """
 
-        m = Member(self.properties.copy())
-        m.infected = self.infected
-        m.recovered = self.recovered
-        m.vaccinated = self.vaccinated
-        m._susceptible_in = self._susceptible_in
-        m._recovers_in = self._recovers_in
-        m._infectious_in = self._infectious_in
-        m._immune_in = self._immune_in
+    #     m = Member(self.properties.copy())
+    #     m.infected = self.infected
+    #     m.recovered = self.recovered
+    #     m.vaccinated = self.vaccinated
+    #     m._susceptible_in = self._susceptible_in
+    #     m._recovers_in = self._recovers_in
+    #     m._infectious_in = self._infectious_in
+    #     m._immune_in = self._immune_in
 
-        return m
+    #     return m
 
 ################################################################################################
 ################################################################################################
@@ -245,16 +245,16 @@ class Group:
         self.members = np.array([])
         self.counter = Counter(0)
 
-    def copy(self):
-        """
-        TODO Docstring Group copy
-        """
+    # def copy(self):
+    #     """
+    #     TODO Docstring Group copy
+    #     """
 
-        g = Group(self.name)
-        g.members = np.array([member.copy() for member in self.members])
-        g.counter = self.counter.copy()
+    #     g = Group(self.name)
+    #     g.members = np.array([member.copy() for member in self.members])
+    #     g.counter = self.counter.copy()
 
-        return g
+    #     return g
 
     @staticmethod
     def move(members: iter, origin: 'Group', destination: 'Group'):
@@ -371,11 +371,12 @@ class Population(Group):
         TODO Docstring Population copy
         """
 
-        # FIX fix strange copying bug..
         p = Population(self.name)
-        p.members = np.array([member.copy() for member in self.members])
+        p.members = list(p.members)
+        for member in self.members:
+            p.add_member(member)
+        p.members = np.array(p.members)
         p.counter = self.counter.copy()
-        p.households = self.households.copy()
 
         return p
 
