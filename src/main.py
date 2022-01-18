@@ -126,10 +126,12 @@ class Simulation:
                 member.vaccinated = False
 
             Group.move(new_members["newly_recovered"], self.groups["Infected"], self.groups["Recovered"])
+
             for member in new_members["newly_infected"]:
                 self.groups["Infected"].add_member(member)
                 if member.vaccinated:
                     self.groups["Vaccinated"].remove_member(member)
+                    member.vaccinated = False
 
         def simulate_vaccinations():
             for member in new_members["staged_vaccinated"]:

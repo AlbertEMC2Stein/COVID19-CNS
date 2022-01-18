@@ -33,7 +33,7 @@ class Member:
             return _properties
 
         self.properties = check(properties)
-        self.infected = 0
+        self.infected = False
         self.recovered = False
         self.vaccinated = False
         self._susceptible_in = -1
