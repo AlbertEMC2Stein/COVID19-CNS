@@ -27,11 +27,13 @@ class Simulation:
         self._population_init = self.population.copy()
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
-                       "Vaccinated": Group("Vaccinated")}
+                       "Vaccinated": Group("Vaccinated"),
+                       "Dead": Group("Dead")}
         self.stats = {"#new_infected": [0],
                       "#new_recovered": [0],
                       "#new_susceptible": [0],
                       "#new_vaccinated": [0],
+                      "#new_dead": [0],
                       "seven_day_incidence": [0]
                       }
 
@@ -97,6 +99,9 @@ class Simulation:
                         if member.make_tick("default"):
                             new_members["newly_recovered"] += [member]
                             member.recovered = True
+                        elif np.random.uniform() < Simulation.mortality(member):
+                            new_members["new_dead"] += [member]
+                            member.make_dead(tick)
 
             elif group.name == "Recovered":
                 for member in group:
@@ -113,6 +118,8 @@ class Simulation:
                     elif not member.infected:
                         member.make_tick("vaccine")
 
+            elif group.name == "Dead":
+                pass
             else:
                 raise ValueError("Group '" + group.name + "' does not have an update function")
 
@@ -126,6 +133,8 @@ class Simulation:
                 member.vaccinated = False
 
             Group.move(new_members["newly_recovered"], self.groups["Infected"], self.groups["Recovered"])
+
+            Group.move(new_members["new_dead"], self.groups["Infected"], self.groups["Dead"])
 
             for member in new_members["newly_infected"]:
                 self.groups["Infected"].add_member(member)
@@ -167,6 +176,7 @@ class Simulation:
             self.stats["#new_recovered"] += [len(new_members["newly_recovered"])]
             self.stats["#new_susceptible"] += [len(new_members["newly_susceptible"])]
             self.stats["#new_vaccinated"] += [n_vacs - len(new_members["not_vaccinated"])]
+            self.stats["#new_dead"] += [len(new_members["new_dead"])]
             self.stats["seven_day_incidence"] += [calc_7di()]
 
         def print_stats():
@@ -215,7 +225,8 @@ class Simulation:
                 "newly_susceptible_rec": [],
                 "newly_susceptible_vac": [],
                 "staged_vaccinated": np.random.choice(self.population.members, size=n_vacs, replace=False),
-                "not_vaccinated": []
+                "not_vaccinated": [],
+                "new_dead": []
             }
 
             for group in self.groups.values():
@@ -285,8 +296,9 @@ class Simulation:
 
             data = np.genfromtxt(path + "progression.csv", delimiter=',', skip_header=1)
             make_plot("SIRV.png", "Total",
-                      [self.population.size - data[:, 0] - data[:, 1] - data[:, 2], data[:, 0], data[:, 1], data[:, 2]],
-                      ['green', 'red', 'blue', 'cyan'])
+                      [self.population.size - data[:, 0] - data[:, 1] - data[:, 2] - data[:, 3],
+                       data[:, 0], data[:, 1], data[:, 2], data[:, 3]],
+                      ['green', 'red', 'blue', 'cyan', 'black'])
 
             make_plot("NewI.png", "New Infections",
                       [self.stats["#new_infected"]],
@@ -307,6 +319,10 @@ class Simulation:
             make_plot("7DI.png", "Seven Day Incidence",
                       [self.stats["seven_day_incidence"]],
                       ['red'])
+
+            make_plot("D.png", "Dead",
+                      [data[:, 3]],
+                      ['black'])
 
         def save_options(path: str):
             settings_mod = self.settings
@@ -362,14 +378,18 @@ class Simulation:
             self.population = Population.load_from_file(self.settings["population_file"])
 
     def reset(self):
-        # self.population = self._population_init.copy() FIX
-        self.population = Population.load_from_file(self.settings["population_file"])
+        self.population = self._population_init.copy()
+        # self.population = Population.load_from_file(self.settings["population_file"])
 
         for group in self.groups.values():
             group.reset()
 
         for stat in self.stats.keys():
             self.stats[stat] = [0]
+
+    def mortality(member, heuristic = "basic"):
+        if heuristic == "basic":
+            return (float(member.properties["age"])/200)**5
 
 
 if __name__ == "__main__":
@@ -397,64 +417,7 @@ if __name__ == "__main__":
         "maximal_simulation_time_interval": 365
     }
 
-    # from matplotlib.colors import LinearSegmentedColormap, LogNorm
-    # custom = LinearSegmentedColormap.from_list('custom', ['g', 'yellow', 'r'], N=255)
-    #
-    # n = 11
-    # sim = Simulation(simulation_settings(-1, -1))
-    # max_infection_values = np.zeros(shape=(n, n))
-    # for x, c_i in enumerate(np.linspace(0, 5, n)):
-    #     for y, c_o in enumerate(np.linspace(0, 5, n)):
-    #         sim.reset_population()
-    #         sim.change_settings(simulation_settings(c_i, c_o))
-    #         sim.start_iteration()
-    #
-    #         max_infection_values[y, x] = max(sim.groups["Infected"].history)
-    #
-    # fig = plt.figure(figsize=(10, 10))
-    # plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
-    # plt.title("Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$", pad=10)
-    # plt.xlabel("$c_{inner}$")
-    # plt.ylabel("$c_{outer}$")
-    # plt.xticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
-    # plt.yticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
-    #
-    # for (j, i), label in np.ndenumerate(max_infection_values):
-    #     plt.text(i, j, int(label), ha='center', va='center')
-    #
-    # plt.show()
-    #
-    # print(max_infection_values)
-
-    # n = 16
-    # sim = Simulation(simulation_settings(-1, -1))
-    # mitigation_interval = np.zeros(n)
-    # for run in range(1, 2):
-    #     print("\n" * 25 + "Run %d" % run)
-    #     for i, c_i in enumerate(np.linspace(1.5, 3, n)):
-    #         sim.reset()
-    #         sim.change_settings(simulation_settings(c_i, 1.5))
-    #         sim.start_iteration()
-
-    #         mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
-    #                                  + 1 / run * max(sim.groups["Infected"].history)
-
-    # plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
-    # plt.title("Maximal infection numbers in relation to $c_{inner}$.")
-    # plt.xlabel("$c_{inner}$")
-    # plt.ylabel("maximal infections")
-    # plt.xticks(ticks=np.linspace(1.5, 3, n))
-    # plt.xlim([1.5, 3])
-    # plt.grid()
-    # plt.show()
-
-    sim1 = Simulation(simulation_settings(1.5, 1.5))
-    sim2 = Simulation(simulation_settings(1.5, 1.5))
-    sim2.population = sim2.population.copy()
-    
-    sim1.start_iteration()
-    sim1.end_iteration()
-    
-    sim2.start_iteration()
-    sim2.end_iteration()
+    sim = Simulation(simulation_settings(1, 2))
+    sim.start_iteration()
+    sim.end_iteration()
 
