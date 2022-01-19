@@ -393,6 +393,7 @@ class Population(Group):
         p.members = list(p.members)
         for member in self.members:
             p.add_member(member.copy())
+
         p.members = np.array(p.members)
         p.counter = self.counter.copy()
 
