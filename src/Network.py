@@ -43,7 +43,7 @@ class Member:
         self._immune_in = -1
 
     def __str__(self):
-        return "\n".join(["%s = %s" % (attr, val) for attr, val in self.__dict__.items()]) #str(self.properties)
+        return "\n".join(["%s = %s" % (attr, val) for attr, val in self.__dict__.items()])
 
     def infect(self, infectant: 'Member', timestamp: int, disease_parameters: dict):
         """
