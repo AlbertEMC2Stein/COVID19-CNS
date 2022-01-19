@@ -64,6 +64,7 @@ class Member:
 
         if "infections" not in self.properties.keys():
             self.properties["infections"] = infection_data
+
         else:
             self.properties["infections"] += infection_data
 
@@ -71,26 +72,8 @@ class Member:
         self._infectious_in = n_incubation
         self._recovers_in = n_infection
         self._susceptible_in = disease_parameters["immunity_period"]
-        return True
 
-    def make_immune(self, immunity_duration: int):
-        """
-        TODO Docstring Member make_immune
-        """
-        if self.infected:
-            raise RuntimeError
-            self.infected = False
-            self._infectious_in = -1
-            self._recovers_in = -1
-            self._susceptible_in = immunity_duration
-            self.properties["immune"] = True
-            return True
-        else:
-            self._infectious_in = -1
-            self._recovers_in = -1
-            self._susceptible_in = immunity_duration
-            self.properties["immune"] = True
-            return False
+        return True
 
     def vaccinate(self, timestamp: int, vaccine_parameters: dict):
         """
@@ -125,6 +108,25 @@ class Member:
                 self._susceptible_in = vaccine_parameters["t_immunity"]
 
             return True
+
+    def make_immune(self, immunity_duration: int):
+        """
+        TODO Docstring Member make_immune
+        """
+        if self.infected:
+            raise RuntimeError
+            self.infected = False
+            self._infectious_in = -1
+            self._recovers_in = -1
+            self._susceptible_in = immunity_duration
+            self.properties["immune"] = True
+            return True
+        else:
+            self._infectious_in = -1
+            self._recovers_in = -1
+            self._susceptible_in = immunity_duration
+            self.properties["immune"] = True
+            return False
 
     def make_dead(self, timestamp: int):
         """
@@ -169,7 +171,7 @@ class Member:
             if self._immune_in == 0:
                 self.properties["immune"] = True
 
-        elif option == "default":
+        elif option == "recover":
             if self.infected:
                 self._recovers_in -= 1
                 if self._recovers_in == 0:
@@ -263,21 +265,10 @@ class Group:
         self.members = np.array([])
         self.counter = Counter(0)
 
-    # def copy(self):
-    #     """
-    #     TODO Docstring Group copy
-    #     """
-
-    #     g = Group(self.name)
-    #     g.members = np.array([member.copy() for member in self.members])
-    #     g.counter = self.counter.copy()
-
-    #     return g
-
     @staticmethod
     def move(members: iter, origin: 'Group', destination: 'Group'):
         """
-        TODO docstring Group move
+        TODO Docstring Group move
         """
 
         for member in members:
