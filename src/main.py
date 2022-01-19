@@ -417,7 +417,9 @@ if __name__ == "__main__":
         "maximal_simulation_time_interval": 365
     }
 
-    sim = Simulation(simulation_settings(1, 2))
-    sim.start_iteration()
-    sim.end_iteration()
+    simA = Simulation(simulation_settings(1.5, 1.5))
+    simB = Simulation(simulation_settings(1.5, 1.5))
+    simB.reset()
+    simA.start_iteration()
+    simB.start_iteration()
 
