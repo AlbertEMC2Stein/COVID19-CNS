@@ -169,7 +169,7 @@ class Counter:
 
     def squash_history(self):
         """
-        TODO Docstring Counter squash
+        TODO Docstring Counter squash_history
         """
 
         self.history = self.history[-1:]
@@ -188,10 +188,14 @@ class Counter:
 
 
 class Standalones:
+    """
+    TODO Docstring Standalones
+    """
+
     @staticmethod
     def get_last_folder(path: str):
         """
-        TODO Standalones get_newest
+        TODO Docstring Standalones get_newest
         """
 
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -201,7 +205,7 @@ class Standalones:
     @staticmethod
     def serialize_function(f: callable):
         """
-        TODO Standalones serialize_function
+        TODO Docstring Standalones serialize_function
         """
 
         if f.__name__ == '<lambda>':
