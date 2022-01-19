@@ -181,8 +181,9 @@ class Simulation:
             self.stats["seven_day_incidence"] += [calc_7di()]
 
         def print_stats():
-            print("Day: %d, #Infected: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
+            print("Day: %d, #Infected: %d, #Dead: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
                   % (tick, self.groups["Infected"].size,
+                     self.groups["Dead"].size,
                      self.stats["#new_infected"][-1],
                      self.stats["#new_recovered"][-1],
                      self.stats["#new_vaccinated"][-1],
@@ -328,8 +329,10 @@ class Simulation:
 
         def save_options(path: str):
             settings_mod = self.settings
-            heuristic = settings_mod["infection_probability_heuristic"]
-            settings_mod["infection_probability_heuristic"] = Standalones.serialize_function(heuristic)
+            infection_heuristic = settings_mod["infection_probability_heuristic"]
+            mortality_heuristic = settings_mod["mortality_probability_heuristic"]
+            settings_mod["infection_probability_heuristic"] = Standalones.serialize_function(infection_heuristic)
+            settings_mod["mortality_probability_heuristic"] = Standalones.serialize_function(mortality_heuristic)
 
             with open(path + "settings.json", 'w') as f:
                 f.write(json.dumps(settings_mod, indent=4))
@@ -353,6 +356,7 @@ class Simulation:
         def check_settings():
             must_haves = ["population_file",
                           "infection_probability_heuristic",
+                          "mortality_probability_heuristic",
                           "inner_reproduction_number",
                           "outer_reproduction_number",
                           "incubation_time",
@@ -467,26 +471,25 @@ if __name__ == "__main__":
     def basic_mortality_heuristic(mem_props):
         return (float(mem_props["age"]) / 200) ** 5
 
-    simulation_settings = lambda inner, outer: {
+    simulation_settings = {
         "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_infection_heuristic,
         "mortality_probability_heuristic": basic_mortality_heuristic,
-        "number_of_initially_infected": 10,
-        "number_of_initially_recovered": 0,
-        "number_of_initially_vaccinated": 0,
-        "inner_reproduction_number": inner,
-        "outer_reproduction_number": outer,
-        "override_newest": True,
+        "number_of_initially_infected": 250,
+        "number_of_initially_recovered": 2500,
+        "number_of_initially_vaccinated": 10000,
+        "inner_reproduction_number": 1,
+        "outer_reproduction_number": 3,
+        "override_newest": False,
         "incubation_time": 7,
         "infection_time": 14,
         "recovered_immunity_time": 90,
         "vaccination_takes_effect_time": 14,
-        "vaccinations_per_day": 100,
+        "vaccinations_per_day": 720,
         "vaccination_immunity_time": 90,
         "waiting_time_vaccination_until_new_vaccination": 90,
         "waiting_time_recovered_until_vaccination": 90,
-        "maximal_simulation_time_interval": 100
+        "maximal_simulation_time_interval": 2*365
     }
 
-    sim = Scenarios.single_simulation(simulation_settings(1, 3))
-
+    sim = Scenarios.single_simulation(simulation_settings)
