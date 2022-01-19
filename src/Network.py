@@ -9,7 +9,7 @@ import numpy as np
 import csv
 import json
 from os.path import sep
-from Utils import ProgressBar, Counter
+from src.Utils import ProgressBar, Counter
 
 
 ################################################################################################
@@ -42,7 +42,7 @@ class Member:
         self._immune_in = -1
 
     def __str__(self):
-        return str(self.properties)
+        return "\n".join(["%s = %s" % (attr, val) for attr, val in self.__dict__.items()]) #str(self.properties)
 
     def infect(self, infectant: 'Member', timestamp: int, disease_parameters: dict):
         """
@@ -371,11 +371,10 @@ class Population(Group):
         TODO Docstring Population copy
         """
 
-        # FIX fix strange copying bug..
         p = Population(self.name)
         p.members = np.array([member.copy() for member in self.members])
         p.counter = self.counter.copy()
-        p.households = self.households.copy()
+        p.households = {id: household.copy() for id, household in self.households.items()}
 
         return p
 
