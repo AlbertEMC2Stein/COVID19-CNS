@@ -10,8 +10,8 @@ from os.path import sep
 
 import matplotlib.pylab as plt
 import numpy as np
-from Network import Group, Population
-from Utils import Standalones
+from src.Network import Group, Population
+from src.Utils import Standalones
 
 
 class Simulation:
@@ -20,11 +20,11 @@ class Simulation:
         TODO Docstring Simulation __init__
         """
 
-        self.settings = {"population_file": None}
+        self.settings = {"population_file": "None"}
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings["population_file"])
-        # self._population_init = self.population.copy() FIX
+        self._population_init = self.population.copy() # FIXME
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated")}
@@ -360,8 +360,8 @@ class Simulation:
             self.population = Population.load_from_file(self.settings["population_file"])
 
     def reset(self):
-        # self.population = self._population_init.copy() FIX
-        self.population = Population.load_from_file(self.settings["population_file"])
+        self.population = self._population_init.copy()
+        # self.population = Population.load_from_file(self.settings["population_file"])
 
         for group in self.groups.values():
             group.reset()
@@ -392,7 +392,7 @@ if __name__ == "__main__":
         "vaccination_immunity_time": 90,
         "waiting_time_vaccination_until_new_vaccination": 90,
         "waiting_time_recovered_until_vaccination": 90,
-        "maximal_simulation_time_interval": 365
+        "maximal_simulation_time_interval": 100
     }
 
     # from matplotlib.colors import LinearSegmentedColormap, LogNorm
@@ -424,24 +424,31 @@ if __name__ == "__main__":
     #
     # print(max_infection_values)
 
-    n = 16
-    sim = Simulation(simulation_settings(-1, -1))
-    mitigation_interval = np.zeros(n)
-    for run in range(1, 2):
-        print("\n" * 25 + "Run %d" % run)
-        for i, c_i in enumerate(np.linspace(1.5, 3, n)):
-            sim.reset()
-            sim.change_settings(simulation_settings(c_i, 1.5))
-            sim.start_iteration()
+    # n = 16
+    # sim = Simulation(simulation_settings(-1, -1))
+    # mitigation_interval = np.zeros(n)
+    # for run in range(1, 11):
+    #     print("\n" * 25 + "Run %d" % run)
+    #     for i, c_o in enumerate(np.linspace(1.5, 3, n)):
+    #         sim.reset()
+    #         sim.change_settings(simulation_settings(1, c_o))
+    #         sim.start_iteration()
+    #
+    #         mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+    #                                  + 1 / run * max(sim.groups["Infected"].history)
+    #
+    # plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
+    # plt.title("Maximal infection numbers in relation to $c_{outer}$.")
+    # plt.xlabel("$c_{outer}$")
+    # plt.ylabel("maximal infections")
+    # plt.xticks(ticks=np.linspace(1.5, 3, n))
+    # plt.xlim([1.5, 3])
+    # plt.grid()
+    # plt.show()
 
-            mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
-                                     + 1 / run * max(sim.groups["Infected"].history)
+    simA = Simulation(simulation_settings(1.5, 1.5))
+    simB = Simulation(simulation_settings(1.5, 1.5))
+    simB.reset()
 
-    plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
-    plt.title("Maximal infection numbers in relation to $c_{inner}$.")
-    plt.xlabel("$c_{inner}$")
-    plt.ylabel("maximal infections")
-    plt.xticks(ticks=np.linspace(1.5, 3, n))
-    plt.xlim([1.5, 3])
-    plt.grid()
-    plt.show()
+    simA.start_iteration()
+    simB.start_iteration()
