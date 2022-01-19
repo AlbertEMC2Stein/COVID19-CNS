@@ -24,14 +24,16 @@ class Simulation:
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings["population_file"])
-        self._population_init = self.population.copy() # FIXME
+        self._population_init = self.population.copy()
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
-                       "Vaccinated": Group("Vaccinated")}
+                       "Vaccinated": Group("Vaccinated"),
+                       "Dead": Group("Dead")}
         self.stats = {"#new_infected": [0],
                       "#new_recovered": [0],
                       "#new_susceptible": [0],
                       "#new_vaccinated": [0],
+                      "#new_dead": [0],
                       "seven_day_incidence": [0]
                       }
 
@@ -97,6 +99,9 @@ class Simulation:
                         if member.make_tick("default"):
                             new_members["newly_recovered"] += [member]
                             member.recovered = True
+                        elif np.random.uniform() < Simulation.mortality(member):
+                            new_members["new_dead"] += [member]
+                            member.make_dead(tick)
 
             elif group.name == "Recovered":
                 for member in group:
@@ -113,6 +118,8 @@ class Simulation:
                     elif not member.infected:
                         member.make_tick("vaccine")
 
+            elif group.name == "Dead":
+                pass
             else:
                 raise ValueError("Group '" + group.name + "' does not have an update function")
 
@@ -126,10 +133,14 @@ class Simulation:
                 member.vaccinated = False
 
             Group.move(new_members["newly_recovered"], self.groups["Infected"], self.groups["Recovered"])
+
+            Group.move(new_members["new_dead"], self.groups["Infected"], self.groups["Dead"])
+
             for member in new_members["newly_infected"]:
                 self.groups["Infected"].add_member(member)
                 if member.vaccinated:
                     self.groups["Vaccinated"].remove_member(member)
+                    member.vaccinated = False
 
         def simulate_vaccinations():
             for member in new_members["staged_vaccinated"]:
@@ -165,6 +176,7 @@ class Simulation:
             self.stats["#new_recovered"] += [len(new_members["newly_recovered"])]
             self.stats["#new_susceptible"] += [len(new_members["newly_susceptible"])]
             self.stats["#new_vaccinated"] += [n_vacs - len(new_members["not_vaccinated"])]
+            self.stats["#new_dead"] += [len(new_members["new_dead"])]
             self.stats["seven_day_incidence"] += [calc_7di()]
 
         def print_stats():
@@ -213,7 +225,8 @@ class Simulation:
                 "newly_susceptible_rec": [],
                 "newly_susceptible_vac": [],
                 "staged_vaccinated": np.random.choice(self.population.members, size=n_vacs, replace=False),
-                "not_vaccinated": []
+                "not_vaccinated": [],
+                "new_dead": []
             }
 
             for group in self.groups.values():
@@ -283,8 +296,9 @@ class Simulation:
 
             data = np.genfromtxt(path + "progression.csv", delimiter=',', skip_header=1)
             make_plot("SIRV.png", "Total",
-                      [self.population.size - data[:, 0] - data[:, 1] - data[:, 2], data[:, 0], data[:, 1], data[:, 2]],
-                      ['green', 'red', 'blue', 'cyan'])
+                      [self.population.size - data[:, 0] - data[:, 1] - data[:, 2] - data[:, 3],
+                       data[:, 0], data[:, 1], data[:, 2], data[:, 3]],
+                      ['green', 'red', 'blue', 'cyan', 'black'])
 
             make_plot("NewI.png", "New Infections",
                       [self.stats["#new_infected"]],
@@ -305,6 +319,10 @@ class Simulation:
             make_plot("7DI.png", "Seven Day Incidence",
                       [self.stats["seven_day_incidence"]],
                       ['red'])
+
+            make_plot("D.png", "Dead",
+                      [data[:, 3]],
+                      ['black'])
 
         def save_options(path: str):
             settings_mod = self.settings
@@ -361,13 +379,16 @@ class Simulation:
 
     def reset(self):
         self.population = self._population_init.copy()
-        # self.population = Population.load_from_file(self.settings["population_file"])
 
         for group in self.groups.values():
             group.reset()
 
         for stat in self.stats.keys():
             self.stats[stat] = [0]
+
+    def mortality(member, heuristic = "basic"):
+        if heuristic == "basic":
+            return (float(member.properties["age"])/200)**5
 
 
 if __name__ == "__main__":
@@ -445,10 +466,3 @@ if __name__ == "__main__":
     # plt.xlim([1.5, 3])
     # plt.grid()
     # plt.show()
-
-    simA = Simulation(simulation_settings(1.5, 1.5))
-    simB = Simulation(simulation_settings(1.5, 1.5))
-    simB.reset()
-
-    simA.start_iteration()
-    simB.start_iteration()

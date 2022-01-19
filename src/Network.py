@@ -33,9 +33,10 @@ class Member:
             return _properties
 
         self.properties = check(properties)
-        self.infected = 0
+        self.infected = False
         self.recovered = False
         self.vaccinated = False
+        self.dead = False
         self._susceptible_in = -1
         self._recovers_in = -1
         self._infectious_in = -1
@@ -49,7 +50,7 @@ class Member:
         TODO Docstring Member infect
         """
 
-        if "immune" in self.properties.keys() and self.properties["immune"] or self.infected:
+        if "immune" in self.properties.keys() and self.properties["immune"] or self.infected or self.dead:
             return False
 
         n_incubation = disease_parameters["incubation_period"]
@@ -96,7 +97,7 @@ class Member:
         TODO Docstring Member vaccinate
         """
 
-        vaccine_unavailable = self.infected or \
+        vaccine_unavailable = self.infected or self.dead or \
                               "vaccinations" in self.properties.keys() and \
                               timestamp < self.properties["vaccinations"][-1][1] + vaccine_parameters["t_wait_vac"] or \
                               "infections" in self.properties.keys() and \
@@ -124,6 +125,22 @@ class Member:
                 self._susceptible_in = vaccine_parameters["t_immunity"]
 
             return True
+
+    def make_dead(self, timestamp: int):
+        """
+        TODO Docstring Member make_dead
+        """
+
+        self.infected = False
+        self.recovered = False
+        self.vaccinated = False
+        self._susceptible_in = -1
+        self._recovers_in = -1
+        self._infectious_in = -1
+        self._immune_in = -1
+
+        self.dead = True
+        self.properties["Death"] = timestamp
 
     def make_tick(self, option: str):
         """
@@ -175,6 +192,7 @@ class Member:
         m.infected = self.infected
         m.recovered = self.recovered
         m.vaccinated = self.vaccinated
+        m.dead = self.dead
         m._susceptible_in = self._susceptible_in
         m._recovers_in = self._recovers_in
         m._infectious_in = self._infectious_in
@@ -245,16 +263,16 @@ class Group:
         self.members = np.array([])
         self.counter = Counter(0)
 
-    def copy(self):
-        """
-        TODO Docstring Group copy
-        """
+    # def copy(self):
+    #     """
+    #     TODO Docstring Group copy
+    #     """
 
-        g = Group(self.name)
-        g.members = np.array([member.copy() for member in self.members])
-        g.counter = self.counter.copy()
+    #     g = Group(self.name)
+    #     g.members = np.array([member.copy() for member in self.members])
+    #     g.counter = self.counter.copy()
 
-        return g
+    #     return g
 
     @staticmethod
     def move(members: iter, origin: 'Group', destination: 'Group'):
@@ -372,9 +390,12 @@ class Population(Group):
         """
 
         p = Population(self.name)
-        p.members = np.array([member.copy() for member in self.members])
+        p.members = list(p.members)
+        for member in self.members:
+            p.add_member(member.copy())
+
+        p.members = np.array(p.members)
         p.counter = self.counter.copy()
-        p.households = {id: household.copy() for id, household in self.households.items()}
 
         return p
 
