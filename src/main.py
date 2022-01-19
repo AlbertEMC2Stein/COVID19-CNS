@@ -7,7 +7,6 @@ __all__ = ['Simulation']
 import json
 import os
 from os.path import sep
-
 import matplotlib.pylab as plt
 import numpy as np
 from src.Network import Group, Population
@@ -85,7 +84,7 @@ class Simulation:
                         n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
                         gen_params = lambda: {
-                            "heuristic": heuristic,
+                            "heuristic": infection_heuristic,
                             "incubation_period": np.random.poisson(c_incubation),
                             "infection_period": np.random.poisson(c_infection),
                             "immunity_period": np.random.poisson(c_immunity)
@@ -96,10 +95,11 @@ class Simulation:
                         new_members["newly_infected"] += self.population.spread_disease(member, n_outer, tick,
                                                                                         gen_params())
 
-                        if member.make_tick("default"):
+                        if member.make_tick("recover"):
                             new_members["newly_recovered"] += [member]
                             member.recovered = True
-                        elif np.random.uniform() < Simulation.mortality(member):
+
+                        elif np.random.uniform() < mortality_heuristic(member.properties):
                             new_members["new_dead"] += [member]
                             member.make_dead(tick)
 
@@ -120,6 +120,7 @@ class Simulation:
 
             elif group.name == "Dead":
                 pass
+
             else:
                 raise ValueError("Group '" + group.name + "' does not have an update function")
 
@@ -191,7 +192,8 @@ class Simulation:
 
         # c -> put into poisson, n -> fixed value
         tick = 0
-        heuristic = self.settings["infection_probability_heuristic"]
+        infection_heuristic = self.settings["infection_probability_heuristic"]
+        mortality_heuristic = self.settings["mortality_probability_heuristic"]
         c_inner = self.settings["inner_reproduction_number"]
         c_outer = self.settings["outer_reproduction_number"]
         n_ini_inf = self.settings["number_of_initially_infected"]
@@ -295,7 +297,7 @@ class Simulation:
                 os.mkdir(path + "Plots")
 
             data = np.genfromtxt(path + "progression.csv", delimiter=',', skip_header=1)
-            make_plot("SIRV.png", "Total",
+            make_plot("SIRVD.png", "Total",
                       [self.population.size - data[:, 0] - data[:, 1] - data[:, 2] - data[:, 3],
                        data[:, 0], data[:, 1], data[:, 2], data[:, 3]],
                       ['green', 'red', 'blue', 'cyan', 'black'])
@@ -386,19 +388,89 @@ class Simulation:
         for stat in self.stats.keys():
             self.stats[stat] = [0]
 
-    def mortality(member, heuristic = "basic"):
-        if heuristic == "basic":
-            return (float(member.properties["age"])/200)**5
+
+class Scenarios:
+    @staticmethod
+    def single_simulation(settings: dict):
+        sim = Simulation(settings)
+        sim.start_iteration()
+        sim.end_iteration()
+
+        return sim
+
+    @staticmethod
+    def c_inner_vs_c_outer(settings: dict, n: int = 5):
+        from matplotlib.colors import LinearSegmentedColormap, LogNorm
+        custom = LinearSegmentedColormap.from_list('custom', ['g', 'yellow', 'r'], N=255)
+
+        sim = Simulation(settings)
+        max_infection_values = np.zeros(shape=(n, n))
+        for x, c_i in enumerate(np.linspace(0, 5, n)):
+            for y, c_o in enumerate(np.linspace(0, 5, n)):
+                settings["inner_reproduction_number"] = c_i
+                settings["outer_reproduction_number"] = c_o
+
+                sim.reset()
+                sim.change_settings(settings)
+                sim.start_iteration()
+
+                max_infection_values[y, x] = max(sim.groups["Infected"].history)
+
+        plt.figure(figsize=(10, 10))
+        plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
+        plt.title("Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$", pad=10)
+        plt.xlabel("$c_{inner}$")
+        plt.ylabel("$c_{outer}$")
+        plt.xticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
+        plt.yticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
+
+        for (j, i), label in np.ndenumerate(max_infection_values):
+            plt.text(i, j, int(label), ha='center', va='center')
+
+        plt.savefig("../out/general/c_inner_vs_c_outer_%dx%d.png" % n)
+        plt.show()
+
+        print(max_infection_values)
+
+    @staticmethod
+    def mitigation_interval(settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10):
+        sim = Simulation(settings)
+        mitigation_interval = np.zeros(samples)
+        interval = np.linspace(interval_boundaries[0], interval_boundaries[1], samples)
+
+        for run in range(1, avg_over + 1):
+            print("\n" * 25 + "Run %d" % run)
+            for i, c_o in enumerate(interval):
+                settings["outer_reproduction_number"] = c_o
+
+                sim.reset()
+                sim.change_settings(settings)
+                sim.start_iteration()
+
+                mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+                                         + 1 / run * max(sim.groups["Infected"].history)
+
+        plt.plot(interval, mitigation_interval, color='r')
+        plt.title("Maximal infection numbers in relation to $c_{outer}$.")
+        plt.xlabel("$c_{outer}$")
+        plt.ylabel("maximal infections")
+        plt.xticks(ticks=interval, labels=["%.2f" % i for i in interval])
+        plt.xlim(interval_boundaries)
+        plt.grid()
+        plt.show()
 
 
 if __name__ == "__main__":
-    def basic_heuristic(mem_props):
+    def basic_infection_heuristic(mem_props):
         return 1 - 1 / (0.001 * float(mem_props["age"]) + 1)
 
+    def basic_mortality_heuristic(mem_props):
+        return (float(mem_props["age"]) / 200) ** 5
 
     simulation_settings = lambda inner, outer: {
         "population_file": "DE_03_KLLand.csv",
-        "infection_probability_heuristic": basic_heuristic,
+        "infection_probability_heuristic": basic_infection_heuristic,
+        "mortality_probability_heuristic": basic_mortality_heuristic,
         "number_of_initially_infected": 10,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
@@ -416,53 +488,5 @@ if __name__ == "__main__":
         "maximal_simulation_time_interval": 100
     }
 
-    # from matplotlib.colors import LinearSegmentedColormap, LogNorm
-    # custom = LinearSegmentedColormap.from_list('custom', ['g', 'yellow', 'r'], N=255)
-    #
-    # n = 11
-    # sim = Simulation(simulation_settings(-1, -1))
-    # max_infection_values = np.zeros(shape=(n, n))
-    # for x, c_i in enumerate(np.linspace(0, 5, n)):
-    #     for y, c_o in enumerate(np.linspace(0, 5, n)):
-    #         sim.reset_population()
-    #         sim.change_settings(simulation_settings(c_i, c_o))
-    #         sim.start_iteration()
-    #
-    #         max_infection_values[y, x] = max(sim.groups["Infected"].history)
-    #
-    # fig = plt.figure(figsize=(10, 10))
-    # plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
-    # plt.title("Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$", pad=10)
-    # plt.xlabel("$c_{inner}$")
-    # plt.ylabel("$c_{outer}$")
-    # plt.xticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
-    # plt.yticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
-    #
-    # for (j, i), label in np.ndenumerate(max_infection_values):
-    #     plt.text(i, j, int(label), ha='center', va='center')
-    #
-    # plt.show()
-    #
-    # print(max_infection_values)
+    sim = Scenarios.single_simulation(simulation_settings(1, 3))
 
-    # n = 16
-    # sim = Simulation(simulation_settings(-1, -1))
-    # mitigation_interval = np.zeros(n)
-    # for run in range(1, 11):
-    #     print("\n" * 25 + "Run %d" % run)
-    #     for i, c_o in enumerate(np.linspace(1.5, 3, n)):
-    #         sim.reset()
-    #         sim.change_settings(simulation_settings(1, c_o))
-    #         sim.start_iteration()
-    #
-    #         mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
-    #                                  + 1 / run * max(sim.groups["Infected"].history)
-    #
-    # plt.plot(np.linspace(1.5, 3, n), mitigation_interval, color='r')
-    # plt.title("Maximal infection numbers in relation to $c_{outer}$.")
-    # plt.xlabel("$c_{outer}$")
-    # plt.ylabel("maximal infections")
-    # plt.xticks(ticks=np.linspace(1.5, 3, n))
-    # plt.xlim([1.5, 3])
-    # plt.grid()
-    # plt.show()
