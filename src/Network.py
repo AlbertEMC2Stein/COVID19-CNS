@@ -9,7 +9,7 @@ import numpy as np
 import csv
 import json
 from os.path import sep
-from src.Utils import ProgressBar, Counter
+from Utils import ProgressBar, Counter
 
 
 ################################################################################################
@@ -423,7 +423,7 @@ class Population(Group):
                 progress.update(1)
                 p.add_member(Member(m_dict))
 
-        print("Finished loading.")
+        print("\nFinished loading.")
 
         p.members = np.array(p.members)
         p.counter.squash_history()
@@ -454,7 +454,7 @@ class Population(Group):
         with open(path + file_name, "r") as f:
             print("Load json...")
             data = json.load(f)
-            print("Finished loading.\nAdding members to population...")
+            print("Finished loading.\n\nAdding members to population...")
 
             progress = ProgressBar(1, 1, len(data["members"]))
             progress.update(0)
@@ -462,7 +462,7 @@ class Population(Group):
                 progress.update(1)
                 p.add_member(Member(member))
 
-            print("Finished adding members.")
+            print("\nFinished adding members.")
 
         p.members = np.array(p.members)
         p.counter.squash_history()

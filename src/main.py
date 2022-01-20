@@ -9,8 +9,8 @@ import os
 from os.path import sep
 import matplotlib.pylab as plt
 import numpy as np
-from src.Network import Group, Population
-from src.Utils import Standalones
+from Network import Group, Population
+from Utils import Standalones
 
 
 class Simulation:
@@ -181,15 +181,15 @@ class Simulation:
             self.stats["seven_day_incidence"] += [calc_7di()]
 
         def print_stats():
-            print("Day: %d, #Infected: %d, #Dead: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
+            print("\rDay: %d, #Infected: %d, #Dead: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
                   % (tick, self.groups["Infected"].size,
                      self.groups["Dead"].size,
                      self.stats["#new_infected"][-1],
                      self.stats["#new_recovered"][-1],
                      self.stats["#new_vaccinated"][-1],
-                     self.stats["seven_day_incidence"][-1]))
+                     self.stats["seven_day_incidence"][-1]), end="")
 
-        print("Initializing simulation...")
+        print("\nInitializing simulation...")
 
         # c -> put into poisson, n -> fixed value
         tick = 0
@@ -212,8 +212,7 @@ class Simulation:
 
         initialize_groups()
 
-        print("Finished initializing simulation.")
-        print("Starting simulation...")
+        print("Finished initializing simulation.\n\nStarting simulation...")
 
         print_stats()
 
@@ -247,7 +246,7 @@ class Simulation:
             if self.groups["Infected"].size == 0 or tick >= max_t:
                 break
 
-        print("Finished simulation.")
+        print("\nFinished simulation.")
 
     def end_iteration(self):
         """
@@ -338,7 +337,7 @@ class Simulation:
                 f.write(json.dumps(settings_mod, indent=4))
                 f.close()
 
-        print("Saving simulation data...")
+        print("\nSaving simulation data...")
 
         out_path = set_out_path()
         self.population.save_as_json(out_path)
@@ -469,7 +468,7 @@ if __name__ == "__main__":
         return 1 - 1 / (0.001 * float(mem_props["age"]) + 1)
 
     def basic_mortality_heuristic(mem_props):
-        return (float(mem_props["age"]) / 200) ** 5
+        return 1/10 * (float(mem_props["age"]) / 200) ** 5
 
     simulation_settings = {
         "population_file": "DE_03_KLLand.csv",
@@ -478,10 +477,10 @@ if __name__ == "__main__":
         "number_of_initially_infected": 250,
         "number_of_initially_recovered": 2500,
         "number_of_initially_vaccinated": 10000,
-        "inner_reproduction_number": 1,
-        "outer_reproduction_number": 3,
+        "inner_reproduction_number": 1.5,
+        "outer_reproduction_number": 2.5,
         "override_newest": False,
-        "incubation_time": 7,
+        "incubation_time": 2,
         "infection_time": 14,
         "recovered_immunity_time": 90,
         "vaccination_takes_effect_time": 14,
@@ -493,3 +492,4 @@ if __name__ == "__main__":
     }
 
     sim = Scenarios.single_simulation(simulation_settings)
+    # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
