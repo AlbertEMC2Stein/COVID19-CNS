@@ -33,8 +33,10 @@ class Simulation:
                       "#new_susceptible": [0],
                       "#new_vaccinated": [0],
                       "#new_dead": [0],
-                      "seven_day_incidence": [0]
+                      "seven_day_incidence": [0],
+                      "in_lockdown": [0]
                       }
+        self.arrange_lockdown = False
 
     def start_iteration(self):
         """
@@ -82,6 +84,9 @@ class Simulation:
                 for member in group:
                     if member.make_tick("infectious"):
                         n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
+
+                        if self.arrange_lockdown:
+                            n_outer //= 2
 
                         gen_params = lambda: {
                             "heuristic": infection_heuristic,
@@ -165,6 +170,20 @@ class Simulation:
                 else:
                     new_members["not_vaccinated"] += [member]
 
+        def decide_measure(measure: str):
+            if measure == "lockdown":
+                if self.settings["start_lockdown_at"] <= self.stats["seven_day_incidence"][-1]:
+                    return True
+
+                elif self.settings["end_lockdown_at"] >= self.stats["seven_day_incidence"][-1]:
+                    return False
+
+                else:
+                    return self.arrange_lockdown
+
+            else:
+                raise ValueError("Measure not available")
+
         def update_stats():
             def calc_7di():
                 new_inf = self.stats["#new_infected"]
@@ -179,10 +198,13 @@ class Simulation:
             self.stats["#new_vaccinated"] += [n_vacs - len(new_members["not_vaccinated"])]
             self.stats["#new_dead"] += [len(new_members["new_dead"])]
             self.stats["seven_day_incidence"] += [calc_7di()]
+            self.stats["in_lockdown"] += [1 if self.arrange_lockdown else 0]
 
         def print_stats():
-            print("\rDay: %d, #Infected: %d, #Dead: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
-                  % (tick, self.groups["Infected"].size,
+            color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+            print(color + "\rDay: %04d, #Infected: %d, #Dead: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
+                  % (tick,
+                     self.groups["Infected"].size,
                      self.groups["Dead"].size,
                      self.stats["#new_infected"][-1],
                      self.stats["#new_recovered"][-1],
@@ -220,6 +242,8 @@ class Simulation:
             tick += 1
             n_vacs = min(np.random.poisson(c_vacs), self.population.size)
 
+            self.arrange_lockdown = decide_measure("lockdown")
+
             new_members = {
                 "newly_susceptible": [],
                 "newly_infected": [],
@@ -246,7 +270,7 @@ class Simulation:
             if self.groups["Infected"].size == 0 or tick >= max_t:
                 break
 
-        print("\nFinished simulation.")
+        print(bcolors.ENDC + "\nFinished simulation.")
 
     def end_iteration(self):
         """
@@ -279,7 +303,6 @@ class Simulation:
             header = ",".join([group.name for group in self.groups.values()] + list(self.stats.keys()))
             rows = np.array([group.history for group in self.groups.values()] +
                             [np.array(stat_values) for stat_values in self.stats.values()]).T
-
             np.savetxt(path + "progression.csv", rows, fmt='%d', delimiter=",", header=header, comments='')
 
         def save_plots(path: str):
@@ -369,11 +392,16 @@ class Simulation:
                           "vaccination_immunity_time",
                           "waiting_time_vaccination_until_new_vaccination",
                           "waiting_time_recovered_until_vaccination",
-                          "maximal_simulation_time_interval"]
+                          "maximal_simulation_time_interval",
+                          "start_lockdown_at",
+                          "end_lockdown_at"]
 
             for property in must_haves:
                 if property not in settings.keys():
                     raise KeyError("Settings have to contain '" + property + "'.")
+
+            if settings["start_lockdown_at"] < settings["end_lockdown_at"]:
+                raise ValueError("end_lockdown_at must be smaller than start_lockdown_at")
 
             return settings
 
@@ -463,6 +491,18 @@ class Scenarios:
         plt.show()
 
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 if __name__ == "__main__":
     def basic_infection_heuristic(mem_props):
         return 1 - 1 / (0.001 * float(mem_props["age"]) + 1)
@@ -477,9 +517,9 @@ if __name__ == "__main__":
         "number_of_initially_infected": 250,
         "number_of_initially_recovered": 2500,
         "number_of_initially_vaccinated": 10000,
-        "inner_reproduction_number": 1.5,
-        "outer_reproduction_number": 2.5,
-        "override_newest": False,
+        "inner_reproduction_number": 1,
+        "outer_reproduction_number": 3,
+        "override_newest": True,
         "incubation_time": 2,
         "infection_time": 14,
         "recovered_immunity_time": 90,
@@ -488,8 +528,10 @@ if __name__ == "__main__":
         "vaccination_immunity_time": 90,
         "waiting_time_vaccination_until_new_vaccination": 90,
         "waiting_time_recovered_until_vaccination": 90,
-        "maximal_simulation_time_interval": 2*365
+        "maximal_simulation_time_interval": 365,
+        "start_lockdown_at": 150,
+        "end_lockdown_at": 50
     }
 
-    sim = Scenarios.single_simulation(simulation_settings)
+    Scenarios.single_simulation(simulation_settings)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
