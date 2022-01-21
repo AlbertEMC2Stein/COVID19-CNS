@@ -307,12 +307,16 @@ class Simulation:
 
         def save_plots(path: str):
             def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
-                for i, dataset in enumerate(datasets):
-                    plt.plot(dataset, color=colors[i])
+                _, ax = plt.subplots()
+                days = np.arange(0, len(datasets[0]), 1)
 
-                plt.xlabel("t")
-                plt.ylabel("#")
-                plt.title(title)
+                for i, dataset in enumerate(datasets):
+                    ax.plot(dataset, color=colors[i])
+
+                ax.fill_between(days, 0, 1, where=self.stats["in_lockdown"], color='red', alpha=0.25, transform=ax.get_xaxis_transform())
+                ax.set_xlabel("t")
+                ax.set_ylabel("#")
+                ax.set_title(title)
                 plt.savefig(path + "Plots" + sep + plotname)
                 plt.show()
 
@@ -514,9 +518,9 @@ if __name__ == "__main__":
         "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_infection_heuristic,
         "mortality_probability_heuristic": basic_mortality_heuristic,
-        "number_of_initially_infected": 250,
-        "number_of_initially_recovered": 2500,
-        "number_of_initially_vaccinated": 10000,
+        "number_of_initially_infected": 10,#250,
+        "number_of_initially_recovered": 0,#2500,
+        "number_of_initially_vaccinated": 0,#10000,
         "inner_reproduction_number": 1,
         "outer_reproduction_number": 3,
         "override_newest": True,
@@ -524,11 +528,11 @@ if __name__ == "__main__":
         "infection_time": 14,
         "recovered_immunity_time": 90,
         "vaccination_takes_effect_time": 14,
-        "vaccinations_per_day": 720,
+        "vaccinations_per_day": 100,#720,
         "vaccination_immunity_time": 90,
         "waiting_time_vaccination_until_new_vaccination": 90,
         "waiting_time_recovered_until_vaccination": 90,
-        "maximal_simulation_time_interval": 365,
+        "maximal_simulation_time_interval": 365,#365,
         "start_lockdown_at": 150,
         "end_lockdown_at": 50
     }
