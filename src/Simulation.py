@@ -245,7 +245,7 @@ class Simulation:
 
         while True:
             tick += 1
-            n_vacs = min(np.random.poisson(c_vacs), self.population.size)
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (tick >= self.settings["vaccine_available_as_of"])
 
             self.arrange_lockdown = decide_measure("lockdown")
 
@@ -264,9 +264,7 @@ class Simulation:
                 simulate_group(group)
 
             move_members_to_new_groups()
-
-            if tick >= self.settings["vaccine_available_as_of"]:
-                simulate_vaccinations()
+            simulate_vaccinations()
 
             for group in self.groups.values():
                 group.counter.save_count()
