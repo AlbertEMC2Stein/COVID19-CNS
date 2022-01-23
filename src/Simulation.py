@@ -264,7 +264,9 @@ class Simulation:
                 simulate_group(group)
 
             move_members_to_new_groups()
-            simulate_vaccinations()
+
+            if tick >= self.settings["vaccine_available_as_of"]:
+                simulate_vaccinations()
 
             for group in self.groups.values():
                 group.counter.save_count()
@@ -392,11 +394,12 @@ class Simulation:
                           "outer_reproduction_number",
                           "incubation_time",
                           "infection_time",
-                          "vaccination_takes_effect_time",
                           "recovered_immunity_time",
                           "number_of_initially_infected",
                           "number_of_initially_recovered",
                           "number_of_initially_vaccinated",
+                          "vaccine_available_as_of",
+                          "vaccination_takes_effect_time",
                           "vaccinations_per_day",
                           "vaccination_immunity_time",
                           "waiting_time_vaccination_until_new_vaccination",
