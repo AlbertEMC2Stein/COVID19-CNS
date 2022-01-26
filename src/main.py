@@ -17,39 +17,41 @@ if __name__ == "__main__":
         "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_infection_heuristic,
         "mortality_probability_heuristic": basic_mortality_heuristic,
-        "number_of_initially_infected": 10,
+        "number_of_initially_infected": 100,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
         "inner_reproduction_number": 1,
-        "outer_reproduction_number": 3,
-        "override_newest": False,
+        "outer_reproduction_number": 2,
+        "override_newest": True,
         "incubation_time": 2,
         "infection_time": 14,
         "recovered_immunity_time": 90,
-        "vaccine_available_as_of": 180,
+        "vaccine_available_as_of": 0,
         "vaccination_takes_effect_time": 14,
-        "vaccinations_per_day": 720,
+        "vaccinations_per_day": 100,
         "vaccination_immunity_time": 90,
         "waiting_time_vaccination_until_new_vaccination": 90,
         "waiting_time_recovered_until_vaccination": 90,
-        "maximal_simulation_time_interval": 365,
-        "start_lockdown_at": 150,
+        "maximal_simulation_time_interval": 2*365,
+        "start_lockdown_at": 250,
         "end_lockdown_at": 50
     }
 
-    values = np.zeros(5)
+    # values = np.zeros(5)
 
-    def multi_sim(i):
-        sim = Simulation(simulation_settings)
-        sim.start_iteration()
-        values[i] = max(sim.groups["Infected"].history)
+    # def multi_sim(i):
+    #     sim = Simulation(simulation_settings)
+    #     sim.start_iteration()
+    #     values[i] = max(sim.groups["Infected"].history)
 
-    T0 = threading.Thread(target=multi_sim, args=(0,)).start()
-    T1 = threading.Thread(target=multi_sim, args=(1,)).start()
-    T2 = threading.Thread(target=multi_sim, args=(2,)).start()
-    T3 = threading.Thread(target=multi_sim, args=(3,)).start()
-    T4 = threading.Thread(target=multi_sim, args=(4,)).start()
+    # T0 = threading.Thread(target=multi_sim, args=(0,)).start()
+    # T1 = threading.Thread(target=multi_sim, args=(1,)).start()
+    # T2 = threading.Thread(target=multi_sim, args=(2,)).start()
+    # T3 = threading.Thread(target=multi_sim, args=(3,)).start()
+    # T4 = threading.Thread(target=multi_sim, args=(4,)).start()
 
-    print(values)
-
+    # print(values)
+    Scenarios.single_simulation(simulation_settings)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
+
+    PostProcessing.infection_graph("../out/DE_03_KLLand/0002")
