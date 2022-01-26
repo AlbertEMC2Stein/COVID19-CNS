@@ -466,7 +466,7 @@ class Scenarios:
 
 class PostProcessing:
     @staticmethod
-    def infection_graph(folder: str, ):
+    def infection_graph(folder: str):
         def get_plot_elements():
             f = json.load(open(folder + "population.json"))
             member_id_dict = {member["id"]: i for i, member in enumerate(f["members"])}
