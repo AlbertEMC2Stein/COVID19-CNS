@@ -212,3 +212,8 @@ class Standalones:
             return inspect.getsource(f).replace(" ", "")[50:-3]
 
         return f.__name__
+
+    @staticmethod
+    def check_existence(path: str):
+        if not os.path.exists(path):
+            os.mkdir(path)
