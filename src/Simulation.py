@@ -509,7 +509,8 @@ class PostProcessing:
         ax.add_collection(LineCollection(plot_elements["Lines"], color='r', alpha=0.2, linewidth=0.01))
         ax.plot(*plot_elements["Infected"][:, [0, 1]].T, color='r', marker='x', linestyle='None', markersize=0.01)
         ax.plot(*plot_elements["Initials"][:, [0, 1]].T, color='b', marker='x', linestyle='None', markersize=0.01)
-
+        plt.xlabel('Population')
+        plt.ylabel('Day')
         plt.savefig(folder + "Plots" + sep + "Infection_graph.pdf")
         plt.show()
         
@@ -526,6 +527,7 @@ class PostProcessing:
                             transform=ax.get_xaxis_transform())
             ax.set_xlabel("t")
             ax.set_ylabel("#")
+            ax.set_xlim(0, days[-1])
             ax.set_title(title)
             plt.savefig(folder + "Plots" + sep + plotname)
             plt.show()
@@ -575,6 +577,43 @@ class PostProcessing:
                   [data["Dead"]],
                   ['black'])
 
+    @staticmethod
+    def compare_inner_and_outer_infection_numbers(folder: str):
+        def get_infection_data():
+            f = json.load(open(folder + "population.json"))
+
+            p = ProgressBar(0, 0, len(f["members"]))
+            for member in f["members"]:
+                if "infections" not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member["infections"]:
+                    if infection[1]:
+                        infection_data["inside"] += 1
+
+                    else:
+                        infection_data["outside"] += 1
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + "Plots")
+
+        infection_data = {"inside": 0, "outside": 0}
+        get_infection_data()
+
+        p_inside = infection_data["inside"] / sum(infection_data.values())
+
+        plt.bar(*zip(*infection_data.items()))
+        for i, v in enumerate([p_inside, 1 - p_inside]):
+            plt.text(i, list(infection_data.values())[i] / 2, "%.1f%%" % (100 * v), color='black', ha='center', va='center', fontsize=32)
+
+        plt.ylabel('Total')
+        plt.savefig(folder + "Plots" + sep + "inner_vs_outer.png")
+        plt.show()
 
 ################################################################################################
 ################################################################################################
