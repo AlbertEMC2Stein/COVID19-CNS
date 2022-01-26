@@ -365,7 +365,7 @@ class Population(Group):
             raise ValueError("Population can't be empty.")
 
         with open(path + "population.json", 'w') as f:
-            wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"members\": [\n"
+            wrapper = "{\n\t\"name\": \"" + self.name + "\",\n\t\"size\": " + str(self.size) + ",\n\t\"members\": [\n"
             inner = ""
             for member in self:
                 json_str = json.dumps(member.properties, indent=4)
