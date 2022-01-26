@@ -2,15 +2,17 @@
 TODO Docstring Simulation
 """
 
-__all__ = ['Simulation', 'Scenarios']
+__all__ = ['Simulation', 'Scenarios', 'PostProcessing']
 
 import json
+import csv
 import os
 from os.path import sep
 import matplotlib.pylab as plt
+from matplotlib.collections import LineCollection
 import numpy as np
 from Network import Group, Population
-from Utils import Standalones
+from Utils import ProgressBar, Standalones
 
 
 ################################################################################################
@@ -310,54 +312,6 @@ class Simulation:
                             [np.array(stat_values) for stat_values in self.stats.values()]).T
             np.savetxt(path + "progression.csv", rows, fmt='%d', delimiter=",", header=header, comments='')
 
-        def save_plots(path: str):
-            def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
-                _, ax = plt.subplots()
-                days = np.arange(0, len(datasets[0]), 1)
-
-                for i, dataset in enumerate(datasets):
-                    ax.plot(dataset, color=colors[i])
-
-                ax.fill_between(days, 0, 1, where=self.stats["in_lockdown"], color='red', alpha=0.25, transform=ax.get_xaxis_transform())
-                ax.set_xlabel("t")
-                ax.set_ylabel("#")
-                ax.set_title(title)
-                plt.savefig(path + "Plots" + sep + plotname)
-                plt.show()
-
-            if not os.path.exists(path + "Plots"):
-                os.mkdir(path + "Plots")
-
-            data = np.genfromtxt(path + "progression.csv", delimiter=',', skip_header=1)
-            make_plot("SIRVD.png", "Total",
-                      [self.population.size - data[:, 0] - data[:, 1] - data[:, 2] - data[:, 3],
-                       data[:, 0], data[:, 1], data[:, 2], data[:, 3]],
-                      ['green', 'red', 'blue', 'cyan', 'black'])
-
-            make_plot("NewI.png", "New Infections",
-                      [self.stats["#new_infected"]],
-                      ['red'])
-
-            make_plot("IR.png", "Infected & Recovered",
-                      [data[:, 0], data[:, 1]],
-                      ['red', 'blue'])
-
-            make_plot("I.png", "Infected",
-                      [data[:, 0]],
-                      ['red'])
-
-            make_plot("V.png", "Vaccinated",
-                      [data[:, 2]],
-                      ['cyan'])
-
-            make_plot("7DI.png", "Seven Day Incidence",
-                      [self.stats["seven_day_incidence"]],
-                      ['red'])
-
-            make_plot("D.png", "Dead",
-                      [data[:, 3]],
-                      ['black'])
-
         def save_options(path: str):
             settings_mod = self.settings
             infection_heuristic = settings_mod["infection_probability_heuristic"]
@@ -374,7 +328,6 @@ class Simulation:
         out_path = set_out_path()
         self.population.save_as_json(out_path)
         save_disease_progression(out_path)
-        save_plots(out_path)
         save_options(out_path)
 
         print("Finished saving simulation data.")
@@ -504,6 +457,123 @@ class Scenarios:
         plt.xlim(interval_boundaries)
         plt.grid()
         plt.show()
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class PostProcessing:
+    @staticmethod
+    def infection_graph(folder: str, ):
+        def get_plot_elements():
+            f = json.load(open(folder + "population.json"))
+            member_id_dict = {member["id"]: i for i, member in enumerate(f["members"])}
+
+            p = ProgressBar(0, 0, len(f["members"]))
+            for member in f["members"]:
+                self = member_id_dict[member["id"]]
+                if "infections" not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member["infections"]:
+                    infectant = member_id_dict[infection[0]]
+                    first_day = infection[2]
+                    last_day = infection[4]
+
+                    plot_elements["Lines"] += [[[self, first_day], [self, last_day]]]
+
+                    if infectant != self:
+                        plot_elements["Lines"] += [[[self, first_day], [infectant, first_day - 1]]]
+                        plot_elements["Infected"] += [[self, first_day]]
+
+                    else:
+                        plot_elements["Initials"] += [[self, 0]]
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + "Plots")
+
+        plot_elements = {"Initials": [], "Infected": [], "Lines": []}
+        get_plot_elements()
+        plot_elements["Initials"] = np.array(plot_elements["Initials"])
+        plot_elements["Infected"] = np.array(plot_elements["Infected"])
+        plot_elements["Lines"] = np.array(plot_elements["Lines"])
+
+        ax = plt.gca()
+        ax.add_collection(LineCollection(plot_elements["Lines"], color='r', alpha=0.2, linewidth=0.01))
+        ax.plot(*plot_elements["Infected"][:, [0, 1]].T, color='r', marker='x', linestyle='None', markersize=0.01)
+        ax.plot(*plot_elements["Initials"][:, [0, 1]].T, color='b', marker='x', linestyle='None', markersize=0.01)
+
+        plt.savefig(folder + "Plots" + sep + "Infection_graph.pdf")
+        plt.show()
+        
+    @staticmethod
+    def progression_plots(folder: str):            
+        def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+            _, ax = plt.subplots()
+            days = np.arange(0, len(datasets[0]), 1)
+
+            for i, dataset in enumerate(datasets):
+                ax.plot(dataset, color=colors[i])
+
+            ax.fill_between(days, 0, 1, where=data["in_lockdown"], color='red', alpha=0.25,
+                            transform=ax.get_xaxis_transform())
+            ax.set_xlabel("t")
+            ax.set_ylabel("#")
+            ax.set_title(title)
+            plt.savefig(folder + "Plots" + sep + plotname)
+            plt.show()
+
+        if folder[-1] != sep:
+            folder += sep
+            
+        Standalones.check_existence(folder + "Plots")
+
+        population_size = json.load(open(folder + "population.json"))["size"]
+        data_stream = csv.DictReader(open(folder + "progression.csv"))
+        data = {}
+        for row in data_stream:
+            for key, value in row.items():
+                if key not in data.keys():
+                    data[key] = []
+
+                data[key] += [int(value)]
+
+        data = {column: np.array(data[column]) for column in data.keys()}
+        make_plot("SIRVD.png", "Total",
+                  [population_size - data["Infected"] - data["Recovered"] - data["Vaccinated"] - data["Dead"],
+                   data["Infected"], data["Recovered"], data["Vaccinated"], data["Dead"]],
+                  ['green', 'red', 'blue', 'cyan', 'black'])
+
+        make_plot("NewI.png", "New Infections",
+                  [data["#new_infected"]],
+                  ['red'])
+
+        make_plot("IR.png", "Infected & Recovered",
+                  [data["Infected"], data["Recovered"]],
+                  ['red', 'blue'])
+
+        make_plot("I.png", "Infected",
+                  [data["Infected"]],
+                  ['red'])
+
+        make_plot("V.png", "Vaccinated",
+                  [data["Vaccinated"]],
+                  ['cyan'])
+
+        make_plot("7DI.png", "Seven Day Incidence",
+                  [data["seven_day_incidence"]],
+                  ['red'])
+
+        make_plot("D.png", "Dead",
+                  [data["Dead"]],
+                  ['black'])
 
 
 ################################################################################################
