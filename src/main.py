@@ -51,7 +51,10 @@ if __name__ == "__main__":
     # T4 = threading.Thread(target=multi_sim, args=(4,)).start()
 
     # print(values)
-    Scenarios.single_simulation(simulation_settings)
+    # Scenarios.single_simulation(simulation_settings)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
 
-    PostProcessing.infection_graph("../out/DE_03_KLLand/0002")
+    sim_path = "../out/DE_03_KLLand/0003"
+    PostProcessing.progression_plots(sim_path)
+    PostProcessing.infection_graph(sim_path)
+    PostProcessing.compare_inner_and_outer_infection_numbers(sim_path)
