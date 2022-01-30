@@ -310,7 +310,6 @@ class Group:
             if infectant.properties["id"] == other.properties["id"]:
                 continue
 
-            other.add_to_contacts(infectant)
             infectant.add_to_contacts(other)
 
             if np.random.uniform() < disease_parameters["heuristic"](other.properties):
