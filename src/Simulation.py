@@ -34,7 +34,8 @@ class Simulation:
         self.groups = {"Infected": Group("Infected"),
                        "Recovered": Group("Recovered"),
                        "Vaccinated": Group("Vaccinated"),
-                       "Dead": Group("Dead")}
+                       "Dead": Group("Dead"),
+                       "Quarantined": Group("Quarantined")}
         self.stats = {"#new_infected": [0],
                       "#new_recovered": [0],
                       "#new_susceptible": [0],
@@ -131,6 +132,9 @@ class Simulation:
                         member.make_tick("vaccine")
 
             elif group.name == "Dead":
+                pass
+
+            elif group.name == "Quarantined":
                 pass
 
             else:
