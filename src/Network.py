@@ -109,6 +109,16 @@ class Member:
 
             return True
 
+    def test(self):
+        result = self.infected * (np.random.uniform() < 0.99)
+
+        if "tests" not in self.properties.keys():
+            self.properties["tests"] = [0, 0]
+
+        self.properties["tests"][result] += 1
+
+        return result
+
     def make_immune(self, immunity_duration: int):
         """
         TODO Docstring Member make_immune
