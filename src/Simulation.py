@@ -7,6 +7,7 @@ __all__ = ['Simulation', 'Scenarios', 'PostProcessing']
 import json
 import csv
 import os
+import shutil
 from os.path import sep
 import matplotlib.pylab as plt
 from matplotlib.collections import LineCollection
@@ -41,7 +42,8 @@ class Simulation:
                       "#new_susceptible": [0],
                       "#new_vaccinated": [0],
                       "#new_dead": [0],
-                      "test_results": [0],
+                      "test_results_-": [0],
+                      "test_results_+": [0],
                       "seven_day_incidence": [0],
                       "in_lockdown": [0]
                       }
@@ -189,18 +191,19 @@ class Simulation:
 
         def simulate_tests():
             n_tests = min(np.random.poisson(c_tests), self.population.size)
-            results = 0
+            results = [0, 0]
             for member in np.random.choice(self.population.members, size=n_tests, replace=False):
                 if not member.quarantined:
                     if member.test():
-                        results += 1
+                        results[1] += 1
                         member.quarantine(self.settings["quarantine_duration"])
                         self.groups["Quarantined"].add_member(member)
 
                     else:
-                        results += 1j
+                        results[0] += 1
 
-            self.stats["test_results"] += [results]
+            self.stats["test_results_-"] += [results[0]]
+            self.stats["test_results_+"] += [results[1]]
 
         def decide_measure(measure: str):
             if measure == "lockdown":
@@ -218,11 +221,11 @@ class Simulation:
 
         def update_stats():
             def calc_7di():
-                positive = self.stats["test_results"]
+                positive = self.stats["test_results_+"]
                 if len(positive) >= 7:
-                    return round(sum(r.real for r in positive[-7:]) * 100000 / self.population.size)
+                    return round(sum(positive[-7:]) * 100000 / self.population.size)
                 else:
-                    return round(sum(r.real for r in positive) * 7 / len(positive) * 100000 / self.population.size)
+                    return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
 
             self.stats["#new_infected"] += [len(new_members["newly_infected"])]
             self.stats["#new_recovered"] += [len(new_members["newly_recovered"])]
@@ -234,13 +237,16 @@ class Simulation:
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
-            print(color + "\rDay: %04d, #Infected: %d, #Dead: %d, #newInf: %d, #newRec: %d, #newVac: %d, 7di: %d"
+            print(color + "\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d"
                   % (tick,
                      self.groups["Infected"].size,
                      self.groups["Dead"].size,
+                     self.groups["Quarantined"].size,
                      self.stats["#new_infected"][-1],
                      self.stats["#new_recovered"][-1],
                      self.stats["#new_vaccinated"][-1],
+                     self.stats["test_results_+"][-1],
+                     self.stats["test_results_-"][-1],
                      self.stats["seven_day_incidence"][-1]), end="")
 
         print("\nInitializing simulation...")
@@ -356,6 +362,9 @@ class Simulation:
         self.population.save_as_json(out_path)
         save_disease_progression(out_path)
         save_options(out_path)
+
+        if self.settings["override_newest"] and os.path.exists(out_path + "Plots"):
+            shutil.rmtree(out_path + "Plots")
 
         print("Finished saving simulation data.")
 
