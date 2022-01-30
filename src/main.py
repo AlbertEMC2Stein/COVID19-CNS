@@ -60,6 +60,7 @@ if __name__ == "__main__":
         "tests_per_day": 1000,
         "test_vaccinated": True,  # FIXME make vaccinated infectable
         "quarantine_duration": 10,
+        "backtracking_depth": 2,
         "maximal_simulation_time_interval": 2*365,
         "start_lockdown_at": 150,
         "end_lockdown_at": 20
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     # print(values)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
 
-    Scenarios.single_simulation(simulation_settings)
+    # sim = Scenarios.single_simulation(simulation_settings)
 
     sim_path = "../out/DE_03_KLLand/0004"
     PostProcessing.progression_plots(sim_path)
