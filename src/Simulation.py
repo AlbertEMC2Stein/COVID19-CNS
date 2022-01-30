@@ -190,17 +190,29 @@ class Simulation:
                     new_members["not_vaccinated"] += [member]
 
         def simulate_tests():
+            def test_and_quarantine_procedure(member):
+                result = member.test()
+                results[result] += 1
+                if result:
+                    member.quarantine(self.settings["quarantine_duration"])
+                    self.groups["Quarantined"].add_member(member)
+
+                return result
+
+            def backtrack(member, depth):
+                if depth == 0:
+                    return
+
+                for contact in member.recent_contacts:
+                    if test_and_quarantine_procedure(contact):
+                        backtrack(contact, depth-1)
+
             n_tests = min(np.random.poisson(c_tests), self.population.size)
             results = [0, 0]
             for member in np.random.choice(self.population.members, size=n_tests, replace=False):
                 if not member.quarantined:
-                    if member.test():
-                        results[1] += 1
-                        member.quarantine(self.settings["quarantine_duration"])
-                        self.groups["Quarantined"].add_member(member)
-
-                    else:
-                        results[0] += 1
+                    if test_and_quarantine_procedure(member):
+                        backtrack(member, self.settings["backtracking_depth"])
 
             self.stats["test_results_-"] += [results[0]]
             self.stats["test_results_+"] += [results[1]]
@@ -395,6 +407,7 @@ class Simulation:
                           "tests_per_day",
                           "test_vaccinated",
                           "quarantine_duration",
+                          "backtracking_depth",
                           "maximal_simulation_time_interval",
                           "start_lockdown_at",
                           "end_lockdown_at"]
