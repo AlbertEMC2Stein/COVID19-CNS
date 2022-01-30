@@ -389,6 +389,7 @@ class Simulation:
                           "vaccination_takes_effect_time",
                           "vaccinations_per_day",
                           "vaccination_immunity_time",
+                          "vaccination_reliability",
                           "waiting_time_vaccination_until_new_vaccination",
                           "waiting_time_recovered_until_vaccination",
                           "tests_per_day",
