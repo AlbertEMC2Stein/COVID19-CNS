@@ -37,10 +37,13 @@ class Member:
         self.recovered = False
         self.vaccinated = False
         self.dead = False
+        self.immune = False
+        self.quarantined = False
         self._susceptible_in = -1
-        self._recovers_in = -1
         self._infectious_in = -1
+        self._recovers_in = -1
         self._immune_in = -1
+        self._released_in = -1
 
     def __str__(self):
         return "\n".join(["%s = %s" % (attr, val) for attr, val in self.__dict__.items()])
@@ -50,7 +53,7 @@ class Member:
         TODO Docstring Member infect
         """
 
-        if "immune" in self.properties.keys() and self.properties["immune"] or self.infected or self.dead:
+        if self.immune or self.infected or self.dead:
             return False
 
         n_incubation = disease_parameters["incubation_period"]
@@ -80,15 +83,13 @@ class Member:
         TODO Docstring Member vaccinate
         """
 
-        vaccine_unavailable = self.infected or self.dead or \
+        vaccine_unavailable = self.infected or self.dead or self.quarantined or \
                               "vaccinations" in self.properties.keys() and \
                               timestamp < self.properties["vaccinations"][-1][1] + vaccine_parameters["t_wait_vac"] or \
                               "infections" in self.properties.keys() and \
                               timestamp < self.properties["infections"][-1][4] + vaccine_parameters["t_wait_rec"]
-        if vaccine_unavailable:
-            return False
 
-        else:
+        if not vaccine_unavailable:
             vaccination_data = [(timestamp,
                                  timestamp + vaccine_parameters["t_vac_effect"],
                                  timestamp + vaccine_parameters["t_immunity"])]
@@ -99,7 +100,7 @@ class Member:
             else:
                 self.properties["vaccinations"] = vaccination_data
 
-            if "immune" in self.properties.keys() and self.properties["immune"]:
+            if self.immune:
                 self._immune_in = 0
                 self._susceptible_in = max(vaccine_parameters["t_immunity"], self._susceptible_in)
 
@@ -109,7 +110,13 @@ class Member:
 
             return True
 
+        return False
+
     def test(self):
+        """
+        TODO Docstring Member test
+        """
+
         result = self.infected * (np.random.uniform() < 0.99)
 
         if "tests" not in self.properties.keys():
@@ -119,10 +126,19 @@ class Member:
 
         return result
 
+    def quarantine(self, days: int):
+        """
+        TODO Docstring Member quarantine
+        """
+
+        self.quarantined = True
+        self._released_in = days
+
     def make_immune(self, immunity_duration: int):
         """
         TODO Docstring Member make_immune
         """
+
         if self.infected:
             raise RuntimeError
             self.infected = False
@@ -131,11 +147,12 @@ class Member:
             self._susceptible_in = immunity_duration
             self.properties["immune"] = True
             return True
+
         else:
             self._infectious_in = -1
             self._recovers_in = -1
             self._susceptible_in = immunity_duration
-            self.properties["immune"] = True
+            self.immune = True
             return False
 
     def make_dead(self, timestamp: int):
@@ -160,11 +177,10 @@ class Member:
         """
 
         if option == "infectious":
-            result = self._infectious_in <= 0
             if self._infectious_in > 0:
                 self._infectious_in -= 1
 
-            return result
+            return self._infectious_in <= 0
 
         elif option == "immunity":
             if self._immune_in <= 0:
@@ -179,15 +195,26 @@ class Member:
         elif option == "vaccine":
             self._immune_in -= 1
             if self._immune_in == 0:
-                self.properties["immune"] = True
+                self.immune = True
 
         elif option == "recover":
-            if self.infected:
-                self._recovers_in -= 1
-                if self._recovers_in == 0:
-                    self._recovers_in = -1
-                    self.infected = False
-                    self.properties["immune"] = True
+            self._recovers_in -= 1
+            if self._recovers_in == 0:
+                self._recovers_in = -1
+                self.infected = False
+                self.immune = True
+                return True
+
+            return False
+
+        elif option == "quarantine":
+            self._released_in -= 1
+            if self._released_in == 0:
+                if self.test():
+                    self._released_in += 5
+                else:
+                    self._released_in = -1
+                    self.quarantined = False
                     return True
 
             return False

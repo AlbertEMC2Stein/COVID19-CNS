@@ -41,6 +41,7 @@ class Simulation:
                       "#new_susceptible": [0],
                       "#new_vaccinated": [0],
                       "#new_dead": [0],
+                      "test_results": [0],
                       "seven_day_incidence": [0],
                       "in_lockdown": [0]
                       }
@@ -96,6 +97,9 @@ class Simulation:
                         if self.arrange_lockdown:
                             n_outer //= 2
 
+                        if member.quarantined:
+                            n_outer = 0
+
                         gen_params = lambda: {
                             "heuristic": infection_heuristic,
                             "incubation_period": np.random.poisson(c_incubation),
@@ -135,7 +139,9 @@ class Simulation:
                 pass
 
             elif group.name == "Quarantined":
-                pass
+                for member in group:
+                    if member.make_tick("quarantine"):
+                        group.remove_member(member)
 
             else:
                 raise ValueError("Group '" + group.name + "' does not have an update function")
@@ -183,9 +189,18 @@ class Simulation:
 
         def simulate_tests():
             n_tests = min(np.random.poisson(c_tests), self.population.size)
+            results = 0
             for member in np.random.choice(self.population.members, size=n_tests, replace=False):
-                if not member.vaccinated or self.settings["test_vaccinated"]:  # FIXME make vaccinated infectable
-                    member.test()
+                if not member.quarantined:
+                    if member.test():
+                        results += 1
+                        member.quarantine(self.settings["quarantine_duration"])
+                        self.groups["Quarantined"].add_member(member)
+
+                    else:
+                        results += 1j
+
+            self.stats["test_results"] += [results]
 
         def decide_measure(measure: str):
             if measure == "lockdown":
@@ -203,11 +218,11 @@ class Simulation:
 
         def update_stats():
             def calc_7di():
-                new_inf = self.stats["#new_infected"]
-                if len(self.stats["#new_infected"]) >= 7:
-                    return round(sum(new_inf[-7:]) * 100000 / self.population.size)
+                positive = self.stats["test_results"]
+                if len(positive) >= 7:
+                    return round(sum(r.real for r in positive[-7:]) * 100000 / self.population.size)
                 else:
-                    return round(sum(new_inf) * 7 / len(new_inf) * 100000 / self.population.size)
+                    return round(sum(r.real for r in positive) * 7 / len(positive) * 100000 / self.population.size)
 
             self.stats["#new_infected"] += [len(new_members["newly_infected"])]
             self.stats["#new_recovered"] += [len(new_members["newly_recovered"])]
@@ -369,6 +384,7 @@ class Simulation:
                           "waiting_time_recovered_until_vaccination",
                           "tests_per_day",
                           "test_vaccinated",
+                          "quarantine_duration",
                           "maximal_simulation_time_interval",
                           "start_lockdown_at",
                           "end_lockdown_at"]
