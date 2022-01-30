@@ -8,40 +8,40 @@ import threading
 
 if __name__ == "__main__":
     def basic_infection_heuristic(mem_props):
-        age = mem_props["age"]
+        age = int(mem_props["age"])
         if 0 <= age <= 4:
-            return 0.0330660325674
+            return 0.0330660325674 / 6
         elif 5 <= age <= 14:
-            return 0.148281618844
+            return 0.148281618844 / 6
         elif 15 <= age <= 34:
-            return 0.304042732216
+            return 0.304042732216 / 6
         elif 35 <= age <= 59:
-            return 0.359434902279
+            return 0.359434902279 / 6
         elif 60 <= age <= 79:
-            return 0.109905306538
+            return 0.109905306538 / 6
         else:
-            return 0.0452694075548
+            return 0.0452694075548 / 6
 
     def basic_mortality_heuristic(mem_props):
-        age = mem_props["age"]
+        age = int(mem_props["age"])
         if 0 <= age <= 4:
-            return 0.000059062155147
+            return 0.000059062155147 / 6
         elif 5 <= age <= 14:
-            return 0.0000124773674418
+            return 0.0000124773674418 / 6
         elif 15 <= age <= 34:
-            return 0.000111900272854
+            return 0.000111900272854 / 6
         elif 35 <= age <= 59:
-            return 0.00176127729351
+            return 0.00176127729351 / 6
         elif 60 <= age <= 79:
-            return 0.0338030065822
+            return 0.0338030065822 / 6
         else:
-            return 0.170387357522
+            return 0.170387357522 / 6
 
     simulation_settings = {
         "population_file": "DE_03_KLLand.csv",
         "infection_probability_heuristic": basic_infection_heuristic,
         "mortality_probability_heuristic": basic_mortality_heuristic,
-        "number_of_initially_infected": 5,
+        "number_of_initially_infected": 10,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
         "inner_reproduction_number": 1,
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         "test_vaccinated": True,  # FIXME make vaccinated infectable
         "quarantine_duration": 10,
         "maximal_simulation_time_interval": 2*365,
-        "start_lockdown_at": 150,
+        "start_lockdown_at": 200,
         "end_lockdown_at": 50
     }
 
@@ -82,5 +82,5 @@ if __name__ == "__main__":
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
 
     folder = "../out/DE_03_KLLand/0004"
-    #PostProcessing.infection_graph(folder)
-    #PostProcessing.progression_plots(folder)
+    PostProcessing.infection_graph(folder)
+    PostProcessing.progression_plots(folder)
