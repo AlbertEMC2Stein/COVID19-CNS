@@ -44,6 +44,7 @@ class Member:
         self._recovers_in = -1
         self._immune_in = -1
         self._released_in = -1
+        self.recent_contacts = []
 
     def __str__(self):
         return "\n".join(["%s = %s" % (attr, val) for attr, val in self.__dict__.items()])
@@ -133,6 +134,17 @@ class Member:
 
         self.quarantined = True
         self._released_in = days
+
+    def add_to_contacts(self, other):
+        """
+        TODO Docstring Member add_to_contacts
+        """
+
+        if len(self.recent_contacts) < 5:
+            self.recent_contacts += [other]
+
+        else:
+            self.recent_contacts = self.recent_contacts[1:] + [other]
 
     def make_immune(self, immunity_duration: int):
         """
@@ -295,6 +307,12 @@ class Group:
 
         result = []
         for other in np.random.choice(self.members, n):
+            if infectant.properties["id"] == other.properties["id"]:
+                continue
+
+            other.add_to_contacts(infectant)
+            infectant.add_to_contacts(other)
+
             if np.random.uniform() < disease_parameters["heuristic"](other.properties):
                 if other.infect(infectant, timestamp, disease_parameters):
                     result += [other]
