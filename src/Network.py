@@ -145,7 +145,7 @@ class Member:
             self._infectious_in = -1
             self._recovers_in = -1
             self._susceptible_in = immunity_duration
-            self.properties["immune"] = True
+            self.immune = True
             return True
 
         else:
@@ -187,7 +187,7 @@ class Member:
                 self._susceptible_in -= 1
                 if self._susceptible_in == 0:
                     self._susceptible_in = -1
-                    self.properties["immune"] = False
+                    self.immune = False
                     return True
 
             return False
@@ -209,6 +209,12 @@ class Member:
 
         elif option == "quarantine":
             self._released_in -= 1
+
+            if "days_in_quarantine" not in self.properties.keys():
+                self.properties["days_in_quarantine"] = 0
+
+            self.properties["days_in_quarantine"] += 1
+
             if self._released_in == 0:
                 if self.test():
                     self._released_in += 5
