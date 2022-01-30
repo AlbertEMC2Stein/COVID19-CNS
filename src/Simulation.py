@@ -177,6 +177,12 @@ class Simulation:
                 else:
                     new_members["not_vaccinated"] += [member]
 
+        def simulate_tests():
+            n_tests = min(np.random.poisson(c_tests), self.population.size)
+            for member in np.random.choice(self.population.members, size=n_tests, replace=False):
+                if not member.vaccinated or self.settings["test_vaccinated"]:  # FIXME make vaccinated infectable
+                    member.test()
+
         def decide_measure(measure: str):
             if measure == "lockdown":
                 if self.settings["start_lockdown_at"] <= self.stats["seven_day_incidence"][-1]:
@@ -235,6 +241,7 @@ class Simulation:
         c_vac_effect = self.settings["vaccination_takes_effect_time"]
         c_vac_immunity = self.settings["vaccination_immunity_time"]
         c_vacs = self.settings["vaccinations_per_day"]
+        c_tests = self.settings["tests_per_day"]
         t_wait_vac = self.settings["waiting_time_vaccination_until_new_vaccination"]
         t_wait_rec = self.settings["waiting_time_recovered_until_vaccination"]
         max_t = self.settings["maximal_simulation_time_interval"]
@@ -267,6 +274,7 @@ class Simulation:
 
             move_members_to_new_groups()
             simulate_vaccinations()
+            simulate_tests()
 
             for group in self.groups.values():
                 group.counter.save_count()
@@ -355,6 +363,8 @@ class Simulation:
                           "vaccination_immunity_time",
                           "waiting_time_vaccination_until_new_vaccination",
                           "waiting_time_recovered_until_vaccination",
+                          "tests_per_day",
+                          "test_vaccinated",
                           "maximal_simulation_time_interval",
                           "start_lockdown_at",
                           "end_lockdown_at"]
