@@ -98,9 +98,11 @@ class Simulation:
 
                         if self.arrange_lockdown:
                             n_outer //= 2
+                            n_inner = round(1.5 * n_inner)
 
                         if member.quarantined:
                             n_outer = 0
+                            n_inner = round(1.5 * n_inner)
 
                         gen_params = lambda: {
                             "heuristic": infection_heuristic,
