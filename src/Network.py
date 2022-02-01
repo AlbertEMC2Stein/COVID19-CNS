@@ -45,6 +45,7 @@ class Member:
         self._immune_in = -1
         self._released_in = -1
         self.recent_contacts = []
+        self._last_tested = -1
 
     def __str__(self):
         return "\n".join(["%s = %s" % (attr, val) for attr, val in self.__dict__.items()])
@@ -113,7 +114,7 @@ class Member:
 
         return False
 
-    def test(self):
+    def test(self, timestamp: int):
         """
         TODO Docstring Member test
         """
@@ -124,6 +125,7 @@ class Member:
             self.properties["tests"] = [0, 0]
 
         self.properties["tests"][result] += 1
+        self._last_tested = timestamp
 
         return result
 
@@ -183,7 +185,7 @@ class Member:
         self.dead = True
         self.properties["Death"] = timestamp
 
-    def make_tick(self, option: str):
+    def make_tick(self, option: str, timestamp: int = None):
         """
         TODO Docstring Member make_tick
         """
@@ -228,7 +230,7 @@ class Member:
             self.properties["days_in_quarantine"] += 1
 
             if self._released_in == 0:
-                if self.test():
+                if self.test(timestamp):
                     self._released_in += 5
                 else:
                     self._released_in = -1

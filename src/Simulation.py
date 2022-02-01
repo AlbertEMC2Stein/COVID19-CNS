@@ -144,7 +144,7 @@ class Simulation:
 
             elif group.name == "Quarantined":
                 for member in group:
-                    if member.make_tick("quarantine"):
+                    if member.make_tick("quarantine", tick):
                         group.remove_member(member)
 
             else:
@@ -194,11 +194,13 @@ class Simulation:
 
         def simulate_tests():
             def test_and_quarantine_procedure(member):
-                result = member.test()
-                results[result] += 1
-                if result:
-                    member.quarantine(self.settings["quarantine_duration"])
-                    self.groups["Quarantined"].add_member(member)
+                result = False
+                if not member.quarantined and tick != member._last_tested:
+                    result = member.test(tick)
+                    results[result] += 1
+                    if result:
+                        member.quarantine(self.settings["quarantine_duration"])
+                        self.groups["Quarantined"].add_member(member)
 
                 return result
 
@@ -213,9 +215,8 @@ class Simulation:
             n_tests = min(np.random.poisson(c_tests), self.population.size)
             results = [0, 0]
             for member in np.random.choice(self.population.members, size=n_tests, replace=False):
-                if not member.quarantined:
-                    if test_and_quarantine_procedure(member):
-                        backtrack(member, self.settings["backtracking_depth"])
+                if test_and_quarantine_procedure(member):
+                    backtrack(member, self.settings["backtracking_depth"])
 
             self.stats["test_results_-"] += [results[0]]
             self.stats["test_results_+"] += [results[1]]
