@@ -162,6 +162,7 @@ class Simulation:
             Group.move(new_members["newly_recovered"], self.groups["Infected"], self.groups["Recovered"])
 
             Group.move(new_members["new_dead"], self.groups["Infected"], self.groups["Dead"])
+            Group.move(new_members["new_dead"], self.groups["Quarantined"], self.groups["Dead"])
 
             for member in new_members["newly_infected"]:
                 self.groups["Infected"].add_member(member)
@@ -410,6 +411,7 @@ class Simulation:
                           "test_vaccinated",
                           "quarantine_duration",
                           "backtracking_depth",
+                          "backtracking_probability",
                           "maximal_simulation_time_interval",
                           "start_lockdown_at",
                           "end_lockdown_at"]
