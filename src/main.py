@@ -44,7 +44,7 @@ if __name__ == "__main__":
         "number_of_initially_infected": 10,
         "number_of_initially_recovered": 0,
         "number_of_initially_vaccinated": 0,
-        "inner_reproduction_number": 1,
+        "inner_reproduction_number": 2,
         "outer_reproduction_number": 3,
         "override_newest": True,
         "incubation_time": 2,
@@ -61,6 +61,7 @@ if __name__ == "__main__":
         "test_vaccinated": True,  # FIXME make vaccinated infectable
         "quarantine_duration": 10,
         "backtracking_depth": 2,
+        "backtracking_probability": 0.3,
         "maximal_simulation_time_interval": 2*365,
         "start_lockdown_at": 150,
         "end_lockdown_at": 20
@@ -82,9 +83,9 @@ if __name__ == "__main__":
     # print(values)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
 
-    # sim = Scenarios.single_simulation(simulation_settings)
+    sim = Scenarios.single_simulation(simulation_settings)
 
-    sim_path = "../out/DE_03_KLLand/0004"
+    sim_path = "../out/DE_03_KLLand/0005"
     PostProcessing.progression_plots(sim_path)
     PostProcessing.infection_graph(sim_path)
     PostProcessing.compare_inner_and_outer_infection_numbers(sim_path)
