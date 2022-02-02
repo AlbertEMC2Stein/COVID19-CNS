@@ -70,6 +70,7 @@ if __name__ == "__main__":
     simulation_settings["vaccine_failure_probability_heuristic"] = heuristic(simulation_settings["vaccine_failure_probability_heuristic"])
 
     #sim = Scenarios.single_simulation(simulation_settings)
-    PostProcessing.infection_graph("../out/DE_03_KLLand/0005")
-    PostProcessing.compare_inner_and_outer_infection_numbers("../out/DE_03_KLLand/0005")
-    PostProcessing.progression_plots("../out/DE_03_KLLand/0005")
+    Scenarios.c_inner_vs_c_outer(simulation_settings, 3)
+    #PostProcessing.infection_graph("../out/DE_03_KLLand/0005")
+    #PostProcessing.compare_inner_and_outer_infection_numbers("../out/DE_03_KLLand/0005")
+    #PostProcessing.progression_plots("../out/DE_03_KLLand/0005")
