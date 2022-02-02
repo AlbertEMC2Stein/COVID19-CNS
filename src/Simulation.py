@@ -204,8 +204,7 @@ class Simulation:
                 result = False
                 if not member.quarantined and tick != member._last_tested:
                     if (not self.settings["test_vaccinated"]) and "vaccinations" in member.properties.keys() and \
-                            tick < member.properties["vaccinations"][-1][0] + self.settings[
-                        "vaccination_immunity_time"]:
+                            tick < member.properties["vaccinations"][-1][0] + self.settings["vaccination_immunity_time"]:
                         return False
 
                     result = member.test(tick)
