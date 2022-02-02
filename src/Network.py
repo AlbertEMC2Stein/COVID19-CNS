@@ -98,7 +98,7 @@ class Member:
         if not vaccine_unavailable:
             vaccination_data = [(timestamp,
                                  timestamp + vaccine_parameters["t_vac_effect"],
-                                 timestamp + vaccine_parameters["t_immunity"])]
+                                 timestamp + vaccine_parameters["t_vac_effect"] + vaccine_parameters["t_immunity"])]
 
             if "vaccinations" in self.properties.keys():
                 self.properties["vaccinations"] += vaccination_data
