@@ -2,8 +2,8 @@
 TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 """
 
-from Simulation import *
-from Utils import Standalones
+from src.Simulation import *
+from src.Utils import Standalones
 import numpy as np
 
 if __name__ == "__main__":
