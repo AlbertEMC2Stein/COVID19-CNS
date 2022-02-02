@@ -217,7 +217,7 @@ class Simulation:
                 return result
 
             def backtrack(member, depth):
-                if depth == 0 or np.random.uniform() > self.settings["backtrack_probability"]:
+                if depth == 0 or np.random.uniform() > self.settings["backtracking_probability"]:
                     return
 
                 for contact in member.recent_contacts:
