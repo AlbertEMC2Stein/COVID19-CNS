@@ -64,10 +64,12 @@ if __name__ == "__main__":
             raise ValueError("Heuristic not available")
 
     settings_name = "Template.cfg"
-    simulation_settings = Standalones.make_settings("Settings/" + settings_name)
+    simulation_settings = Standalones.make_settings(settings_name)
     simulation_settings["infection_probability_heuristic"] = heuristic(simulation_settings["infection_probability_heuristic"])
     simulation_settings["mortality_probability_heuristic"] = heuristic(simulation_settings["mortality_probability_heuristic"])
+    simulation_settings["vaccine_failure_probability_heuristic"] = heuristic(simulation_settings["vaccine_failure_probability_heuristic"])
 
-    Scenarios.single_simulation(simulation_settings)
-    # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
-    # PostProcessing.infection_graph("../out/DE_03_KLLand/0002")
+    #sim = Scenarios.single_simulation(simulation_settings)
+    PostProcessing.infection_graph("../out/DE_03_KLLand/0005")
+    PostProcessing.compare_inner_and_outer_infection_numbers("../out/DE_03_KLLand/0005")
+    PostProcessing.progression_plots("../out/DE_03_KLLand/0005")
