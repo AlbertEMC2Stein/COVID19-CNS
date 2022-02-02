@@ -51,5 +51,4 @@ if __name__ == "__main__":
 
     Scenarios.single_simulation(simulation_settings)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
-
     # PostProcessing.infection_graph("../out/DE_03_KLLand/0002")
