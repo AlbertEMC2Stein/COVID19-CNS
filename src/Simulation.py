@@ -108,7 +108,7 @@ class Simulation:
                             "heuristic": infection_heuristic,
                             "incubation_period": np.random.poisson(c_incubation),
                             "infection_period": np.random.poisson(c_infection),
-                            "immunity_period": np.random.poisson(c_immunity)
+                            "immunity_period": np.random.poisson(c_immunity),
                         }
 
                         household = self.population.households[member.properties["household"]]
@@ -205,7 +205,7 @@ class Simulation:
                 return result
 
             def backtrack(member, depth):
-                if depth == 0:
+                if depth == 0 or np.random.uniform() > self.settings["backtrack_probability"]:
                     return
 
                 for contact in member.recent_contacts:
