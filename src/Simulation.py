@@ -621,16 +621,12 @@ class PostProcessing:
                   ['green', 'red', 'blue', 'cyan', 'black'])
 
         make_plot("NewI.png", "New Infections",
-                  [data["#new_infected"]],
-                  ['red'])
+                  [data["#new_infected"], data["#ill_vaccinated"]],
+                  ['red', 'purple'])
 
         make_plot("IR.png", "Infected & Recovered",
                   [data["Infected"], data["Recovered"]],
                   ['red', 'blue'])
-
-        make_plot("I.png", "Infected",
-                  [data["Infected"]],
-                  ['red'])
 
         make_plot("V.png", "Vaccinated",
                   [data["Vaccinated"]],
