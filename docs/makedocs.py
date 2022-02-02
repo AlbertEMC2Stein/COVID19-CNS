@@ -2,7 +2,7 @@ import os
 from os.path import sep
 
 if __name__ == "__main__":
-    os.system("pdoc --html --config latex_math=True --output-dir . .." + sep + "src")
+    os.system("pdoc3 --html --config latex_math=True --output-dir . .." + sep + "src")
 
     assert(os.getcwd().split(sep)[-1] == "docs")
     # TODO always navigate in docs no matter the cwd and do CI
