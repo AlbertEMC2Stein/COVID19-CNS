@@ -55,15 +55,18 @@ class Member:
         TODO Docstring Member infect
         """
 
-        if self.immune or self.infected or self.dead:
-            return False
-
         n_incubation = disease_parameters["incubation_period"]
         n_infection = disease_parameters["infection_period"]
         shared_household = self.properties["household"] == infectant.properties["household"]
 
-        if self.quarantined and not shared_household:
+        if (self.immune and not self.vaccinated) or self.infected or \
+                self.dead or (self.quarantined and not shared_household):
             return False
+
+        if self.vaccinated and self._immune_in <= 0:
+            p_failure = disease_parameters["vaccine_failure_probability_heuristic"](self, timestamp)
+            if np.random.uniform() > p_failure:
+                return False
 
         infection_data = [(infectant.properties["id"],
                            shared_household,
@@ -318,7 +321,7 @@ class Group:
 
             infectant.add_to_contacts(other)
 
-            if np.random.uniform() < disease_parameters["heuristic"](other.properties):
+            if np.random.uniform() < disease_parameters["infection_probability_heuristic"](other.properties):
                 if other.infect(infectant, timestamp, disease_parameters):
                     result += [other]
 
