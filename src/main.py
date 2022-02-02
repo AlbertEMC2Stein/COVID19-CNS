@@ -6,7 +6,7 @@ from Simulation import *
 from Utils import Standalones
 
 if __name__ == "__main__":
-    def infection_heuristic(mem_props):
+    def infection_probability_heuristic(mem_props):
         age = int(mem_props["age"])
         if 0 <= age <= 4:
             return 0.0330660325674 / 8
@@ -21,7 +21,7 @@ if __name__ == "__main__":
         else:
             return 0.0452694075548 / 8
 
-    def mortality_heuristic(mem_props):
+    def mortality_probability_heuristic(mem_props):
         age = int(mem_props["age"])
         if 0 <= age <= 4:
             result = 0.000059062155147 / 14
