@@ -582,7 +582,7 @@ class PostProcessing:
         plt.show()
 
     @staticmethod
-    def progression_plots(folder: str):            
+    def progression_plots(folder: str):
         def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
             _, ax = plt.subplots()
             days = np.arange(0, len(datasets[0]), 1)
@@ -601,7 +601,7 @@ class PostProcessing:
 
         if folder[-1] != sep:
             folder += sep
-            
+
         Standalones.check_existence(folder + "Plots")
 
         population_size = json.load(open(folder + "population.json"))["size"]
