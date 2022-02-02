@@ -41,6 +41,12 @@ if __name__ == "__main__":
         else:
             return result
 
+    def vaccine_failure_probability_heuristic(a, b):
+        v_when = lambda member: member.properties["vaccinations"][-1][1]
+        v_till = lambda member: member.properties["vaccinations"][-1][2]
+        t = lambda member, tick: (tick - v_when(member)) / (v_till(member) - v_when(member))
+        return lambda member, tick: 1 - a * (1 - np.exp(b * (t(member, tick) - 1))) / (1 - np.exp(-b))
+
     def heuristic(name):
         if name == "infection_heuristic":
             return infection_heuristic
