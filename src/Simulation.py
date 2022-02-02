@@ -310,7 +310,8 @@ class Simulation:
 
         while True:
             tick += 1
-            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (tick >= self.settings["vaccine_available_as_of"])
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
+                        tick >= self.settings["vaccine_available_as_of"])
 
             self.arrange_lockdown = decide_measure("lockdown")
 
