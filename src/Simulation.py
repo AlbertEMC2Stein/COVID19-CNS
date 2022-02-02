@@ -217,12 +217,12 @@ class Simulation:
                 return result
 
             def backtrack(member, depth):
-                if depth == 0 or np.random.uniform() > self.settings["backtracking_probability"]:
+                if depth <= 0 or np.random.uniform() > self.settings["backtracking_probability"]:
                     return
 
                 for contact in member.recent_contacts:
                     if test_and_quarantine_procedure(contact):
-                        backtrack(contact, depth-1)
+                        backtrack(contact, depth - 1)
 
             n_tests = min(np.random.poisson(c_tests), self.population.size)
             results = [0, 0]
