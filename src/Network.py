@@ -39,12 +39,12 @@ class Member:
         self.dead = False
         self.immune = False
         self.quarantined = False
+        self.recent_contacts = []
         self._susceptible_in = -1
         self._infectious_in = -1
         self._recovers_in = -1
         self._immune_in = -1
         self._released_in = -1
-        self.recent_contacts = []
         self._last_tested = -1
 
     def __str__(self):
@@ -61,6 +61,10 @@ class Member:
         n_incubation = disease_parameters["incubation_period"]
         n_infection = disease_parameters["infection_period"]
         shared_household = self.properties["household"] == infectant.properties["household"]
+
+        if self.quarantined and not shared_household:
+            return False
+
         infection_data = [(infectant.properties["id"],
                            shared_household,
                            timestamp,
