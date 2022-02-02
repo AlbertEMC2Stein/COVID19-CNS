@@ -672,11 +672,13 @@ class PostProcessing:
 
         plt.bar(*zip(*infection_data.items()))
         for i, v in enumerate([p_inside, 1 - p_inside]):
-            plt.text(i, list(infection_data.values())[i] / 2, "%.1f%%" % (100 * v), color='black', ha='center', va='center', fontsize=32)
+            plt.text(i, list(infection_data.values())[i] / 2, "%.1f%%" % (100 * v), color='black', ha='center',
+                     va='center', fontsize=32)
 
         plt.ylabel('Total')
         plt.savefig(folder + "Plots" + sep + "inner_vs_outer.png")
         plt.show()
+
 
 ################################################################################################
 ################################################################################################
