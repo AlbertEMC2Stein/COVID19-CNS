@@ -204,17 +204,6 @@ class Standalones:
         return sorted(folders)[-1]
 
     @staticmethod
-    def serialize_function(f: callable):
-        """
-        TODO Docstring Standalones serialize_function
-        """
-
-        if f.__name__ == '<lambda>':
-            return inspect.getsource(f).replace(" ", "")[50:-3]
-
-        return f.__name__
-
-    @staticmethod
     def check_existence(path: str):
         """
         TODO Docstring Standalones check_existence
