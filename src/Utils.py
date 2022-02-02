@@ -247,4 +247,6 @@ class Standalones:
                         except ValueError:
                             settings[setting] = value
 
+        settings["file"] = settings_file
+
         return settings
