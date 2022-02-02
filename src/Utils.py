@@ -165,6 +165,10 @@ class Counter:
         return self._step('dec', k, return_when)
 
     def save_count(self):
+        """
+        TODO Docstring Counter save_count
+        """
+
         self.history = np.append(self.history, self.count)
 
     def squash_history(self):
@@ -175,6 +179,10 @@ class Counter:
         self.history = self.history[-1:]
 
     def copy(self):
+        """
+        TODO Docstring Counter copy
+        """
+
         c = Counter(0)
         c.count = self.count
         c.history = self.history.copy()

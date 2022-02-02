@@ -439,6 +439,10 @@ class Simulation:
             self.population = Population.load_from_file(self.settings["population_file"])
 
     def reset(self):
+        """
+        TODO Docstring Simulation reset
+        """
+
         self.population = self._population_init.copy()
 
         for group in self.groups.values():
@@ -454,8 +458,16 @@ class Simulation:
 
 
 class Scenarios:
+    """
+    TODO Docstring Scenarios
+    """
+
     @staticmethod
     def single_simulation(settings: dict):
+        """
+        TODO Docstring Scenarios single_simulation
+        """
+
         sim = Simulation(settings)
         sim.start_iteration()
         sim.end_iteration()
@@ -464,6 +476,10 @@ class Scenarios:
 
     @staticmethod
     def c_inner_vs_c_outer(settings: dict, n: int = 5):
+        """
+        TODO Docstring Scenarios c_inner_vs_c_outer
+        """
+
         from matplotlib.colors import LinearSegmentedColormap, LogNorm
         custom = LinearSegmentedColormap.from_list('custom', ['g', 'yellow', 'r'], N=255)
 
@@ -498,6 +514,10 @@ class Scenarios:
 
     @staticmethod
     def mitigation_interval(settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10):
+        """
+        TODO Docstring Scenarios mitigation_interval
+        """
+
         sim = Simulation(settings)
         mitigation_interval = np.zeros(samples)
         interval = np.linspace(interval_boundaries[0], interval_boundaries[1], samples)
@@ -530,8 +550,16 @@ class Scenarios:
 
 
 class PostProcessing:
+    """
+    TODO Docstring PostProcessing
+    """
+
     @staticmethod
     def infection_graph(folder: str):
+        """
+        TODO Docstring PostProcessing infection_graph
+        """
+
         def get_plot_elements():
             f = json.load(open(folder + "population.json"))
             member_id_dict = {member["id"]: i for i, member in enumerate(f["members"])}
@@ -581,6 +609,10 @@ class PostProcessing:
 
     @staticmethod
     def progression_plots(folder: str):
+        """
+        TODO Docstring PostProcessing progression_plots
+        """
+
         def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
             _, ax = plt.subplots()
             days = np.arange(0, len(datasets[0]), 1)
@@ -640,6 +672,10 @@ class PostProcessing:
 
     @staticmethod
     def compare_inner_and_outer_infection_numbers(folder: str):
+        """
+        TODO Docstring PostProcessing compare_inner_and_outer_infection_numbers
+        """
+
         def get_infection_data():
             f = json.load(open(folder + "population.json"))
 
