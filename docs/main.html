@@ -31,6 +31,7 @@
 <pre><code class="python">&#34;&#34;&#34;
 TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 &#34;&#34;&#34;
+import os
 
 from src.Simulation import *
 from src.Utils import Standalones
@@ -99,11 +100,10 @@ if __name__ == &#34;__main__&#34;:
     simulation_settings[&#34;mortality_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;mortality_probability_heuristic&#34;])
     simulation_settings[&#34;vaccine_failure_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;vaccine_failure_probability_heuristic&#34;])
 
-    #sim = Scenarios.single_simulation(simulation_settings)
-    Scenarios.c_inner_vs_c_outer(simulation_settings, 2)
-    #PostProcessing.infection_graph(&#34;../out/DE_03_KLLand/0005&#34;)
-    #PostProcessing.compare_inner_and_outer_infection_numbers(&#34;../out/DE_03_KLLand/0005&#34;)
-    #PostProcessing.progression_plots(&#34;../out/DE_03_KLLand/0005&#34;)</code></pre>
+    sim = Scenarios.single_simulation(simulation_settings)
+    #PostProcessing.infection_graph(&#34;../out/DE_03_KLLand/0000&#34;)
+    #PostProcessing.compare_inner_and_outer_infection_numbers(&#34;../out/DE_03_KLLand/0000&#34;)
+    #PostProcessing.progression_plots(&#34;../out/DE_03_KLLand/0000&#34;)</code></pre>
 </details>
 </section>
 <section>
