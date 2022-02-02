@@ -213,13 +213,13 @@ class Standalones:
             os.mkdir(path)
 
     @staticmethod
-    def make_settings(file_path: str):
+    def make_settings(settings_file: str):
         """
         TODO Docstring Standalones make_settings
         """
 
         config = configparser.RawConfigParser()
-        config.read(file_path)
+        config.read("Settings" + sep + settings_file)
 
         settings = {}
         for section in config.sections():
