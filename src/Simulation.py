@@ -42,6 +42,7 @@ class Simulation:
                       "#new_susceptible": [0],
                       "#new_vaccinated": [0],
                       "#new_dead": [0],
+                      "#ill_vaccinated": [0],
                       "test_results_-": [0],
                       "test_results_+": [0],
                       "seven_day_incidence": [0],
@@ -124,6 +125,11 @@ class Simulation:
                             new_members["new_dead"] += [member]
                             member.make_dead(tick)
 
+                    if member.vaccinated:
+                        member.make_tick("vaccine")
+
+                new_members["newly_infected_vac"] = [m for m in new_members["newly_infected"] if m.vaccinated]
+
             elif group.name == "Recovered":
                 for member in group:
                     if member.make_tick("immunity"):
@@ -196,6 +202,11 @@ class Simulation:
             def test_and_quarantine_procedure(member):
                 result = False
                 if not member.quarantined and tick != member._last_tested:
+                    if (not self.settings["test_vaccinated"]) and "vaccinations" in member.properties.keys() and \
+                            tick < member.properties["vaccinations"][-1][0] + self.settings[
+                        "vaccination_immunity_time"]:
+                        return False
+
                     result = member.test(tick)
                     results[result] += 1
                     if result:
@@ -248,22 +259,24 @@ class Simulation:
             self.stats["#new_susceptible"] += [len(new_members["newly_susceptible"])]
             self.stats["#new_vaccinated"] += [n_vacs - len(new_members["not_vaccinated"])]
             self.stats["#new_dead"] += [len(new_members["new_dead"])]
+            self.stats["#ill_vaccinated"] += [len(new_members["newly_infected_vac"])]
             self.stats["seven_day_incidence"] += [calc_7di()]
             self.stats["in_lockdown"] += [1 if self.arrange_lockdown else 0]
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
-            print(color + "\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d"
-                  % (tick,
-                     self.groups["Infected"].size,
-                     self.groups["Dead"].size,
-                     self.groups["Quarantined"].size,
-                     self.stats["#new_infected"][-1],
-                     self.stats["#new_recovered"][-1],
-                     self.stats["#new_vaccinated"][-1],
-                     self.stats["test_results_+"][-1],
-                     self.stats["test_results_-"][-1],
-                     self.stats["seven_day_incidence"][-1]), end="")
+            print(
+                color + "\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d"
+                % (tick,
+                   self.groups["Infected"].size,
+                   self.groups["Dead"].size,
+                   self.groups["Quarantined"].size,
+                   self.stats["#new_infected"][-1],
+                   self.stats["#new_recovered"][-1],
+                   self.stats["#new_vaccinated"][-1],
+                   self.stats["test_results_+"][-1],
+                   self.stats["test_results_-"][-1],
+                   self.stats["seven_day_incidence"][-1]), end="")
 
         print("\nInitializing simulation...")
 
@@ -271,6 +284,7 @@ class Simulation:
         tick = 0
         infection_heuristic = self.settings["infection_probability_heuristic"]
         mortality_heuristic = self.settings["mortality_probability_heuristic"]
+        vaccine_heuristic = self.settings["vaccine_failure_probability_heuristic"]
         c_inner = self.settings["inner_reproduction_number"]
         c_outer = self.settings["outer_reproduction_number"]
         n_ini_inf = self.settings["number_of_initially_infected"]
@@ -302,6 +316,7 @@ class Simulation:
             new_members = {
                 "newly_susceptible": [],
                 "newly_infected": [],
+                "newly_infected_vac": [],
                 "newly_recovered": [],
                 "newly_susceptible_rec": [],
                 "newly_susceptible_vac": [],
