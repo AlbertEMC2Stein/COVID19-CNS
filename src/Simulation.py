@@ -106,7 +106,8 @@ class Simulation:
                             n_inner = round(1.5 * n_inner)
 
                         gen_params = lambda: {
-                            "heuristic": infection_heuristic,
+                            "infection_probability_heuristic": infection_heuristic,
+                            "vaccine_failure_probability_heuristic": vaccine_heuristic,
                             "incubation_period": np.random.poisson(c_incubation),
                             "infection_period": np.random.poisson(c_infection),
                             "immunity_period": np.random.poisson(c_immunity),
