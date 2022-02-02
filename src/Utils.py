@@ -239,7 +239,7 @@ class Standalones:
 
                     except ValueError:
                         try:
-                            if value == str(bool(value)):
+                            if value in ["True", "False"]:
                                 settings[setting] = bool(value)
                             else:
                                 raise ValueError
