@@ -379,15 +379,7 @@ class Simulation:
             np.savetxt(path + "progression.csv", rows, fmt='%d', delimiter=",", header=header, comments='')
 
         def save_options(path: str):
-            settings_mod = self.settings
-            infection_heuristic = settings_mod["infection_probability_heuristic"]
-            mortality_heuristic = settings_mod["mortality_probability_heuristic"]
-            settings_mod["infection_probability_heuristic"] = Standalones.serialize_function(infection_heuristic)
-            settings_mod["mortality_probability_heuristic"] = Standalones.serialize_function(mortality_heuristic)
-
-            with open(path + "settings.json", 'w') as f:
-                f.write(json.dumps(settings_mod, indent=4))
-                f.close()
+            shutil.copyfile("Settings" + sep + self.settings["file"], path + "settings.cfg")
 
         print("\nSaving simulation data...")
 
