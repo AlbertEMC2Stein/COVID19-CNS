@@ -491,7 +491,7 @@ class Scenarios:
         for (j, i), label in np.ndenumerate(max_infection_values):
             plt.text(i, j, int(label), ha='center', va='center')
 
-        plt.savefig("../out/general/c_inner_vs_c_outer_%dx%d.png" % n)
+        plt.savefig("../out/general/c_inner_vs_c_outer_%dx%d.png" % (n, n))
         plt.show()
 
         print(max_infection_values)
