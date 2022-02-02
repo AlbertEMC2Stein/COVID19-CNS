@@ -4,6 +4,7 @@ TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 
 from Simulation import *
 from Utils import Standalones
+import numpy as np
 
 if __name__ == "__main__":
     def infection_probability_heuristic(mem_props):
@@ -48,10 +49,17 @@ if __name__ == "__main__":
         return lambda member, tick: 1 - a * (1 - np.exp(b * (t(member, tick) - 1))) / (1 - np.exp(-b))
 
     def heuristic(name):
-        if name == "infection_heuristic":
-            return infection_heuristic
-        elif name == "mortality_heuristic":
-            return mortality_heuristic
+        if name == "infection_probability_heuristic":
+            return infection_probability_heuristic
+
+        elif name == "mortality_probability_heuristic":
+            return mortality_probability_heuristic
+
+        elif name.split('-')[0] == "vaccine_failure_probability_heuristic":
+            a = float(name.split('-')[1])
+            b = float(name.split('-')[2])
+            return vaccine_failure_probability_heuristic(a, b)
+
         else:
             raise ValueError("Heuristic not available")
 
