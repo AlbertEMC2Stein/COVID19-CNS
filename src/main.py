@@ -37,10 +37,10 @@ if __name__ == "__main__":
             return 0.170387357522 / 14
 
     def heuristic(name):
-        if name == "basic_infection_heuristic":
-            return basic_infection_heuristic
-        elif name == "basic_mortality_heuristic":
-            return basic_mortality_heuristic
+        if name == "infection_heuristic":
+            return infection_heuristic
+        elif name == "mortality_heuristic":
+            return mortality_heuristic
         else:
             raise ValueError("Heuristic not available")
 
