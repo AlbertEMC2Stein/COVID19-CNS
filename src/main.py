@@ -3,8 +3,7 @@ TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 """
 
 from Simulation import *
-import numpy as np
-import threading
+from Utils import Standalones
 
 if __name__ == "__main__":
     def infection_heuristic(mem_props):
@@ -37,55 +36,20 @@ if __name__ == "__main__":
         else:
             return 0.170387357522 / 14
 
-    simulation_settings = {
-        "population_file": "DE_03_KLLand.csv",
-        "infection_probability_heuristic": infection_heuristic,
-        "mortality_probability_heuristic": mortality_heuristic,
-        "number_of_initially_infected": 10,
-        "number_of_initially_recovered": 0,
-        "number_of_initially_vaccinated": 0,
-        "inner_reproduction_number": 2,
-        "outer_reproduction_number": 3,
-        "override_newest": True,
-        "incubation_time": 2,
-        "infection_time": 14,
-        "recovered_immunity_time": 90,
-        "vaccine_available_as_of": 365,
-        "vaccination_takes_effect_time": 14,
-        "vaccinations_per_day": 360,
-        "vaccination_immunity_time": 90,
-        "vaccination_reliability": 0.9,  # FIXME make vaccinated infectable
-        "waiting_time_vaccination_until_new_vaccination": 90,
-        "waiting_time_recovered_until_vaccination": 90,
-        "tests_per_day": 1000,
-        "test_vaccinated": True,  # FIXME make vaccinated infectable
-        "quarantine_duration": 10,
-        "backtracking_depth": 2,
-        "backtracking_probability": 0.3,
-        "maximal_simulation_time_interval": 2*365,
-        "start_lockdown_at": 150,
-        "end_lockdown_at": 20
-    }
+    def heuristic(name):
+        if name == "basic_infection_heuristic":
+            return basic_infection_heuristic
+        elif name == "basic_mortality_heuristic":
+            return basic_mortality_heuristic
+        else:
+            raise ValueError("Heuristic not available")
 
-    # values = np.zeros(5)
+    settings_name = "Template.cfg"
+    simulation_settings = Standalones.make_settings("Settings/" + settings_name)
+    simulation_settings["infection_probability_heuristic"] = heuristic(simulation_settings["infection_probability_heuristic"])
+    simulation_settings["mortality_probability_heuristic"] = heuristic(simulation_settings["mortality_probability_heuristic"])
 
-    # def multi_sim(i):
-    #     sim = Simulation(simulation_settings)
-    #     sim.start_iteration()
-    #     values[i] = max(sim.groups["Infected"].history)
-
-    # T0 = threading.Thread(target=multi_sim, args=(0,)).start()
-    # T1 = threading.Thread(target=multi_sim, args=(1,)).start()
-    # T2 = threading.Thread(target=multi_sim, args=(2,)).start()
-    # T3 = threading.Thread(target=multi_sim, args=(3,)).start()
-    # T4 = threading.Thread(target=multi_sim, args=(4,)).start()
-
-    # print(values)
+    Scenarios.single_simulation(simulation_settings)
     # Scenarios.mitigation_interval(simulation_settings, (1.5, 3), 16, 1)
 
-    sim = Scenarios.single_simulation(simulation_settings)
-
-    sim_path = "../out/DE_03_KLLand/0005"
-    PostProcessing.progression_plots(sim_path)
-    PostProcessing.infection_graph(sim_path)
-    PostProcessing.compare_inner_and_outer_infection_numbers(sim_path)
+    # PostProcessing.infection_graph("../out/DE_03_KLLand/0002")

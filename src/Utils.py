@@ -10,6 +10,7 @@ from numpy import clip
 from numpy.random import uniform, randint
 import os
 from os.path import sep
+import configparser
 
 
 class EmpiricDistribution:
@@ -215,5 +216,46 @@ class Standalones:
 
     @staticmethod
     def check_existence(path: str):
+        """
+        TODO Docstring Standalones check_existence
+        """
+
         if not os.path.exists(path):
             os.mkdir(path)
+
+    @staticmethod
+    def make_settings(file_path: str):
+        """
+        TODO Docstring Standalones make_settings
+        """
+
+        config = configparser.RawConfigParser()
+        config.read(file_path)
+
+        settings = {}
+        for section in config.sections():
+            for setting, value in config.items(section):
+                try:
+                    if value == str(float(value)):
+                        settings[setting] = float(value)
+                    else:
+                        raise ValueError
+
+                except ValueError:
+                    try:
+                        if value == str(int(value)):
+                            settings[setting] = int(value)
+                        else:
+                            raise ValueError
+
+                    except ValueError:
+                        try:
+                            if value == str(bool(value)):
+                                settings[setting] = bool(value)
+                            else:
+                                raise ValueError
+
+                        except ValueError:
+                            settings[setting] = value
+
+        return settings
