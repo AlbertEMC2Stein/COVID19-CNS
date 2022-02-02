@@ -580,7 +580,7 @@ class PostProcessing:
         plt.ylabel('Day')
         plt.savefig(folder + "Plots" + sep + "Infection_graph.pdf")
         plt.show()
-        
+
     @staticmethod
     def progression_plots(folder: str):            
         def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
