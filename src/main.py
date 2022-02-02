@@ -24,17 +24,22 @@ if __name__ == "__main__":
     def mortality_heuristic(mem_props):
         age = int(mem_props["age"])
         if 0 <= age <= 4:
-            return 0.000059062155147 / 14
+            result = 0.000059062155147 / 14
         elif 5 <= age <= 14:
-            return 0.0000124773674418 / 14
+            result = 0.0000124773674418 / 14
         elif 15 <= age <= 34:
-            return 0.000111900272854 / 14
+            result = 0.000111900272854 / 14
         elif 35 <= age <= 59:
-            return 0.00176127729351 / 14
+            result = 0.00176127729351 / 14
         elif 60 <= age <= 79:
-            return 0.0338030065822 / 14
+            result = 0.0338030065822 / 14
         else:
-            return 0.170387357522 / 14
+            result = 0.170387357522 / 14
+
+        if "vaccinations" in mem_props.keys():
+            return result / 2
+        else:
+            return result
 
     def heuristic(name):
         if name == "infection_heuristic":
