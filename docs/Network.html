@@ -63,46 +63,238 @@ class Member:
             return _properties
 
         self.properties = check(properties)
-        self.infected = 0
+        self.infected = False
+        self.recovered = False
+        self.vaccinated = False
+        self.dead = False
+        self.immune = False
+        self.quarantined = False
+        self.recent_contacts = []
+        self._susceptible_in = -1
+        self._infectious_in = -1
         self._recovers_in = -1
+        self._immune_in = -1
+        self._released_in = -1
+        self._last_tested = -1
 
     def __str__(self):
-        return str(self.properties)
+        return &#34;\n&#34;.join([&#34;%s = %s&#34; % (attr, val) for attr, val in self.__dict__.items()])
 
-    def infect(self, period: int, infectant: &#39;Member&#39;, timestamp: int):
+    def infect(self, infectant: &#39;Member&#39;, timestamp: int, disease_parameters: dict):
         &#34;&#34;&#34;
         TODO Docstring Member infect
         &#34;&#34;&#34;
 
-        if &#34;immune&#34; in self.properties.keys() and self.properties[&#34;immune&#34;] or self.infected:
+        n_incubation = disease_parameters[&#34;incubation_period&#34;]
+        n_infection = disease_parameters[&#34;infection_period&#34;]
+        shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
+
+        if (self.immune and not self.vaccinated) or self.infected or \
+                self.dead or (self.quarantined and not shared_household):
             return False
 
-        shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
-        infection_data = [(infectant.properties[&#34;id&#34;], shared_household, timestamp)]
+        if self.vaccinated and self._immune_in &lt;= 0:
+            p_failure = disease_parameters[&#34;vaccine_failure_probability_heuristic&#34;](self, timestamp)
+            if np.random.uniform() &gt; p_failure:
+                return False
+
+        infection_data = [(infectant.properties[&#34;id&#34;],
+                           shared_household,
+                           timestamp,
+                           timestamp + n_incubation,
+                           timestamp + n_incubation + n_infection)]
 
         if &#34;infections&#34; not in self.properties.keys():
             self.properties[&#34;infections&#34;] = infection_data
+
         else:
             self.properties[&#34;infections&#34;] += infection_data
 
         self.infected = True
-        self._recovers_in = period
+        self._infectious_in = n_incubation
+        self._recovers_in = n_infection
+        self._susceptible_in = disease_parameters[&#34;immunity_period&#34;]
+
         return True
 
-    def make_tick(self):
+    def vaccinate(self, timestamp: int, vaccine_parameters: dict):
+        &#34;&#34;&#34;
+        TODO Docstring Member vaccinate
+        &#34;&#34;&#34;
+
+        vaccine_unavailable = self.infected or self.dead or self.quarantined or \
+                              &#34;vaccinations&#34; in self.properties.keys() and \
+                              timestamp &lt; self.properties[&#34;vaccinations&#34;][-1][1] + vaccine_parameters[&#34;t_wait_vac&#34;] or \
+                              &#34;infections&#34; in self.properties.keys() and \
+                              timestamp &lt; self.properties[&#34;infections&#34;][-1][4] + vaccine_parameters[&#34;t_wait_rec&#34;]
+
+        if not vaccine_unavailable:
+            vaccination_data = [(timestamp,
+                                 timestamp + vaccine_parameters[&#34;t_vac_effect&#34;],
+                                 timestamp + vaccine_parameters[&#34;t_vac_effect&#34;] + vaccine_parameters[&#34;t_immunity&#34;])]
+
+            if &#34;vaccinations&#34; in self.properties.keys():
+                self.properties[&#34;vaccinations&#34;] += vaccination_data
+
+            else:
+                self.properties[&#34;vaccinations&#34;] = vaccination_data
+
+            if self.immune:
+                self._immune_in = 0
+                self._susceptible_in = max(vaccine_parameters[&#34;t_immunity&#34;], self._susceptible_in)
+
+            else:
+                self._immune_in = vaccine_parameters[&#34;t_vac_effect&#34;]
+                self._susceptible_in = vaccine_parameters[&#34;t_immunity&#34;]
+
+            return True
+
+        return False
+
+    def test(self, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member test
+        &#34;&#34;&#34;
+
+        result = self.infected * (np.random.uniform() &lt; 0.99)
+
+        if &#34;tests&#34; not in self.properties.keys():
+            self.properties[&#34;tests&#34;] = [0, 0]
+
+        self.properties[&#34;tests&#34;][result] += 1
+        self._last_tested = timestamp
+
+        return result
+
+    def quarantine(self, days: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member quarantine
+        &#34;&#34;&#34;
+
+        self.quarantined = True
+        self._released_in = days
+
+    def add_to_contacts(self, other):
+        &#34;&#34;&#34;
+        TODO Docstring Member add_to_contacts
+        &#34;&#34;&#34;
+
+        if len(self.recent_contacts) &lt; 5:
+            self.recent_contacts += [other]
+
+        else:
+            self.recent_contacts = self.recent_contacts[1:] + [other]
+
+    def make_immune(self, immunity_duration: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member make_immune
+        &#34;&#34;&#34;
+
+        if self.infected:
+            raise RuntimeError
+            self.infected = False
+            self._infectious_in = -1
+            self._recovers_in = -1
+            self._susceptible_in = immunity_duration
+            self.immune = True
+            return True
+
+        else:
+            self._infectious_in = -1
+            self._recovers_in = -1
+            self._susceptible_in = immunity_duration
+            self.immune = True
+            return False
+
+    def make_dead(self, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member make_dead
+        &#34;&#34;&#34;
+
+        self.infected = False
+        self.recovered = False
+        self.vaccinated = False
+        self._susceptible_in = -1
+        self._recovers_in = -1
+        self._infectious_in = -1
+        self._immune_in = -1
+
+        self.dead = True
+        self.properties[&#34;Death&#34;] = timestamp
+
+    def make_tick(self, option: str, timestamp: int = None):
         &#34;&#34;&#34;
         TODO Docstring Member make_tick
         &#34;&#34;&#34;
 
-        if self.infected:
+        if option == &#34;infectious&#34;:
+            if self._infectious_in &gt; 0:
+                self._infectious_in -= 1
+
+            return self._infectious_in &lt;= 0
+
+        elif option == &#34;immunity&#34;:
+            if self._immune_in &lt;= 0:
+                self._susceptible_in -= 1
+                if self._susceptible_in == 0:
+                    self._susceptible_in = -1
+                    self.immune = False
+                    return True
+
+            return False
+
+        elif option == &#34;vaccine&#34;:
+            self._immune_in -= 1
+            if self._immune_in == 0:
+                self.immune = True
+
+        elif option == &#34;recover&#34;:
             self._recovers_in -= 1
             if self._recovers_in == 0:
                 self._recovers_in = -1
                 self.infected = False
-                self.properties[&#34;immune&#34;] = True
+                self.immune = True
                 return True
 
-        return False
+            return False
+
+        elif option == &#34;quarantine&#34;:
+            self._released_in -= 1
+
+            if &#34;days_in_quarantine&#34; not in self.properties.keys():
+                self.properties[&#34;days_in_quarantine&#34;] = 0
+
+            self.properties[&#34;days_in_quarantine&#34;] += 1
+
+            if self._released_in == 0:
+                if self.test(timestamp):
+                    self._released_in += 5
+                else:
+                    self._released_in = -1
+                    self.quarantined = False
+                    return True
+
+            return False
+
+        else:
+            raise ValueError(&#34;option not supported&#34;)
+
+    def copy(self):
+        &#34;&#34;&#34;
+        TODO Docstring Member copy
+        &#34;&#34;&#34;
+
+        m = Member(self.properties.copy())
+        m.infected = self.infected
+        m.recovered = self.recovered
+        m.vaccinated = self.vaccinated
+        m.dead = self.dead
+        m._susceptible_in = self._susceptible_in
+        m._recovers_in = self._recovers_in
+        m._infectious_in = self._infectious_in
+        m._immune_in = self._immune_in
+
+        return m
 
 
 ################################################################################################
@@ -147,23 +339,36 @@ class Group:
         self.members = self.members[self.members != member]
         self.counter.decrement(old_size - self.members.size)
 
-    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+    def spread_disease(self, infectant: Member, n: int, timestamp: int, disease_parameters: dict):
         &#34;&#34;&#34;
         TODO Docstring Group spread_disease
         &#34;&#34;&#34;
 
         result = []
         for other in np.random.choice(self.members, n):
-            if np.random.uniform() &lt; heuristic(other.properties):
-                if other.infect(14, infectant, timestamp):
+            if infectant.properties[&#34;id&#34;] == other.properties[&#34;id&#34;]:
+                continue
+
+            infectant.add_to_contacts(other)
+
+            if np.random.uniform() &lt; disease_parameters[&#34;infection_probability_heuristic&#34;](other.properties):
+                if other.infect(infectant, timestamp, disease_parameters):
                     result += [other]
 
         return result
 
-    @staticmethod
-    def move(members: np.ndarray, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+    def reset(self):
         &#34;&#34;&#34;
-        TODO docstring Group move
+        TODO Docstring Group reset
+        &#34;&#34;&#34;
+
+        self.members = np.array([])
+        self.counter = Counter(0)
+
+    @staticmethod
+    def move(members: iter, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+        &#34;&#34;&#34;
+        TODO Docstring Group move
         &#34;&#34;&#34;
 
         for member in members:
@@ -189,7 +394,7 @@ class Household(Group):
         &#34;&#34;&#34;
         TODO Docstring Household __init__
         &#34;&#34;&#34;
-        
+
         super().__init__(str(identifier))
 
     @property
@@ -250,6 +455,41 @@ class Population(Group):
 
         self.counter.increment()
 
+    def save_as_json(self, path: str) -&gt; None:
+        &#34;&#34;&#34;
+        TODO Docstring Population save_as_json
+        &#34;&#34;&#34;
+
+        if len(self.members) == 0:
+            raise ValueError(&#34;Population can&#39;t be empty.&#34;)
+
+        with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
+            wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;size\&#34;: &#34; + str(self.size) + &#34;,\n\t\&#34;members\&#34;: [\n&#34;
+            inner = &#34;&#34;
+            for member in self:
+                json_str = json.dumps(member.properties, indent=4)
+                inner += json_str + &#39;, \n&#39;
+
+            inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
+
+            f.write(wrapper + inner + &#34;\t]\n}&#34;)
+            f.close()
+
+    def copy(self):
+        &#34;&#34;&#34;
+        TODO Docstring Population copy
+        &#34;&#34;&#34;
+
+        p = Population(self.name)
+        p.members = list(p.members)
+        for member in self.members:
+            p.add_member(member.copy())
+
+        p.members = np.array(p.members)
+        p.counter = self.counter.copy()
+
+        return p
+
     @staticmethod
     def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
         &#34;&#34;&#34;
@@ -283,7 +523,7 @@ class Population(Group):
                 progress.update(1)
                 p.add_member(Member(m_dict))
 
-        print(&#34;Finished loading.&#34;)
+        print(&#34;\nFinished loading.&#34;)
 
         p.members = np.array(p.members)
         p.counter.squash_history()
@@ -314,7 +554,7 @@ class Population(Group):
         with open(path + file_name, &#34;r&#34;) as f:
             print(&#34;Load json...&#34;)
             data = json.load(f)
-            print(&#34;Finished loading.\nAdding members to population...&#34;)
+            print(&#34;Finished loading.\n\nAdding members to population...&#34;)
 
             progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
             progress.update(0)
@@ -322,7 +562,7 @@ class Population(Group):
                 progress.update(1)
                 p.add_member(Member(member))
 
-            print(&#34;Finished adding members.&#34;)
+            print(&#34;\nFinished adding members.&#34;)
 
         p.members = np.array(p.members)
         p.counter.squash_history()
@@ -361,26 +601,6 @@ class Population(Group):
             return Population.load_from_json(file_name, path)
         else:
             raise ValueError(&#34;file_name must end in .csv or .json.&#34;)
-
-    def save_as_json(self, path: str) -&gt; None:
-        &#34;&#34;&#34;
-        TODO Docstring Population save_as_json
-        &#34;&#34;&#34;
-
-        if len(self.members) == 0:
-            raise ValueError(&#34;Population can&#39;t be empty.&#34;)
-
-        with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
-            wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
-            inner = &#34;&#34;
-            for member in self:
-                json_str = json.dumps(member.properties, indent=4)
-                inner += json_str + &#39;, \n&#39;
-
-            inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
-
-            f.write(wrapper + inner + &#34;\t]\n}&#34;)
-            f.close()
 
 
 ################################################################################################
@@ -444,23 +664,36 @@ class Population(Group):
         self.members = self.members[self.members != member]
         self.counter.decrement(old_size - self.members.size)
 
-    def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+    def spread_disease(self, infectant: Member, n: int, timestamp: int, disease_parameters: dict):
         &#34;&#34;&#34;
         TODO Docstring Group spread_disease
         &#34;&#34;&#34;
 
         result = []
         for other in np.random.choice(self.members, n):
-            if np.random.uniform() &lt; heuristic(other.properties):
-                if other.infect(14, infectant, timestamp):
+            if infectant.properties[&#34;id&#34;] == other.properties[&#34;id&#34;]:
+                continue
+
+            infectant.add_to_contacts(other)
+
+            if np.random.uniform() &lt; disease_parameters[&#34;infection_probability_heuristic&#34;](other.properties):
+                if other.infect(infectant, timestamp, disease_parameters):
                     result += [other]
 
         return result
 
-    @staticmethod
-    def move(members: np.ndarray, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+    def reset(self):
         &#34;&#34;&#34;
-        TODO docstring Group move
+        TODO Docstring Group reset
+        &#34;&#34;&#34;
+
+        self.members = np.array([])
+        self.counter = Counter(0)
+
+    @staticmethod
+    def move(members: iter, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+        &#34;&#34;&#34;
+        TODO Docstring Group move
         &#34;&#34;&#34;
 
         for member in members:
@@ -483,18 +716,18 @@ class Population(Group):
 <h3>Static methods</h3>
 <dl>
 <dt id="src.Network.Group.move"><code class="name flex">
-<span>def <span class="ident">move</span></span>(<span>members: numpy.ndarray, origin: <a title="src.Network.Group" href="#src.Network.Group">Group</a>, destination: <a title="src.Network.Group" href="#src.Network.Group">Group</a>)</span>
+<span>def <span class="ident">move</span></span>(<span>members: <built-in function iter>, origin: <a title="src.Network.Group" href="#src.Network.Group">Group</a>, destination: <a title="src.Network.Group" href="#src.Network.Group">Group</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO docstring Group move</p></div>
+<div class="desc"><p>TODO Docstring Group move</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def move(members: np.ndarray, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
+def move(members: iter, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
     &#34;&#34;&#34;
-    TODO docstring Group move
+    TODO Docstring Group move
     &#34;&#34;&#34;
 
     for member in members:
@@ -569,8 +802,26 @@ def size(self):
     self.counter.decrement(old_size - self.members.size)</code></pre>
 </details>
 </dd>
+<dt id="src.Network.Group.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Group reset</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset(self):
+    &#34;&#34;&#34;
+    TODO Docstring Group reset
+    &#34;&#34;&#34;
+
+    self.members = np.array([])
+    self.counter = Counter(0)</code></pre>
+</details>
+</dd>
 <dt id="src.Network.Group.spread_disease"><code class="name flex">
-<span>def <span class="ident">spread_disease</span></span>(<span>self, infectant: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, n: int, heuristic: <built-in function callable>, timestamp: int)</span>
+<span>def <span class="ident">spread_disease</span></span>(<span>self, infectant: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, n: int, timestamp: int, disease_parameters: dict)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>TODO Docstring Group spread_disease</p></div>
@@ -578,15 +829,20 @@ def size(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def spread_disease(self, infectant: Member, n: int, heuristic: callable, timestamp: int):
+<pre><code class="python">def spread_disease(self, infectant: Member, n: int, timestamp: int, disease_parameters: dict):
     &#34;&#34;&#34;
     TODO Docstring Group spread_disease
     &#34;&#34;&#34;
 
     result = []
     for other in np.random.choice(self.members, n):
-        if np.random.uniform() &lt; heuristic(other.properties):
-            if other.infect(14, infectant, timestamp):
+        if infectant.properties[&#34;id&#34;] == other.properties[&#34;id&#34;]:
+            continue
+
+        infectant.add_to_contacts(other)
+
+        if np.random.uniform() &lt; disease_parameters[&#34;infection_probability_heuristic&#34;](other.properties):
+            if other.infect(infectant, timestamp, disease_parameters):
                 result += [other]
 
     return result</code></pre>
@@ -609,7 +865,7 @@ def size(self):
         &#34;&#34;&#34;
         TODO Docstring Household __init__
         &#34;&#34;&#34;
-        
+
         super().__init__(str(identifier))
 
     @property
@@ -642,6 +898,7 @@ def id(self):
 <li><code><a title="src.Network.Group.add_member" href="#src.Network.Group.add_member">add_member</a></code></li>
 <li><code><a title="src.Network.Group.move" href="#src.Network.Group.move">move</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+<li><code><a title="src.Network.Group.reset" href="#src.Network.Group.reset">reset</a></code></li>
 <li><code><a title="src.Network.Group.spread_disease" href="#src.Network.Group.spread_disease">spread_disease</a></code></li>
 </ul>
 </li>
@@ -673,51 +930,291 @@ def id(self):
             return _properties
 
         self.properties = check(properties)
-        self.infected = 0
+        self.infected = False
+        self.recovered = False
+        self.vaccinated = False
+        self.dead = False
+        self.immune = False
+        self.quarantined = False
+        self.recent_contacts = []
+        self._susceptible_in = -1
+        self._infectious_in = -1
         self._recovers_in = -1
+        self._immune_in = -1
+        self._released_in = -1
+        self._last_tested = -1
 
     def __str__(self):
-        return str(self.properties)
+        return &#34;\n&#34;.join([&#34;%s = %s&#34; % (attr, val) for attr, val in self.__dict__.items()])
 
-    def infect(self, period: int, infectant: &#39;Member&#39;, timestamp: int):
+    def infect(self, infectant: &#39;Member&#39;, timestamp: int, disease_parameters: dict):
         &#34;&#34;&#34;
         TODO Docstring Member infect
         &#34;&#34;&#34;
 
-        if &#34;immune&#34; in self.properties.keys() and self.properties[&#34;immune&#34;] or self.infected:
+        n_incubation = disease_parameters[&#34;incubation_period&#34;]
+        n_infection = disease_parameters[&#34;infection_period&#34;]
+        shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
+
+        if (self.immune and not self.vaccinated) or self.infected or \
+                self.dead or (self.quarantined and not shared_household):
             return False
 
-        shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
-        infection_data = [(infectant.properties[&#34;id&#34;], shared_household, timestamp)]
+        if self.vaccinated and self._immune_in &lt;= 0:
+            p_failure = disease_parameters[&#34;vaccine_failure_probability_heuristic&#34;](self, timestamp)
+            if np.random.uniform() &gt; p_failure:
+                return False
+
+        infection_data = [(infectant.properties[&#34;id&#34;],
+                           shared_household,
+                           timestamp,
+                           timestamp + n_incubation,
+                           timestamp + n_incubation + n_infection)]
 
         if &#34;infections&#34; not in self.properties.keys():
             self.properties[&#34;infections&#34;] = infection_data
+
         else:
             self.properties[&#34;infections&#34;] += infection_data
 
         self.infected = True
-        self._recovers_in = period
+        self._infectious_in = n_incubation
+        self._recovers_in = n_infection
+        self._susceptible_in = disease_parameters[&#34;immunity_period&#34;]
+
         return True
 
-    def make_tick(self):
+    def vaccinate(self, timestamp: int, vaccine_parameters: dict):
+        &#34;&#34;&#34;
+        TODO Docstring Member vaccinate
+        &#34;&#34;&#34;
+
+        vaccine_unavailable = self.infected or self.dead or self.quarantined or \
+                              &#34;vaccinations&#34; in self.properties.keys() and \
+                              timestamp &lt; self.properties[&#34;vaccinations&#34;][-1][1] + vaccine_parameters[&#34;t_wait_vac&#34;] or \
+                              &#34;infections&#34; in self.properties.keys() and \
+                              timestamp &lt; self.properties[&#34;infections&#34;][-1][4] + vaccine_parameters[&#34;t_wait_rec&#34;]
+
+        if not vaccine_unavailable:
+            vaccination_data = [(timestamp,
+                                 timestamp + vaccine_parameters[&#34;t_vac_effect&#34;],
+                                 timestamp + vaccine_parameters[&#34;t_vac_effect&#34;] + vaccine_parameters[&#34;t_immunity&#34;])]
+
+            if &#34;vaccinations&#34; in self.properties.keys():
+                self.properties[&#34;vaccinations&#34;] += vaccination_data
+
+            else:
+                self.properties[&#34;vaccinations&#34;] = vaccination_data
+
+            if self.immune:
+                self._immune_in = 0
+                self._susceptible_in = max(vaccine_parameters[&#34;t_immunity&#34;], self._susceptible_in)
+
+            else:
+                self._immune_in = vaccine_parameters[&#34;t_vac_effect&#34;]
+                self._susceptible_in = vaccine_parameters[&#34;t_immunity&#34;]
+
+            return True
+
+        return False
+
+    def test(self, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member test
+        &#34;&#34;&#34;
+
+        result = self.infected * (np.random.uniform() &lt; 0.99)
+
+        if &#34;tests&#34; not in self.properties.keys():
+            self.properties[&#34;tests&#34;] = [0, 0]
+
+        self.properties[&#34;tests&#34;][result] += 1
+        self._last_tested = timestamp
+
+        return result
+
+    def quarantine(self, days: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member quarantine
+        &#34;&#34;&#34;
+
+        self.quarantined = True
+        self._released_in = days
+
+    def add_to_contacts(self, other):
+        &#34;&#34;&#34;
+        TODO Docstring Member add_to_contacts
+        &#34;&#34;&#34;
+
+        if len(self.recent_contacts) &lt; 5:
+            self.recent_contacts += [other]
+
+        else:
+            self.recent_contacts = self.recent_contacts[1:] + [other]
+
+    def make_immune(self, immunity_duration: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member make_immune
+        &#34;&#34;&#34;
+
+        if self.infected:
+            raise RuntimeError
+            self.infected = False
+            self._infectious_in = -1
+            self._recovers_in = -1
+            self._susceptible_in = immunity_duration
+            self.immune = True
+            return True
+
+        else:
+            self._infectious_in = -1
+            self._recovers_in = -1
+            self._susceptible_in = immunity_duration
+            self.immune = True
+            return False
+
+    def make_dead(self, timestamp: int):
+        &#34;&#34;&#34;
+        TODO Docstring Member make_dead
+        &#34;&#34;&#34;
+
+        self.infected = False
+        self.recovered = False
+        self.vaccinated = False
+        self._susceptible_in = -1
+        self._recovers_in = -1
+        self._infectious_in = -1
+        self._immune_in = -1
+
+        self.dead = True
+        self.properties[&#34;Death&#34;] = timestamp
+
+    def make_tick(self, option: str, timestamp: int = None):
         &#34;&#34;&#34;
         TODO Docstring Member make_tick
         &#34;&#34;&#34;
 
-        if self.infected:
+        if option == &#34;infectious&#34;:
+            if self._infectious_in &gt; 0:
+                self._infectious_in -= 1
+
+            return self._infectious_in &lt;= 0
+
+        elif option == &#34;immunity&#34;:
+            if self._immune_in &lt;= 0:
+                self._susceptible_in -= 1
+                if self._susceptible_in == 0:
+                    self._susceptible_in = -1
+                    self.immune = False
+                    return True
+
+            return False
+
+        elif option == &#34;vaccine&#34;:
+            self._immune_in -= 1
+            if self._immune_in == 0:
+                self.immune = True
+
+        elif option == &#34;recover&#34;:
             self._recovers_in -= 1
             if self._recovers_in == 0:
                 self._recovers_in = -1
                 self.infected = False
-                self.properties[&#34;immune&#34;] = True
+                self.immune = True
                 return True
 
-        return False</code></pre>
+            return False
+
+        elif option == &#34;quarantine&#34;:
+            self._released_in -= 1
+
+            if &#34;days_in_quarantine&#34; not in self.properties.keys():
+                self.properties[&#34;days_in_quarantine&#34;] = 0
+
+            self.properties[&#34;days_in_quarantine&#34;] += 1
+
+            if self._released_in == 0:
+                if self.test(timestamp):
+                    self._released_in += 5
+                else:
+                    self._released_in = -1
+                    self.quarantined = False
+                    return True
+
+            return False
+
+        else:
+            raise ValueError(&#34;option not supported&#34;)
+
+    def copy(self):
+        &#34;&#34;&#34;
+        TODO Docstring Member copy
+        &#34;&#34;&#34;
+
+        m = Member(self.properties.copy())
+        m.infected = self.infected
+        m.recovered = self.recovered
+        m.vaccinated = self.vaccinated
+        m.dead = self.dead
+        m._susceptible_in = self._susceptible_in
+        m._recovers_in = self._recovers_in
+        m._infectious_in = self._infectious_in
+        m._immune_in = self._immune_in
+
+        return m</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="src.Network.Member.add_to_contacts"><code class="name flex">
+<span>def <span class="ident">add_to_contacts</span></span>(<span>self, other)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member add_to_contacts</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_to_contacts(self, other):
+    &#34;&#34;&#34;
+    TODO Docstring Member add_to_contacts
+    &#34;&#34;&#34;
+
+    if len(self.recent_contacts) &lt; 5:
+        self.recent_contacts += [other]
+
+    else:
+        self.recent_contacts = self.recent_contacts[1:] + [other]</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Member.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member copy</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self):
+    &#34;&#34;&#34;
+    TODO Docstring Member copy
+    &#34;&#34;&#34;
+
+    m = Member(self.properties.copy())
+    m.infected = self.infected
+    m.recovered = self.recovered
+    m.vaccinated = self.vaccinated
+    m.dead = self.dead
+    m._susceptible_in = self._susceptible_in
+    m._recovers_in = self._recovers_in
+    m._infectious_in = self._infectious_in
+    m._immune_in = self._immune_in
+
+    return m</code></pre>
+</details>
+</dd>
 <dt id="src.Network.Member.infect"><code class="name flex">
-<span>def <span class="ident">infect</span></span>(<span>self, period: int, infectant: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, timestamp: int)</span>
+<span>def <span class="ident">infect</span></span>(<span>self, infectant: <a title="src.Network.Member" href="#src.Network.Member">Member</a>, timestamp: int, disease_parameters: dict)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>TODO Docstring Member infect</p></div>
@@ -725,29 +1222,103 @@ def id(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def infect(self, period: int, infectant: &#39;Member&#39;, timestamp: int):
+<pre><code class="python">def infect(self, infectant: &#39;Member&#39;, timestamp: int, disease_parameters: dict):
     &#34;&#34;&#34;
     TODO Docstring Member infect
     &#34;&#34;&#34;
 
-    if &#34;immune&#34; in self.properties.keys() and self.properties[&#34;immune&#34;] or self.infected:
+    n_incubation = disease_parameters[&#34;incubation_period&#34;]
+    n_infection = disease_parameters[&#34;infection_period&#34;]
+    shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
+
+    if (self.immune and not self.vaccinated) or self.infected or \
+            self.dead or (self.quarantined and not shared_household):
         return False
 
-    shared_household = self.properties[&#34;household&#34;] == infectant.properties[&#34;household&#34;]
-    infection_data = [(infectant.properties[&#34;id&#34;], shared_household, timestamp)]
+    if self.vaccinated and self._immune_in &lt;= 0:
+        p_failure = disease_parameters[&#34;vaccine_failure_probability_heuristic&#34;](self, timestamp)
+        if np.random.uniform() &gt; p_failure:
+            return False
+
+    infection_data = [(infectant.properties[&#34;id&#34;],
+                       shared_household,
+                       timestamp,
+                       timestamp + n_incubation,
+                       timestamp + n_incubation + n_infection)]
 
     if &#34;infections&#34; not in self.properties.keys():
         self.properties[&#34;infections&#34;] = infection_data
+
     else:
         self.properties[&#34;infections&#34;] += infection_data
 
     self.infected = True
-    self._recovers_in = period
+    self._infectious_in = n_incubation
+    self._recovers_in = n_infection
+    self._susceptible_in = disease_parameters[&#34;immunity_period&#34;]
+
     return True</code></pre>
 </details>
 </dd>
+<dt id="src.Network.Member.make_dead"><code class="name flex">
+<span>def <span class="ident">make_dead</span></span>(<span>self, timestamp: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member make_dead</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_dead(self, timestamp: int):
+    &#34;&#34;&#34;
+    TODO Docstring Member make_dead
+    &#34;&#34;&#34;
+
+    self.infected = False
+    self.recovered = False
+    self.vaccinated = False
+    self._susceptible_in = -1
+    self._recovers_in = -1
+    self._infectious_in = -1
+    self._immune_in = -1
+
+    self.dead = True
+    self.properties[&#34;Death&#34;] = timestamp</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Member.make_immune"><code class="name flex">
+<span>def <span class="ident">make_immune</span></span>(<span>self, immunity_duration: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member make_immune</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_immune(self, immunity_duration: int):
+    &#34;&#34;&#34;
+    TODO Docstring Member make_immune
+    &#34;&#34;&#34;
+
+    if self.infected:
+        raise RuntimeError
+        self.infected = False
+        self._infectious_in = -1
+        self._recovers_in = -1
+        self._susceptible_in = immunity_duration
+        self.immune = True
+        return True
+
+    else:
+        self._infectious_in = -1
+        self._recovers_in = -1
+        self._susceptible_in = immunity_duration
+        self.immune = True
+        return False</code></pre>
+</details>
+</dd>
 <dt id="src.Network.Member.make_tick"><code class="name flex">
-<span>def <span class="ident">make_tick</span></span>(<span>self)</span>
+<span>def <span class="ident">make_tick</span></span>(<span>self, option: str, timestamp: int = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>TODO Docstring Member make_tick</p></div>
@@ -755,18 +1326,147 @@ def id(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def make_tick(self):
+<pre><code class="python">def make_tick(self, option: str, timestamp: int = None):
     &#34;&#34;&#34;
     TODO Docstring Member make_tick
     &#34;&#34;&#34;
 
-    if self.infected:
+    if option == &#34;infectious&#34;:
+        if self._infectious_in &gt; 0:
+            self._infectious_in -= 1
+
+        return self._infectious_in &lt;= 0
+
+    elif option == &#34;immunity&#34;:
+        if self._immune_in &lt;= 0:
+            self._susceptible_in -= 1
+            if self._susceptible_in == 0:
+                self._susceptible_in = -1
+                self.immune = False
+                return True
+
+        return False
+
+    elif option == &#34;vaccine&#34;:
+        self._immune_in -= 1
+        if self._immune_in == 0:
+            self.immune = True
+
+    elif option == &#34;recover&#34;:
         self._recovers_in -= 1
         if self._recovers_in == 0:
             self._recovers_in = -1
             self.infected = False
-            self.properties[&#34;immune&#34;] = True
+            self.immune = True
             return True
+
+        return False
+
+    elif option == &#34;quarantine&#34;:
+        self._released_in -= 1
+
+        if &#34;days_in_quarantine&#34; not in self.properties.keys():
+            self.properties[&#34;days_in_quarantine&#34;] = 0
+
+        self.properties[&#34;days_in_quarantine&#34;] += 1
+
+        if self._released_in == 0:
+            if self.test(timestamp):
+                self._released_in += 5
+            else:
+                self._released_in = -1
+                self.quarantined = False
+                return True
+
+        return False
+
+    else:
+        raise ValueError(&#34;option not supported&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Member.quarantine"><code class="name flex">
+<span>def <span class="ident">quarantine</span></span>(<span>self, days: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member quarantine</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def quarantine(self, days: int):
+    &#34;&#34;&#34;
+    TODO Docstring Member quarantine
+    &#34;&#34;&#34;
+
+    self.quarantined = True
+    self._released_in = days</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Member.test"><code class="name flex">
+<span>def <span class="ident">test</span></span>(<span>self, timestamp: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member test</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test(self, timestamp: int):
+    &#34;&#34;&#34;
+    TODO Docstring Member test
+    &#34;&#34;&#34;
+
+    result = self.infected * (np.random.uniform() &lt; 0.99)
+
+    if &#34;tests&#34; not in self.properties.keys():
+        self.properties[&#34;tests&#34;] = [0, 0]
+
+    self.properties[&#34;tests&#34;][result] += 1
+    self._last_tested = timestamp
+
+    return result</code></pre>
+</details>
+</dd>
+<dt id="src.Network.Member.vaccinate"><code class="name flex">
+<span>def <span class="ident">vaccinate</span></span>(<span>self, timestamp: int, vaccine_parameters: dict)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Member vaccinate</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vaccinate(self, timestamp: int, vaccine_parameters: dict):
+    &#34;&#34;&#34;
+    TODO Docstring Member vaccinate
+    &#34;&#34;&#34;
+
+    vaccine_unavailable = self.infected or self.dead or self.quarantined or \
+                          &#34;vaccinations&#34; in self.properties.keys() and \
+                          timestamp &lt; self.properties[&#34;vaccinations&#34;][-1][1] + vaccine_parameters[&#34;t_wait_vac&#34;] or \
+                          &#34;infections&#34; in self.properties.keys() and \
+                          timestamp &lt; self.properties[&#34;infections&#34;][-1][4] + vaccine_parameters[&#34;t_wait_rec&#34;]
+
+    if not vaccine_unavailable:
+        vaccination_data = [(timestamp,
+                             timestamp + vaccine_parameters[&#34;t_vac_effect&#34;],
+                             timestamp + vaccine_parameters[&#34;t_vac_effect&#34;] + vaccine_parameters[&#34;t_immunity&#34;])]
+
+        if &#34;vaccinations&#34; in self.properties.keys():
+            self.properties[&#34;vaccinations&#34;] += vaccination_data
+
+        else:
+            self.properties[&#34;vaccinations&#34;] = vaccination_data
+
+        if self.immune:
+            self._immune_in = 0
+            self._susceptible_in = max(vaccine_parameters[&#34;t_immunity&#34;], self._susceptible_in)
+
+        else:
+            self._immune_in = vaccine_parameters[&#34;t_vac_effect&#34;]
+            self._susceptible_in = vaccine_parameters[&#34;t_immunity&#34;]
+
+        return True
 
     return False</code></pre>
 </details>
@@ -831,6 +1531,41 @@ def id(self):
 
         self.counter.increment()
 
+    def save_as_json(self, path: str) -&gt; None:
+        &#34;&#34;&#34;
+        TODO Docstring Population save_as_json
+        &#34;&#34;&#34;
+
+        if len(self.members) == 0:
+            raise ValueError(&#34;Population can&#39;t be empty.&#34;)
+
+        with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
+            wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;size\&#34;: &#34; + str(self.size) + &#34;,\n\t\&#34;members\&#34;: [\n&#34;
+            inner = &#34;&#34;
+            for member in self:
+                json_str = json.dumps(member.properties, indent=4)
+                inner += json_str + &#39;, \n&#39;
+
+            inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
+
+            f.write(wrapper + inner + &#34;\t]\n}&#34;)
+            f.close()
+
+    def copy(self):
+        &#34;&#34;&#34;
+        TODO Docstring Population copy
+        &#34;&#34;&#34;
+
+        p = Population(self.name)
+        p.members = list(p.members)
+        for member in self.members:
+            p.add_member(member.copy())
+
+        p.members = np.array(p.members)
+        p.counter = self.counter.copy()
+
+        return p
+
     @staticmethod
     def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
         &#34;&#34;&#34;
@@ -864,7 +1599,7 @@ def id(self):
                 progress.update(1)
                 p.add_member(Member(m_dict))
 
-        print(&#34;Finished loading.&#34;)
+        print(&#34;\nFinished loading.&#34;)
 
         p.members = np.array(p.members)
         p.counter.squash_history()
@@ -895,7 +1630,7 @@ def id(self):
         with open(path + file_name, &#34;r&#34;) as f:
             print(&#34;Load json...&#34;)
             data = json.load(f)
-            print(&#34;Finished loading.\nAdding members to population...&#34;)
+            print(&#34;Finished loading.\n\nAdding members to population...&#34;)
 
             progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
             progress.update(0)
@@ -903,7 +1638,7 @@ def id(self):
                 progress.update(1)
                 p.add_member(Member(member))
 
-            print(&#34;Finished adding members.&#34;)
+            print(&#34;\nFinished adding members.&#34;)
 
         p.members = np.array(p.members)
         p.counter.squash_history()
@@ -941,27 +1676,7 @@ def id(self):
         elif file_name[-5:] == &#34;.json&#34;:
             return Population.load_from_json(file_name, path)
         else:
-            raise ValueError(&#34;file_name must end in .csv or .json.&#34;)
-
-    def save_as_json(self, path: str) -&gt; None:
-        &#34;&#34;&#34;
-        TODO Docstring Population save_as_json
-        &#34;&#34;&#34;
-
-        if len(self.members) == 0:
-            raise ValueError(&#34;Population can&#39;t be empty.&#34;)
-
-        with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
-            wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
-            inner = &#34;&#34;
-            for member in self:
-                json_str = json.dumps(member.properties, indent=4)
-                inner += json_str + &#39;, \n&#39;
-
-            inner = textwrap.indent(inner[:-3] + &#39;\n&#39;, &#39;\t\t&#39;)
-
-            f.write(wrapper + inner + &#34;\t]\n}&#34;)
-            f.close()</code></pre>
+            raise ValueError(&#34;file_name must end in .csv or .json.&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1025,7 +1740,7 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
             progress.update(1)
             p.add_member(Member(m_dict))
 
-    print(&#34;Finished loading.&#34;)
+    print(&#34;\nFinished loading.&#34;)
 
     p.members = np.array(p.members)
     p.counter.squash_history()
@@ -1145,7 +1860,7 @@ def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
     with open(path + file_name, &#34;r&#34;) as f:
         print(&#34;Load json...&#34;)
         data = json.load(f)
-        print(&#34;Finished loading.\nAdding members to population...&#34;)
+        print(&#34;Finished loading.\n\nAdding members to population...&#34;)
 
         progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
         progress.update(0)
@@ -1153,7 +1868,7 @@ def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
             progress.update(1)
             p.add_member(Member(member))
 
-        print(&#34;Finished adding members.&#34;)
+        print(&#34;\nFinished adding members.&#34;)
 
     p.members = np.array(p.members)
     p.counter.squash_history()
@@ -1229,6 +1944,31 @@ a KeyError will be raised.</dd>
     self.counter.increment()</code></pre>
 </details>
 </dd>
+<dt id="src.Network.Population.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Population copy</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self):
+    &#34;&#34;&#34;
+    TODO Docstring Population copy
+    &#34;&#34;&#34;
+
+    p = Population(self.name)
+    p.members = list(p.members)
+    for member in self.members:
+        p.add_member(member.copy())
+
+    p.members = np.array(p.members)
+    p.counter = self.counter.copy()
+
+    return p</code></pre>
+</details>
+</dd>
 <dt id="src.Network.Population.save_as_json"><code class="name flex">
 <span>def <span class="ident">save_as_json</span></span>(<span>self, path: str) ‑> None</span>
 </code></dt>
@@ -1247,7 +1987,7 @@ a KeyError will be raised.</dd>
         raise ValueError(&#34;Population can&#39;t be empty.&#34;)
 
     with open(path + &#34;population.json&#34;, &#39;w&#39;) as f:
-        wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;members\&#34;: [\n&#34;
+        wrapper = &#34;{\n\t\&#34;name\&#34;: \&#34;&#34; + self.name + &#34;\&#34;,\n\t\&#34;size\&#34;: &#34; + str(self.size) + &#34;,\n\t\&#34;members\&#34;: [\n&#34;
         inner = &#34;&#34;
         for member in self:
             json_str = json.dumps(member.properties, indent=4)
@@ -1266,6 +2006,7 @@ a KeyError will be raised.</dd>
 <ul class="hlist">
 <li><code><a title="src.Network.Group.move" href="#src.Network.Group.move">move</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+<li><code><a title="src.Network.Group.reset" href="#src.Network.Group.reset">reset</a></code></li>
 <li><code><a title="src.Network.Group.spread_disease" href="#src.Network.Group.spread_disease">spread_disease</a></code></li>
 </ul>
 </li>
@@ -1294,6 +2035,7 @@ a KeyError will be raised.</dd>
 <li><code><a title="src.Network.Group.history" href="#src.Network.Group.history">history</a></code></li>
 <li><code><a title="src.Network.Group.move" href="#src.Network.Group.move">move</a></code></li>
 <li><code><a title="src.Network.Group.remove_member" href="#src.Network.Group.remove_member">remove_member</a></code></li>
+<li><code><a title="src.Network.Group.reset" href="#src.Network.Group.reset">reset</a></code></li>
 <li><code><a title="src.Network.Group.size" href="#src.Network.Group.size">size</a></code></li>
 <li><code><a title="src.Network.Group.spread_disease" href="#src.Network.Group.spread_disease">spread_disease</a></code></li>
 </ul>
@@ -1306,15 +2048,23 @@ a KeyError will be raised.</dd>
 </li>
 <li>
 <h4><code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="src.Network.Member.add_to_contacts" href="#src.Network.Member.add_to_contacts">add_to_contacts</a></code></li>
+<li><code><a title="src.Network.Member.copy" href="#src.Network.Member.copy">copy</a></code></li>
 <li><code><a title="src.Network.Member.infect" href="#src.Network.Member.infect">infect</a></code></li>
+<li><code><a title="src.Network.Member.make_dead" href="#src.Network.Member.make_dead">make_dead</a></code></li>
+<li><code><a title="src.Network.Member.make_immune" href="#src.Network.Member.make_immune">make_immune</a></code></li>
 <li><code><a title="src.Network.Member.make_tick" href="#src.Network.Member.make_tick">make_tick</a></code></li>
+<li><code><a title="src.Network.Member.quarantine" href="#src.Network.Member.quarantine">quarantine</a></code></li>
+<li><code><a title="src.Network.Member.test" href="#src.Network.Member.test">test</a></code></li>
+<li><code><a title="src.Network.Member.vaccinate" href="#src.Network.Member.vaccinate">vaccinate</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="src.Network.Population.add_member" href="#src.Network.Population.add_member">add_member</a></code></li>
+<li><code><a title="src.Network.Population.copy" href="#src.Network.Population.copy">copy</a></code></li>
 <li><code><a title="src.Network.Population.load_from_csv" href="#src.Network.Population.load_from_csv">load_from_csv</a></code></li>
 <li><code><a title="src.Network.Population.load_from_file" href="#src.Network.Population.load_from_file">load_from_file</a></code></li>
 <li><code><a title="src.Network.Population.load_from_json" href="#src.Network.Population.load_from_json">load_from_json</a></code></li>

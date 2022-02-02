@@ -32,471 +32,87 @@
 TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 &#34;&#34;&#34;
 
-__all__ = [&#39;Simulation&#39;]
-
-import json
-import os
-import numpy as np
-import matplotlib.pylab as plt
-from os.path import sep
-from src.Network import Group, Population
+from src.Simulation import *
 from src.Utils import Standalones
-
-
-class Simulation:
-    def __init__(self, settings):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation __init__
-        &#34;&#34;&#34;
-
-        def check(_settings: dict):
-            must_haves = [&#34;population_file&#34;,
-                          &#34;infection_probability_heuristic&#34;,
-                          &#34;inner_reproduction_number&#34;,
-                          &#34;outer_reproduction_number&#34;]
-
-            for property in must_haves:
-                if property not in _settings.keys():
-                    raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
-
-            return _settings
-
-        self.settings = check(settings)
-        self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
-        self.groups = {&#34;Infected&#34;: Group(&#34;Infected&#34;),
-                       &#34;Recovered&#34;: Group(&#34;Recovered&#34;)}
-
-    def start_iteration(self):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation start_iteration
-        &#34;&#34;&#34;
-
-        tick = 0
-        heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
-        c_inner = self.settings[&#34;inner_reproduction_number&#34;]
-        c_outer = self.settings[&#34;outer_reproduction_number&#34;]
-
-        # start infection
-        seed = np.random.choice(self.population.members)
-        seed.infect(14, seed, 0)
-        self.groups[&#34;Infected&#34;].add_member(seed)
-        self.groups[&#34;Infected&#34;].counter.save_count()
-        self.groups[&#34;Infected&#34;].counter.squash_history()
-
-        while True:
-            tick += 1
-
-            # spread infection
-            #   - inside household
-            #   - outside household
-            newly_infected, newly_recovered = [], []
-            for member in self.groups[&#34;Infected&#34;]:
-                n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
-
-                household = self.population.households[member.properties[&#34;household&#34;]]
-                newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
-                newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
-
-                # (possibly) recover
-                if member.make_tick():
-                    newly_recovered += [member]
-
-            Group.move(newly_recovered, self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
-            for member in newly_infected:
-                self.groups[&#34;Infected&#34;].add_member(member)
-
-            for group in self.groups.values():
-                group.counter.save_count()
-
-            # repeat till no more infectious people
-            print(&#34;Day: %d, #Infected: %d&#34; % (tick, self.groups[&#34;Infected&#34;].size))
-            if self.groups[&#34;Infected&#34;].size == 0:
-                break
-
-    def end_iteration(self):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation end_iteration
-        &#34;&#34;&#34;
-
-        def set_out_path():
-            path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
-            if not os.path.exists(path):
-                os.mkdir(path)
-
-            newest_iteration = Standalones.get_last_folder(path)
-            override = self.settings[&#34;override_newest&#34;] \
-                if &#34;override_newest&#34; in self.settings.keys() \
-                else newest_iteration == &#34;9999&#34;
-
-            if not newest_iteration:
-                path += &#34;0000&#34; + sep
-                os.mkdir(path)
-            else:
-                if override:
-                    path += newest_iteration + sep
-                else:
-                    path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
-                    os.mkdir(path)
-
-            return path
-
-        def save_group_histories(path):
-            header = &#34;,&#34;.join([group.name for group in self.groups.values()])
-            rows = np.array([group.history for group in self.groups.values()]).T
-            np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
-
-        out_path = set_out_path()
-        self.save_options(out_path)
-        self.population.save_as_json(out_path)
-        save_group_histories(out_path)
-
-    def change_options(self, settings):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation change_options
-        &#34;&#34;&#34;
-
-        if self.settings[&#34;population_file&#34;] != settings[&#34;population_file&#34;]:
-            self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
-
-        self.settings = settings
-
-    def save_options(self, path: str):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation save_options
-        &#34;&#34;&#34;
-
-        settings_mod = self.settings
-        heuristic = settings_mod[&#34;infection_probability_heuristic&#34;]
-        settings_mod[&#34;infection_probability_heuristic&#34;] = Standalones.serialize_function(heuristic)
-
-        with open(path + &#34;settings.json&#34;, &#39;w&#39;) as f:
-            f.write(json.dumps(settings_mod, indent=4))
-            f.close()
-
+import numpy as np
 
 if __name__ == &#34;__main__&#34;:
-    simulation_settings = {
-        &#34;population_file&#34;: &#34;DE_03_KLLand.csv&#34;,
-        &#34;infection_probability_heuristic&#34;: lambda mem_props: 1 - 1 / (0.001 * float(mem_props[&#34;age&#34;]) + 1),
-        &#34;inner_reproduction_number&#34;: 1,
-        &#34;outer_reproduction_number&#34;: 3,
-        &#34;override_newest&#34;: True
-    }
-
-    sim = Simulation(simulation_settings)
-    sim.start_iteration()
-    sim.end_iteration()
-
-    sim_path = &#34;..&#34; + sep + &#34;out&#34; + sep + &#34;DE_03_KLLand&#34; + sep
-    latest = Standalones.get_last_folder(sim_path)
-    data = np.genfromtxt(sim_path + latest + sep + &#34;progression.csv&#34;, delimiter=&#39;,&#39;, skip_header=1)
-    plt.plot(106463 - data[:, 0] - data[:, 1], color=&#39;green&#39;)
-    plt.plot(data[:, 0], color=&#39;red&#39;)
-    plt.plot(data[:, 1], color=&#39;blue&#39;)
-    plt.show()</code></pre>
-</details>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="src.main.Simulation"><code class="flex name class">
-<span>class <span class="ident">Simulation</span></span>
-<span>(</span><span>settings)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>TODO Docstring Simulation <strong>init</strong></p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Simulation:
-    def __init__(self, settings):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation __init__
-        &#34;&#34;&#34;
-
-        def check(_settings: dict):
-            must_haves = [&#34;population_file&#34;,
-                          &#34;infection_probability_heuristic&#34;,
-                          &#34;inner_reproduction_number&#34;,
-                          &#34;outer_reproduction_number&#34;]
-
-            for property in must_haves:
-                if property not in _settings.keys():
-                    raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
-
-            return _settings
-
-        self.settings = check(settings)
-        self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
-        self.groups = {&#34;Infected&#34;: Group(&#34;Infected&#34;),
-                       &#34;Recovered&#34;: Group(&#34;Recovered&#34;)}
-
-    def start_iteration(self):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation start_iteration
-        &#34;&#34;&#34;
-
-        tick = 0
-        heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
-        c_inner = self.settings[&#34;inner_reproduction_number&#34;]
-        c_outer = self.settings[&#34;outer_reproduction_number&#34;]
-
-        # start infection
-        seed = np.random.choice(self.population.members)
-        seed.infect(14, seed, 0)
-        self.groups[&#34;Infected&#34;].add_member(seed)
-        self.groups[&#34;Infected&#34;].counter.save_count()
-        self.groups[&#34;Infected&#34;].counter.squash_history()
-
-        while True:
-            tick += 1
-
-            # spread infection
-            #   - inside household
-            #   - outside household
-            newly_infected, newly_recovered = [], []
-            for member in self.groups[&#34;Infected&#34;]:
-                n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
-
-                household = self.population.households[member.properties[&#34;household&#34;]]
-                newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
-                newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
-
-                # (possibly) recover
-                if member.make_tick():
-                    newly_recovered += [member]
-
-            Group.move(newly_recovered, self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
-            for member in newly_infected:
-                self.groups[&#34;Infected&#34;].add_member(member)
-
-            for group in self.groups.values():
-                group.counter.save_count()
-
-            # repeat till no more infectious people
-            print(&#34;Day: %d, #Infected: %d&#34; % (tick, self.groups[&#34;Infected&#34;].size))
-            if self.groups[&#34;Infected&#34;].size == 0:
-                break
-
-    def end_iteration(self):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation end_iteration
-        &#34;&#34;&#34;
-
-        def set_out_path():
-            path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
-            if not os.path.exists(path):
-                os.mkdir(path)
-
-            newest_iteration = Standalones.get_last_folder(path)
-            override = self.settings[&#34;override_newest&#34;] \
-                if &#34;override_newest&#34; in self.settings.keys() \
-                else newest_iteration == &#34;9999&#34;
-
-            if not newest_iteration:
-                path += &#34;0000&#34; + sep
-                os.mkdir(path)
-            else:
-                if override:
-                    path += newest_iteration + sep
-                else:
-                    path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
-                    os.mkdir(path)
-
-            return path
-
-        def save_group_histories(path):
-            header = &#34;,&#34;.join([group.name for group in self.groups.values()])
-            rows = np.array([group.history for group in self.groups.values()]).T
-            np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
-
-        out_path = set_out_path()
-        self.save_options(out_path)
-        self.population.save_as_json(out_path)
-        save_group_histories(out_path)
-
-    def change_options(self, settings):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation change_options
-        &#34;&#34;&#34;
-
-        if self.settings[&#34;population_file&#34;] != settings[&#34;population_file&#34;]:
-            self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
-
-        self.settings = settings
-
-    def save_options(self, path: str):
-        &#34;&#34;&#34;
-        TODO Docstring Simulation save_options
-        &#34;&#34;&#34;
-
-        settings_mod = self.settings
-        heuristic = settings_mod[&#34;infection_probability_heuristic&#34;]
-        settings_mod[&#34;infection_probability_heuristic&#34;] = Standalones.serialize_function(heuristic)
-
-        with open(path + &#34;settings.json&#34;, &#39;w&#39;) as f:
-            f.write(json.dumps(settings_mod, indent=4))
-            f.close()</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="src.main.Simulation.change_options"><code class="name flex">
-<span>def <span class="ident">change_options</span></span>(<span>self, settings)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>TODO Docstring Simulation change_options</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def change_options(self, settings):
-    &#34;&#34;&#34;
-    TODO Docstring Simulation change_options
-    &#34;&#34;&#34;
-
-    if self.settings[&#34;population_file&#34;] != settings[&#34;population_file&#34;]:
-        self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
-
-    self.settings = settings</code></pre>
-</details>
-</dd>
-<dt id="src.main.Simulation.end_iteration"><code class="name flex">
-<span>def <span class="ident">end_iteration</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>TODO Docstring Simulation end_iteration</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def end_iteration(self):
-    &#34;&#34;&#34;
-    TODO Docstring Simulation end_iteration
-    &#34;&#34;&#34;
-
-    def set_out_path():
-        path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
-        if not os.path.exists(path):
-            os.mkdir(path)
-
-        newest_iteration = Standalones.get_last_folder(path)
-        override = self.settings[&#34;override_newest&#34;] \
-            if &#34;override_newest&#34; in self.settings.keys() \
-            else newest_iteration == &#34;9999&#34;
-
-        if not newest_iteration:
-            path += &#34;0000&#34; + sep
-            os.mkdir(path)
+    def infection_probability_heuristic(mem_props):
+        age = int(mem_props[&#34;age&#34;])
+        if 0 &lt;= age &lt;= 4:
+            return 0.0330660325674 / 8
+        elif 5 &lt;= age &lt;= 14:
+            return 0.148281618844 / 8
+        elif 15 &lt;= age &lt;= 34:
+            return 0.304042732216 / 8
+        elif 35 &lt;= age &lt;= 59:
+            return 0.359434902279 / 8
+        elif 60 &lt;= age &lt;= 79:
+            return 0.109905306538 / 8
         else:
-            if override:
-                path += newest_iteration + sep
-            else:
-                path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
-                os.mkdir(path)
+            return 0.0452694075548 / 8
 
-        return path
+    def mortality_probability_heuristic(mem_props):
+        age = int(mem_props[&#34;age&#34;])
+        if 0 &lt;= age &lt;= 4:
+            result = 0.000059062155147 / 14
+        elif 5 &lt;= age &lt;= 14:
+            result = 0.0000124773674418 / 14
+        elif 15 &lt;= age &lt;= 34:
+            result = 0.000111900272854 / 14
+        elif 35 &lt;= age &lt;= 59:
+            result = 0.00176127729351 / 14
+        elif 60 &lt;= age &lt;= 79:
+            result = 0.0338030065822 / 14
+        else:
+            result = 0.170387357522 / 14
 
-    def save_group_histories(path):
-        header = &#34;,&#34;.join([group.name for group in self.groups.values()])
-        rows = np.array([group.history for group in self.groups.values()]).T
-        np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+        if &#34;vaccinations&#34; in mem_props.keys():
+            return result / 2
+        else:
+            return result
 
-    out_path = set_out_path()
-    self.save_options(out_path)
-    self.population.save_as_json(out_path)
-    save_group_histories(out_path)</code></pre>
+    def vaccine_failure_probability_heuristic(a, b):
+        v_when = lambda member: member.properties[&#34;vaccinations&#34;][-1][1]
+        v_till = lambda member: member.properties[&#34;vaccinations&#34;][-1][2]
+        t = lambda member, tick: (tick - v_when(member)) / (v_till(member) - v_when(member))
+        return lambda member, tick: 1 - a * (1 - np.exp(b * (t(member, tick) - 1))) / (1 - np.exp(-b))
+
+    def heuristic(name):
+        if name == &#34;infection_probability_heuristic&#34;:
+            return infection_probability_heuristic
+
+        elif name == &#34;mortality_probability_heuristic&#34;:
+            return mortality_probability_heuristic
+
+        elif name.split(&#39;-&#39;)[0] == &#34;vaccine_failure_probability_heuristic&#34;:
+            a = float(name.split(&#39;-&#39;)[1])
+            b = float(name.split(&#39;-&#39;)[2])
+            return vaccine_failure_probability_heuristic(a, b)
+
+        else:
+            raise ValueError(&#34;Heuristic not available&#34;)
+
+    settings_name = &#34;Template.cfg&#34;
+    simulation_settings = Standalones.make_settings(settings_name)
+    simulation_settings[&#34;infection_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;infection_probability_heuristic&#34;])
+    simulation_settings[&#34;mortality_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;mortality_probability_heuristic&#34;])
+    simulation_settings[&#34;vaccine_failure_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;vaccine_failure_probability_heuristic&#34;])
+
+    #sim = Scenarios.single_simulation(simulation_settings)
+    Scenarios.c_inner_vs_c_outer(simulation_settings, 2)
+    #PostProcessing.infection_graph(&#34;../out/DE_03_KLLand/0005&#34;)
+    #PostProcessing.compare_inner_and_outer_infection_numbers(&#34;../out/DE_03_KLLand/0005&#34;)
+    #PostProcessing.progression_plots(&#34;../out/DE_03_KLLand/0005&#34;)</code></pre>
 </details>
-</dd>
-<dt id="src.main.Simulation.save_options"><code class="name flex">
-<span>def <span class="ident">save_options</span></span>(<span>self, path: str)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>TODO Docstring Simulation save_options</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def save_options(self, path: str):
-    &#34;&#34;&#34;
-    TODO Docstring Simulation save_options
-    &#34;&#34;&#34;
-
-    settings_mod = self.settings
-    heuristic = settings_mod[&#34;infection_probability_heuristic&#34;]
-    settings_mod[&#34;infection_probability_heuristic&#34;] = Standalones.serialize_function(heuristic)
-
-    with open(path + &#34;settings.json&#34;, &#39;w&#39;) as f:
-        f.write(json.dumps(settings_mod, indent=4))
-        f.close()</code></pre>
-</details>
-</dd>
-<dt id="src.main.Simulation.start_iteration"><code class="name flex">
-<span>def <span class="ident">start_iteration</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>TODO Docstring Simulation start_iteration</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def start_iteration(self):
-    &#34;&#34;&#34;
-    TODO Docstring Simulation start_iteration
-    &#34;&#34;&#34;
-
-    tick = 0
-    heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
-    c_inner = self.settings[&#34;inner_reproduction_number&#34;]
-    c_outer = self.settings[&#34;outer_reproduction_number&#34;]
-
-    # start infection
-    seed = np.random.choice(self.population.members)
-    seed.infect(14, seed, 0)
-    self.groups[&#34;Infected&#34;].add_member(seed)
-    self.groups[&#34;Infected&#34;].counter.save_count()
-    self.groups[&#34;Infected&#34;].counter.squash_history()
-
-    while True:
-        tick += 1
-
-        # spread infection
-        #   - inside household
-        #   - outside household
-        newly_infected, newly_recovered = [], []
-        for member in self.groups[&#34;Infected&#34;]:
-            n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
-
-            household = self.population.households[member.properties[&#34;household&#34;]]
-            newly_infected += household.spread_disease(member, n_inner, heuristic, tick)
-            newly_infected += self.population.spread_disease(member, n_outer, heuristic, tick)
-
-            # (possibly) recover
-            if member.make_tick():
-                newly_recovered += [member]
-
-        Group.move(newly_recovered, self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
-        for member in newly_infected:
-            self.groups[&#34;Infected&#34;].add_member(member)
-
-        for group in self.groups.values():
-            group.counter.save_count()
-
-        # repeat till no more infectious people
-        print(&#34;Day: %d, #Infected: %d&#34; % (tick, self.groups[&#34;Infected&#34;].size))
-        if self.groups[&#34;Infected&#34;].size == 0:
-            break</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-</dl>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -508,19 +124,6 @@ if __name__ == &#34;__main__&#34;:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="src" href="index.html">src</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="src.main.Simulation" href="#src.main.Simulation">Simulation</a></code></h4>
-<ul class="">
-<li><code><a title="src.main.Simulation.change_options" href="#src.main.Simulation.change_options">change_options</a></code></li>
-<li><code><a title="src.main.Simulation.end_iteration" href="#src.main.Simulation.end_iteration">end_iteration</a></code></li>
-<li><code><a title="src.main.Simulation.save_options" href="#src.main.Simulation.save_options">save_options</a></code></li>
-<li><code><a title="src.main.Simulation.start_iteration" href="#src.main.Simulation.start_iteration">start_iteration</a></code></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

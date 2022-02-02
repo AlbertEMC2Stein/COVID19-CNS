@@ -1,0 +1,2284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>src.Simulation API documentation</title>
+<meta name="description" content="TODO Docstring Simulation" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.Simulation</code></h1>
+</header>
+<section id="section-intro">
+<p>TODO Docstring Simulation</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+TODO Docstring Simulation
+&#34;&#34;&#34;
+
+__all__ = [&#39;Simulation&#39;, &#39;Scenarios&#39;, &#39;PostProcessing&#39;]
+
+import json
+import csv
+import os
+import shutil
+from os.path import sep
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+import numpy as np
+from src.Network import Group, Population
+from src.Utils import ProgressBar, Standalones
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class Simulation:
+    def __init__(self, settings):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation __init__
+        &#34;&#34;&#34;
+
+        self.settings = {&#34;population_file&#34;: &#34;None&#34;}
+        self.change_settings(settings)
+
+        self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
+        self._population_init = self.population.copy()
+        self.groups = {&#34;Infected&#34;: Group(&#34;Infected&#34;),
+                       &#34;Recovered&#34;: Group(&#34;Recovered&#34;),
+                       &#34;Vaccinated&#34;: Group(&#34;Vaccinated&#34;),
+                       &#34;Dead&#34;: Group(&#34;Dead&#34;),
+                       &#34;Quarantined&#34;: Group(&#34;Quarantined&#34;)}
+        self.stats = {&#34;#new_infected&#34;: [0],
+                      &#34;#new_recovered&#34;: [0],
+                      &#34;#new_susceptible&#34;: [0],
+                      &#34;#new_vaccinated&#34;: [0],
+                      &#34;#new_dead&#34;: [0],
+                      &#34;#ill_vaccinated&#34;: [0],
+                      &#34;test_results_-&#34;: [0],
+                      &#34;test_results_+&#34;: [0],
+                      &#34;seven_day_incidence&#34;: [0],
+                      &#34;in_lockdown&#34;: [0]
+                      }
+        self.arrange_lockdown = False
+
+    def start_iteration(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation start_iteration
+        &#34;&#34;&#34;
+
+        def initialize_groups():
+            def put_inits_in_respective_group():
+                gen_params = lambda: {
+                    &#34;incubation_period&#34;: -1,
+                    &#34;infection_period&#34;: np.random.poisson(c_infection),
+                    &#34;immunity_period&#34;: np.random.poisson(c_immunity)
+                }
+
+                for ini_inf in ini_infs:
+                    ini_inf.infect(ini_inf, 0, gen_params())
+                    self.groups[&#34;Infected&#34;].add_member(ini_inf)
+
+                for ini_rec in ini_recs:
+                    ini_rec.make_immune(np.random.poisson(c_immunity))
+                    self.groups[&#34;Recovered&#34;].add_member(ini_rec)
+                    ini_rec.recovered = True
+
+                for ini_vac in ini_vacs:
+                    ini_vac.make_immune(np.random.poisson(c_vac_immunity))
+                    self.groups[&#34;Vaccinated&#34;].add_member(ini_vac)
+                    ini_vac.vaccinated = True
+
+                for group in self.groups.values():
+                    group.counter.save_count()
+                    group.counter.squash_history()
+
+            infs_recs_vacs = np.random.choice(self.population.members,
+                                              size=n_ini_inf + n_ini_recs + n_ini_vacs,
+                                              replace=False)
+
+            ini_infs = infs_recs_vacs[:n_ini_inf]
+            ini_recs = infs_recs_vacs[n_ini_inf:n_ini_inf + n_ini_recs]
+            ini_vacs = infs_recs_vacs[n_ini_inf + n_ini_recs:]
+
+            put_inits_in_respective_group()
+
+        def simulate_group(group: Group):
+            if group.name == &#34;Infected&#34;:
+                for member in group:
+                    if member.make_tick(&#34;infectious&#34;):
+                        n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
+
+                        if self.arrange_lockdown:
+                            n_outer //= 2
+                            n_inner = round(1.5 * n_inner)
+
+                        if member.quarantined:
+                            n_outer = 0
+                            n_inner = round(1.5 * n_inner)
+
+                        gen_params = lambda: {
+                            &#34;infection_probability_heuristic&#34;: infection_heuristic,
+                            &#34;vaccine_failure_probability_heuristic&#34;: vaccine_heuristic,
+                            &#34;incubation_period&#34;: np.random.poisson(c_incubation),
+                            &#34;infection_period&#34;: np.random.poisson(c_infection),
+                            &#34;immunity_period&#34;: np.random.poisson(c_immunity),
+                        }
+
+                        household = self.population.households[member.properties[&#34;household&#34;]]
+                        new_members[&#34;newly_infected&#34;] += household.spread_disease(member, n_inner, tick, gen_params())
+                        new_members[&#34;newly_infected&#34;] += self.population.spread_disease(member, n_outer, tick,
+                                                                                        gen_params())
+
+                        if member.make_tick(&#34;recover&#34;):
+                            new_members[&#34;newly_recovered&#34;] += [member]
+                            member.recovered = True
+
+                        elif np.random.uniform() &lt; mortality_heuristic(member.properties):
+                            new_members[&#34;new_dead&#34;] += [member]
+                            member.make_dead(tick)
+
+                    if member.vaccinated:
+                        member.make_tick(&#34;vaccine&#34;)
+
+                new_members[&#34;newly_infected_vac&#34;] = [m for m in new_members[&#34;newly_infected&#34;] if m.vaccinated]
+
+            elif group.name == &#34;Recovered&#34;:
+                for member in group:
+                    if member.make_tick(&#34;immunity&#34;):
+                        new_members[&#34;newly_susceptible_rec&#34;] += [member]
+                        new_members[&#34;newly_susceptible&#34;] += [member]
+
+            elif group.name == &#34;Vaccinated&#34;:
+                for member in group:
+                    if member.make_tick(&#34;immunity&#34;):
+                        new_members[&#34;newly_susceptible_vac&#34;] += [member]
+                        new_members[&#34;newly_susceptible&#34;] += [member]
+
+                    elif not member.infected:
+                        member.make_tick(&#34;vaccine&#34;)
+
+            elif group.name == &#34;Dead&#34;:
+                pass
+
+            elif group.name == &#34;Quarantined&#34;:
+                for member in group:
+                    if member.make_tick(&#34;quarantine&#34;, tick):
+                        group.remove_member(member)
+
+            else:
+                raise ValueError(&#34;Group &#39;&#34; + group.name + &#34;&#39; does not have an update function&#34;)
+
+        def move_members_to_new_groups():
+            for member in new_members[&#34;newly_susceptible_rec&#34;]:
+                self.groups[&#34;Recovered&#34;].remove_member(member)
+                member.recovered = False
+
+            for member in new_members[&#34;newly_susceptible_vac&#34;]:
+                self.groups[&#34;Vaccinated&#34;].remove_member(member)
+                member.vaccinated = False
+
+            Group.move(new_members[&#34;newly_recovered&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
+
+            Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Dead&#34;])
+            Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Quarantined&#34;], self.groups[&#34;Dead&#34;])
+
+            for member in new_members[&#34;newly_infected&#34;]:
+                self.groups[&#34;Infected&#34;].add_member(member)
+                if member.vaccinated:
+                    self.groups[&#34;Vaccinated&#34;].remove_member(member)
+                    member.vaccinated = False
+
+        def simulate_vaccinations():
+            for member in new_members[&#34;staged_vaccinated&#34;]:
+                gen_params = lambda: {
+                    &#34;t_vac_effect&#34;: np.random.poisson(c_vac_effect),
+                    &#34;t_immunity&#34;: np.random.poisson(c_vac_immunity),
+                    &#34;t_wait_vac&#34;: t_wait_vac,
+                    &#34;t_wait_rec&#34;: t_wait_rec
+                }
+
+                if member.vaccinate(tick, gen_params()):
+                    if member.recovered:
+                        Group.move([member], self.groups[&#34;Recovered&#34;], self.groups[&#34;Vaccinated&#34;])
+                        member.recovered = False
+
+                    elif not member.vaccinated:
+                        self.groups[&#34;Vaccinated&#34;].add_member(member)
+
+                    member.vaccinated = True
+
+                else:
+                    new_members[&#34;not_vaccinated&#34;] += [member]
+
+        def simulate_tests():
+            def test_and_quarantine_procedure(member):
+                result = False
+                if not member.quarantined and tick != member._last_tested:
+                    if (not self.settings[&#34;test_vaccinated&#34;]) and &#34;vaccinations&#34; in member.properties.keys() and \
+                            tick &lt; member.properties[&#34;vaccinations&#34;][-1][0] + self.settings[&#34;vaccination_immunity_time&#34;]:
+                        return False
+
+                    result = member.test(tick)
+                    results[result] += 1
+                    if result:
+                        member.quarantine(self.settings[&#34;quarantine_duration&#34;])
+                        self.groups[&#34;Quarantined&#34;].add_member(member)
+
+                return result
+
+            def backtrack(member, depth):
+                if depth &lt;= 0 or np.random.uniform() &gt; self.settings[&#34;backtracking_probability&#34;]:
+                    return
+
+                for contact in member.recent_contacts:
+                    if test_and_quarantine_procedure(contact):
+                        backtrack(contact, depth - 1)
+
+            n_tests = min(np.random.poisson(c_tests), self.population.size)
+            results = [0, 0]
+            for member in np.random.choice(self.population.members, size=n_tests, replace=False):
+                if test_and_quarantine_procedure(member):
+                    backtrack(member, self.settings[&#34;backtracking_depth&#34;])
+
+            self.stats[&#34;test_results_-&#34;] += [results[0]]
+            self.stats[&#34;test_results_+&#34;] += [results[1]]
+
+        def decide_measure(measure: str):
+            if measure == &#34;lockdown&#34;:
+                if self.settings[&#34;start_lockdown_at&#34;] &lt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
+                    return True
+
+                elif self.settings[&#34;end_lockdown_at&#34;] &gt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
+                    return False
+
+                else:
+                    return self.arrange_lockdown
+
+            else:
+                raise ValueError(&#34;Measure not available&#34;)
+
+        def update_stats():
+            def calc_7di():
+                positive = self.stats[&#34;test_results_+&#34;]
+                if len(positive) &gt;= 7:
+                    return round(sum(positive[-7:]) * 100000 / self.population.size)
+                else:
+                    return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
+
+            self.stats[&#34;#new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
+            self.stats[&#34;#new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
+            self.stats[&#34;#new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
+            self.stats[&#34;#new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
+            self.stats[&#34;#new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
+            self.stats[&#34;#ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
+            self.stats[&#34;seven_day_incidence&#34;] += [calc_7di()]
+            self.stats[&#34;in_lockdown&#34;] += [1 if self.arrange_lockdown else 0]
+
+        def print_stats():
+            color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+            print(
+                color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
+                % (tick,
+                   self.groups[&#34;Infected&#34;].size,
+                   self.groups[&#34;Dead&#34;].size,
+                   self.groups[&#34;Quarantined&#34;].size,
+                   self.stats[&#34;#new_infected&#34;][-1],
+                   self.stats[&#34;#new_recovered&#34;][-1],
+                   self.stats[&#34;#new_vaccinated&#34;][-1],
+                   self.stats[&#34;test_results_+&#34;][-1],
+                   self.stats[&#34;test_results_-&#34;][-1],
+                   self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
+
+        print(&#34;\nInitializing simulation...&#34;)
+
+        # c -&gt; put into poisson, n -&gt; fixed value
+        tick = 0
+        infection_heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
+        mortality_heuristic = self.settings[&#34;mortality_probability_heuristic&#34;]
+        vaccine_heuristic = self.settings[&#34;vaccine_failure_probability_heuristic&#34;]
+        c_inner = self.settings[&#34;inner_reproduction_number&#34;]
+        c_outer = self.settings[&#34;outer_reproduction_number&#34;]
+        n_ini_inf = self.settings[&#34;number_of_initially_infected&#34;]
+        n_ini_recs = self.settings[&#34;number_of_initially_recovered&#34;]
+        n_ini_vacs = self.settings[&#34;number_of_initially_vaccinated&#34;]
+        c_incubation = self.settings[&#34;incubation_time&#34;]
+        c_infection = self.settings[&#34;infection_time&#34;]
+        c_immunity = self.settings[&#34;recovered_immunity_time&#34;]
+        c_vac_effect = self.settings[&#34;vaccination_takes_effect_time&#34;]
+        c_vac_immunity = self.settings[&#34;vaccination_immunity_time&#34;]
+        c_vacs = self.settings[&#34;vaccinations_per_day&#34;]
+        c_tests = self.settings[&#34;tests_per_day&#34;]
+        t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
+        t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
+        max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
+
+        initialize_groups()
+
+        print(&#34;Finished initializing simulation.\n\nStarting simulation...&#34;)
+
+        print_stats()
+
+        while True:
+            tick += 1
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
+                        tick &gt;= self.settings[&#34;vaccine_available_as_of&#34;])
+
+            self.arrange_lockdown = decide_measure(&#34;lockdown&#34;)
+
+            new_members = {
+                &#34;newly_susceptible&#34;: [],
+                &#34;newly_infected&#34;: [],
+                &#34;newly_infected_vac&#34;: [],
+                &#34;newly_recovered&#34;: [],
+                &#34;newly_susceptible_rec&#34;: [],
+                &#34;newly_susceptible_vac&#34;: [],
+                &#34;staged_vaccinated&#34;: np.random.choice(self.population.members, size=n_vacs, replace=False),
+                &#34;not_vaccinated&#34;: [],
+                &#34;new_dead&#34;: []
+            }
+
+            for group in self.groups.values():
+                simulate_group(group)
+
+            move_members_to_new_groups()
+            simulate_vaccinations()
+            simulate_tests()
+
+            for group in self.groups.values():
+                group.counter.save_count()
+
+            update_stats()
+            print_stats()
+
+            if self.groups[&#34;Infected&#34;].size == 0 or tick &gt;= max_t:
+                break
+
+        print(bcolors.ENDC + &#34;\nFinished simulation.&#34;)
+
+    def end_iteration(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation end_iteration
+        &#34;&#34;&#34;
+
+        def set_out_path():
+            path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
+            if not os.path.exists(path):
+                os.mkdir(path)
+
+            newest_iteration = Standalones.get_last_folder(path)
+            override = self.settings[&#34;override_newest&#34;] \
+                if &#34;override_newest&#34; in self.settings.keys() \
+                else newest_iteration == &#34;9999&#34;
+
+            if not newest_iteration:
+                path += &#34;0000&#34; + sep
+                os.mkdir(path)
+            else:
+                if override:
+                    path += newest_iteration + sep
+                else:
+                    path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
+                    os.mkdir(path)
+
+            return path
+
+        def save_disease_progression(path):
+            header = &#34;,&#34;.join([group.name for group in self.groups.values()] + list(self.stats.keys()))
+            rows = np.array([group.history for group in self.groups.values()] +
+                            [np.array(stat_values) for stat_values in self.stats.values()]).T
+            np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+
+        def save_options(path: str):
+            shutil.copyfile(&#34;Settings&#34; + sep + self.settings[&#34;file&#34;], path + &#34;settings.cfg&#34;)
+
+        print(&#34;\nSaving simulation data...&#34;)
+
+        out_path = set_out_path()
+        self.population.save_as_json(out_path)
+        save_disease_progression(out_path)
+        save_options(out_path)
+
+        if self.settings[&#34;override_newest&#34;] and os.path.exists(out_path + &#34;Plots&#34;):
+            shutil.rmtree(out_path + &#34;Plots&#34;)
+
+        print(&#34;Finished saving simulation data.&#34;)
+
+    def change_settings(self, settings):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation change_settings
+        &#34;&#34;&#34;
+
+        def check_settings():
+            must_haves = [&#34;population_file&#34;,
+                          &#34;infection_probability_heuristic&#34;,
+                          &#34;mortality_probability_heuristic&#34;,
+                          &#34;inner_reproduction_number&#34;,
+                          &#34;outer_reproduction_number&#34;,
+                          &#34;incubation_time&#34;,
+                          &#34;infection_time&#34;,
+                          &#34;recovered_immunity_time&#34;,
+                          &#34;number_of_initially_infected&#34;,
+                          &#34;number_of_initially_recovered&#34;,
+                          &#34;number_of_initially_vaccinated&#34;,
+                          &#34;vaccine_available_as_of&#34;,
+                          &#34;vaccination_takes_effect_time&#34;,
+                          &#34;vaccinations_per_day&#34;,
+                          &#34;vaccination_immunity_time&#34;,
+                          &#34;waiting_time_vaccination_until_new_vaccination&#34;,
+                          &#34;waiting_time_recovered_until_vaccination&#34;,
+                          &#34;tests_per_day&#34;,
+                          &#34;test_vaccinated&#34;,
+                          &#34;quarantine_duration&#34;,
+                          &#34;backtracking_depth&#34;,
+                          &#34;backtracking_probability&#34;,
+                          &#34;maximal_simulation_time_interval&#34;,
+                          &#34;start_lockdown_at&#34;,
+                          &#34;end_lockdown_at&#34;]
+
+            for property in must_haves:
+                if property not in settings.keys():
+                    raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+            if settings[&#34;start_lockdown_at&#34;] &lt; settings[&#34;end_lockdown_at&#34;]:
+                raise ValueError(&#34;end_lockdown_at must be smaller than start_lockdown_at&#34;)
+
+            return settings
+
+        self.settings = check_settings()
+
+        if self.settings[&#34;population_file&#34;] != settings[&#34;population_file&#34;]:
+            self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
+
+    def reset(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation reset
+        &#34;&#34;&#34;
+
+        self.population = self._population_init.copy()
+
+        for group in self.groups.values():
+            group.reset()
+
+        for stat in self.stats.keys():
+            self.stats[stat] = [0]
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class Scenarios:
+    &#34;&#34;&#34;
+    TODO Docstring Scenarios
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def single_simulation(settings: dict):
+        &#34;&#34;&#34;
+        TODO Docstring Scenarios single_simulation
+        &#34;&#34;&#34;
+
+        sim = Simulation(settings)
+        sim.start_iteration()
+        sim.end_iteration()
+
+        return sim
+
+    @staticmethod
+    def c_inner_vs_c_outer(settings: dict, n: int = 5):
+        &#34;&#34;&#34;
+        TODO Docstring Scenarios c_inner_vs_c_outer
+        &#34;&#34;&#34;
+
+        from matplotlib.colors import LinearSegmentedColormap, LogNorm
+        custom = LinearSegmentedColormap.from_list(&#39;custom&#39;, [&#39;g&#39;, &#39;yellow&#39;, &#39;r&#39;], N=255)
+
+        sim = Simulation(settings)
+        max_infection_values = np.zeros(shape=(n, n))
+        for x, c_i in enumerate(np.linspace(0, 5, n)):
+            for y, c_o in enumerate(np.linspace(0, 5, n)):
+                settings[&#34;inner_reproduction_number&#34;] = c_i
+                settings[&#34;outer_reproduction_number&#34;] = c_o
+
+                sim.reset()
+                sim.change_settings(settings)
+                sim.start_iteration()
+
+                max_infection_values[y, x] = max(sim.groups[&#34;Infected&#34;].history)
+
+        plt.figure(figsize=(10, 10))
+        plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
+        plt.title(&#34;Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
+        plt.xlabel(&#34;$c_{inner}$&#34;)
+        plt.ylabel(&#34;$c_{outer}$&#34;)
+        plt.xticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
+        plt.yticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
+
+        for (j, i), label in np.ndenumerate(max_infection_values):
+            plt.text(i, j, int(label), ha=&#39;center&#39;, va=&#39;center&#39;)
+
+        plt.savefig(&#34;../out/general/c_inner_vs_c_outer_%dx%d.png&#34; % (n, n))
+        plt.show()
+
+        print(max_infection_values)
+
+    @staticmethod
+    def mitigation_interval(settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10):
+        &#34;&#34;&#34;
+        TODO Docstring Scenarios mitigation_interval
+        &#34;&#34;&#34;
+
+        sim = Simulation(settings)
+        mitigation_interval = np.zeros(samples)
+        interval = np.linspace(interval_boundaries[0], interval_boundaries[1], samples)
+
+        for run in range(1, avg_over + 1):
+            print(&#34;\n&#34; * 25 + &#34;Run %d&#34; % run)
+            for i, c_o in enumerate(interval):
+                settings[&#34;outer_reproduction_number&#34;] = c_o
+
+                sim.reset()
+                sim.change_settings(settings)
+                sim.start_iteration()
+
+                mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+                                         + 1 / run * max(sim.groups[&#34;Infected&#34;].history)
+
+        plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
+        plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
+        plt.xlabel(&#34;$c_{outer}$&#34;)
+        plt.ylabel(&#34;maximal infections&#34;)
+        plt.xticks(ticks=interval, labels=[&#34;%.2f&#34; % i for i in interval])
+        plt.xlim(interval_boundaries)
+        plt.grid()
+        plt.show()
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class PostProcessing:
+    &#34;&#34;&#34;
+    TODO Docstring PostProcessing
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def infection_graph(folder: str):
+        &#34;&#34;&#34;
+        TODO Docstring PostProcessing infection_graph
+        &#34;&#34;&#34;
+
+        def get_plot_elements():
+            f = json.load(open(folder + &#34;population.json&#34;))
+            member_id_dict = {member[&#34;id&#34;]: i for i, member in enumerate(f[&#34;members&#34;])}
+
+            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                self = member_id_dict[member[&#34;id&#34;]]
+                if &#34;infections&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member[&#34;infections&#34;]:
+                    infectant = member_id_dict[infection[0]]
+                    first_day = infection[2]
+                    last_day = infection[4]
+
+                    plot_elements[&#34;Lines&#34;] += [[[self, first_day], [self, last_day]]]
+
+                    if infectant != self:
+                        plot_elements[&#34;Lines&#34;] += [[[self, first_day], [infectant, first_day - 1]]]
+                        plot_elements[&#34;Infected&#34;] += [[self, first_day]]
+
+                    else:
+                        plot_elements[&#34;Initials&#34;] += [[self, 0]]
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        plot_elements = {&#34;Initials&#34;: [], &#34;Infected&#34;: [], &#34;Lines&#34;: []}
+        get_plot_elements()
+        plot_elements[&#34;Initials&#34;] = np.array(plot_elements[&#34;Initials&#34;])
+        plot_elements[&#34;Infected&#34;] = np.array(plot_elements[&#34;Infected&#34;])
+        plot_elements[&#34;Lines&#34;] = np.array(plot_elements[&#34;Lines&#34;])
+
+        ax = plt.gca()
+        ax.add_collection(LineCollection(plot_elements[&#34;Lines&#34;], color=&#39;r&#39;, alpha=0.2, linewidth=0.01))
+        ax.plot(*plot_elements[&#34;Infected&#34;][:, [0, 1]].T, color=&#39;r&#39;, marker=&#39;x&#39;, linestyle=&#39;None&#39;, markersize=0.01)
+        ax.plot(*plot_elements[&#34;Initials&#34;][:, [0, 1]].T, color=&#39;b&#39;, marker=&#39;x&#39;, linestyle=&#39;None&#39;, markersize=0.01)
+        plt.xlabel(&#39;Population&#39;)
+        plt.ylabel(&#39;Day&#39;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;Infection_graph.pdf&#34;)
+        plt.show()
+
+    @staticmethod
+    def progression_plots(folder: str):
+        &#34;&#34;&#34;
+        TODO Docstring PostProcessing progression_plots
+        &#34;&#34;&#34;
+
+        def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+            _, ax = plt.subplots()
+            days = np.arange(0, len(datasets[0]), 1)
+
+            for i, dataset in enumerate(datasets):
+                ax.plot(dataset, color=colors[i])
+
+            ax.fill_between(days, 0, 1, where=data[&#34;in_lockdown&#34;], color=&#39;red&#39;, alpha=0.25,
+                            transform=ax.get_xaxis_transform())
+            ax.set_xlabel(&#34;t&#34;)
+            ax.set_ylabel(&#34;#&#34;)
+            ax.set_xlim(0, days[-1])
+            ax.set_title(title)
+            plt.savefig(folder + &#34;Plots&#34; + sep + plotname)
+            plt.show()
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        population_size = json.load(open(folder + &#34;population.json&#34;))[&#34;size&#34;]
+        data_stream = csv.DictReader(open(folder + &#34;progression.csv&#34;))
+        data = {}
+        for row in data_stream:
+            for key, value in row.items():
+                if key not in data.keys():
+                    data[key] = []
+
+                data[key] += [int(value)]
+
+        data = {column: np.array(data[column]) for column in data.keys()}
+        make_plot(&#34;SIRVD.png&#34;, &#34;Total&#34;,
+                  [population_size - data[&#34;Infected&#34;] - data[&#34;Recovered&#34;] - data[&#34;Vaccinated&#34;] - data[&#34;Dead&#34;],
+                   data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;], data[&#34;Dead&#34;]],
+                  [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
+
+        make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
+                  [data[&#34;#new_infected&#34;], data[&#34;#ill_vaccinated&#34;]],
+                  [&#39;red&#39;, &#39;purple&#39;])
+
+        make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
+                  [data[&#34;Infected&#34;], data[&#34;Recovered&#34;]],
+                  [&#39;red&#39;, &#39;blue&#39;])
+
+        make_plot(&#34;V.png&#34;, &#34;Vaccinated&#34;,
+                  [data[&#34;Vaccinated&#34;]],
+                  [&#39;cyan&#39;])
+
+        make_plot(&#34;7DI.png&#34;, &#34;Seven Day Incidence&#34;,
+                  [data[&#34;seven_day_incidence&#34;]],
+                  [&#39;red&#39;])
+
+        make_plot(&#34;D.png&#34;, &#34;Dead&#34;,
+                  [data[&#34;Dead&#34;]],
+                  [&#39;black&#39;])
+
+    @staticmethod
+    def compare_inner_and_outer_infection_numbers(folder: str):
+        &#34;&#34;&#34;
+        TODO Docstring PostProcessing compare_inner_and_outer_infection_numbers
+        &#34;&#34;&#34;
+
+        def get_infection_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;infections&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member[&#34;infections&#34;]:
+                    if infection[1]:
+                        infection_data[&#34;inside&#34;] += 1
+
+                    else:
+                        infection_data[&#34;outside&#34;] += 1
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        infection_data = {&#34;inside&#34;: 0, &#34;outside&#34;: 0}
+        get_infection_data()
+
+        p_inside = infection_data[&#34;inside&#34;] / sum(infection_data.values())
+
+        plt.bar(*zip(*infection_data.items()))
+        for i, v in enumerate([p_inside, 1 - p_inside]):
+            plt.text(i, list(infection_data.values())[i] / 2, &#34;%.1f%%&#34; % (100 * v), color=&#39;black&#39;, ha=&#39;center&#39;,
+                     va=&#39;center&#39;, fontsize=32)
+
+        plt.ylabel(&#39;Total&#39;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;inner_vs_outer.png&#34;)
+        plt.show()
+
+
+################################################################################################
+################################################################################################
+################################################################################################
+
+
+class bcolors:
+    HEADER = &#39;\033[95m&#39;
+    OKBLUE = &#39;\033[94m&#39;
+    OKCYAN = &#39;\033[96m&#39;
+    OKGREEN = &#39;\033[92m&#39;
+    WARNING = &#39;\033[93m&#39;
+    FAIL = &#39;\033[91m&#39;
+    ENDC = &#39;\033[0m&#39;
+    BOLD = &#39;\033[1m&#39;
+    UNDERLINE = &#39;\033[4m&#39;</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.Simulation.PostProcessing"><code class="flex name class">
+<span>class <span class="ident">PostProcessing</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring PostProcessing</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PostProcessing:
+    &#34;&#34;&#34;
+    TODO Docstring PostProcessing
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def infection_graph(folder: str):
+        &#34;&#34;&#34;
+        TODO Docstring PostProcessing infection_graph
+        &#34;&#34;&#34;
+
+        def get_plot_elements():
+            f = json.load(open(folder + &#34;population.json&#34;))
+            member_id_dict = {member[&#34;id&#34;]: i for i, member in enumerate(f[&#34;members&#34;])}
+
+            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                self = member_id_dict[member[&#34;id&#34;]]
+                if &#34;infections&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member[&#34;infections&#34;]:
+                    infectant = member_id_dict[infection[0]]
+                    first_day = infection[2]
+                    last_day = infection[4]
+
+                    plot_elements[&#34;Lines&#34;] += [[[self, first_day], [self, last_day]]]
+
+                    if infectant != self:
+                        plot_elements[&#34;Lines&#34;] += [[[self, first_day], [infectant, first_day - 1]]]
+                        plot_elements[&#34;Infected&#34;] += [[self, first_day]]
+
+                    else:
+                        plot_elements[&#34;Initials&#34;] += [[self, 0]]
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        plot_elements = {&#34;Initials&#34;: [], &#34;Infected&#34;: [], &#34;Lines&#34;: []}
+        get_plot_elements()
+        plot_elements[&#34;Initials&#34;] = np.array(plot_elements[&#34;Initials&#34;])
+        plot_elements[&#34;Infected&#34;] = np.array(plot_elements[&#34;Infected&#34;])
+        plot_elements[&#34;Lines&#34;] = np.array(plot_elements[&#34;Lines&#34;])
+
+        ax = plt.gca()
+        ax.add_collection(LineCollection(plot_elements[&#34;Lines&#34;], color=&#39;r&#39;, alpha=0.2, linewidth=0.01))
+        ax.plot(*plot_elements[&#34;Infected&#34;][:, [0, 1]].T, color=&#39;r&#39;, marker=&#39;x&#39;, linestyle=&#39;None&#39;, markersize=0.01)
+        ax.plot(*plot_elements[&#34;Initials&#34;][:, [0, 1]].T, color=&#39;b&#39;, marker=&#39;x&#39;, linestyle=&#39;None&#39;, markersize=0.01)
+        plt.xlabel(&#39;Population&#39;)
+        plt.ylabel(&#39;Day&#39;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;Infection_graph.pdf&#34;)
+        plt.show()
+
+    @staticmethod
+    def progression_plots(folder: str):
+        &#34;&#34;&#34;
+        TODO Docstring PostProcessing progression_plots
+        &#34;&#34;&#34;
+
+        def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+            _, ax = plt.subplots()
+            days = np.arange(0, len(datasets[0]), 1)
+
+            for i, dataset in enumerate(datasets):
+                ax.plot(dataset, color=colors[i])
+
+            ax.fill_between(days, 0, 1, where=data[&#34;in_lockdown&#34;], color=&#39;red&#39;, alpha=0.25,
+                            transform=ax.get_xaxis_transform())
+            ax.set_xlabel(&#34;t&#34;)
+            ax.set_ylabel(&#34;#&#34;)
+            ax.set_xlim(0, days[-1])
+            ax.set_title(title)
+            plt.savefig(folder + &#34;Plots&#34; + sep + plotname)
+            plt.show()
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        population_size = json.load(open(folder + &#34;population.json&#34;))[&#34;size&#34;]
+        data_stream = csv.DictReader(open(folder + &#34;progression.csv&#34;))
+        data = {}
+        for row in data_stream:
+            for key, value in row.items():
+                if key not in data.keys():
+                    data[key] = []
+
+                data[key] += [int(value)]
+
+        data = {column: np.array(data[column]) for column in data.keys()}
+        make_plot(&#34;SIRVD.png&#34;, &#34;Total&#34;,
+                  [population_size - data[&#34;Infected&#34;] - data[&#34;Recovered&#34;] - data[&#34;Vaccinated&#34;] - data[&#34;Dead&#34;],
+                   data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;], data[&#34;Dead&#34;]],
+                  [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
+
+        make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
+                  [data[&#34;#new_infected&#34;], data[&#34;#ill_vaccinated&#34;]],
+                  [&#39;red&#39;, &#39;purple&#39;])
+
+        make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
+                  [data[&#34;Infected&#34;], data[&#34;Recovered&#34;]],
+                  [&#39;red&#39;, &#39;blue&#39;])
+
+        make_plot(&#34;V.png&#34;, &#34;Vaccinated&#34;,
+                  [data[&#34;Vaccinated&#34;]],
+                  [&#39;cyan&#39;])
+
+        make_plot(&#34;7DI.png&#34;, &#34;Seven Day Incidence&#34;,
+                  [data[&#34;seven_day_incidence&#34;]],
+                  [&#39;red&#39;])
+
+        make_plot(&#34;D.png&#34;, &#34;Dead&#34;,
+                  [data[&#34;Dead&#34;]],
+                  [&#39;black&#39;])
+
+    @staticmethod
+    def compare_inner_and_outer_infection_numbers(folder: str):
+        &#34;&#34;&#34;
+        TODO Docstring PostProcessing compare_inner_and_outer_infection_numbers
+        &#34;&#34;&#34;
+
+        def get_infection_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;infections&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member[&#34;infections&#34;]:
+                    if infection[1]:
+                        infection_data[&#34;inside&#34;] += 1
+
+                    else:
+                        infection_data[&#34;outside&#34;] += 1
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        infection_data = {&#34;inside&#34;: 0, &#34;outside&#34;: 0}
+        get_infection_data()
+
+        p_inside = infection_data[&#34;inside&#34;] / sum(infection_data.values())
+
+        plt.bar(*zip(*infection_data.items()))
+        for i, v in enumerate([p_inside, 1 - p_inside]):
+            plt.text(i, list(infection_data.values())[i] / 2, &#34;%.1f%%&#34; % (100 * v), color=&#39;black&#39;, ha=&#39;center&#39;,
+                     va=&#39;center&#39;, fontsize=32)
+
+        plt.ylabel(&#39;Total&#39;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;inner_vs_outer.png&#34;)
+        plt.show()</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers"><code class="name flex">
+<span>def <span class="ident">compare_inner_and_outer_infection_numbers</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring PostProcessing compare_inner_and_outer_infection_numbers</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def compare_inner_and_outer_infection_numbers(folder: str):
+    &#34;&#34;&#34;
+    TODO Docstring PostProcessing compare_inner_and_outer_infection_numbers
+    &#34;&#34;&#34;
+
+    def get_infection_data():
+        f = json.load(open(folder + &#34;population.json&#34;))
+
+        p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+        for member in f[&#34;members&#34;]:
+            if &#34;infections&#34; not in member.keys():
+                p.update(1)
+                continue
+
+            for infection in member[&#34;infections&#34;]:
+                if infection[1]:
+                    infection_data[&#34;inside&#34;] += 1
+
+                else:
+                    infection_data[&#34;outside&#34;] += 1
+
+            p.update(1)
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    infection_data = {&#34;inside&#34;: 0, &#34;outside&#34;: 0}
+    get_infection_data()
+
+    p_inside = infection_data[&#34;inside&#34;] / sum(infection_data.values())
+
+    plt.bar(*zip(*infection_data.items()))
+    for i, v in enumerate([p_inside, 1 - p_inside]):
+        plt.text(i, list(infection_data.values())[i] / 2, &#34;%.1f%%&#34; % (100 * v), color=&#39;black&#39;, ha=&#39;center&#39;,
+                 va=&#39;center&#39;, fontsize=32)
+
+    plt.ylabel(&#39;Total&#39;)
+    plt.savefig(folder + &#34;Plots&#34; + sep + &#34;inner_vs_outer.png&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.PostProcessing.infection_graph"><code class="name flex">
+<span>def <span class="ident">infection_graph</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring PostProcessing infection_graph</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def infection_graph(folder: str):
+    &#34;&#34;&#34;
+    TODO Docstring PostProcessing infection_graph
+    &#34;&#34;&#34;
+
+    def get_plot_elements():
+        f = json.load(open(folder + &#34;population.json&#34;))
+        member_id_dict = {member[&#34;id&#34;]: i for i, member in enumerate(f[&#34;members&#34;])}
+
+        p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+        for member in f[&#34;members&#34;]:
+            self = member_id_dict[member[&#34;id&#34;]]
+            if &#34;infections&#34; not in member.keys():
+                p.update(1)
+                continue
+
+            for infection in member[&#34;infections&#34;]:
+                infectant = member_id_dict[infection[0]]
+                first_day = infection[2]
+                last_day = infection[4]
+
+                plot_elements[&#34;Lines&#34;] += [[[self, first_day], [self, last_day]]]
+
+                if infectant != self:
+                    plot_elements[&#34;Lines&#34;] += [[[self, first_day], [infectant, first_day - 1]]]
+                    plot_elements[&#34;Infected&#34;] += [[self, first_day]]
+
+                else:
+                    plot_elements[&#34;Initials&#34;] += [[self, 0]]
+
+            p.update(1)
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    plot_elements = {&#34;Initials&#34;: [], &#34;Infected&#34;: [], &#34;Lines&#34;: []}
+    get_plot_elements()
+    plot_elements[&#34;Initials&#34;] = np.array(plot_elements[&#34;Initials&#34;])
+    plot_elements[&#34;Infected&#34;] = np.array(plot_elements[&#34;Infected&#34;])
+    plot_elements[&#34;Lines&#34;] = np.array(plot_elements[&#34;Lines&#34;])
+
+    ax = plt.gca()
+    ax.add_collection(LineCollection(plot_elements[&#34;Lines&#34;], color=&#39;r&#39;, alpha=0.2, linewidth=0.01))
+    ax.plot(*plot_elements[&#34;Infected&#34;][:, [0, 1]].T, color=&#39;r&#39;, marker=&#39;x&#39;, linestyle=&#39;None&#39;, markersize=0.01)
+    ax.plot(*plot_elements[&#34;Initials&#34;][:, [0, 1]].T, color=&#39;b&#39;, marker=&#39;x&#39;, linestyle=&#39;None&#39;, markersize=0.01)
+    plt.xlabel(&#39;Population&#39;)
+    plt.ylabel(&#39;Day&#39;)
+    plt.savefig(folder + &#34;Plots&#34; + sep + &#34;Infection_graph.pdf&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.PostProcessing.progression_plots"><code class="name flex">
+<span>def <span class="ident">progression_plots</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring PostProcessing progression_plots</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def progression_plots(folder: str):
+    &#34;&#34;&#34;
+    TODO Docstring PostProcessing progression_plots
+    &#34;&#34;&#34;
+
+    def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+        _, ax = plt.subplots()
+        days = np.arange(0, len(datasets[0]), 1)
+
+        for i, dataset in enumerate(datasets):
+            ax.plot(dataset, color=colors[i])
+
+        ax.fill_between(days, 0, 1, where=data[&#34;in_lockdown&#34;], color=&#39;red&#39;, alpha=0.25,
+                        transform=ax.get_xaxis_transform())
+        ax.set_xlabel(&#34;t&#34;)
+        ax.set_ylabel(&#34;#&#34;)
+        ax.set_xlim(0, days[-1])
+        ax.set_title(title)
+        plt.savefig(folder + &#34;Plots&#34; + sep + plotname)
+        plt.show()
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    population_size = json.load(open(folder + &#34;population.json&#34;))[&#34;size&#34;]
+    data_stream = csv.DictReader(open(folder + &#34;progression.csv&#34;))
+    data = {}
+    for row in data_stream:
+        for key, value in row.items():
+            if key not in data.keys():
+                data[key] = []
+
+            data[key] += [int(value)]
+
+    data = {column: np.array(data[column]) for column in data.keys()}
+    make_plot(&#34;SIRVD.png&#34;, &#34;Total&#34;,
+              [population_size - data[&#34;Infected&#34;] - data[&#34;Recovered&#34;] - data[&#34;Vaccinated&#34;] - data[&#34;Dead&#34;],
+               data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;], data[&#34;Dead&#34;]],
+              [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
+
+    make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
+              [data[&#34;#new_infected&#34;], data[&#34;#ill_vaccinated&#34;]],
+              [&#39;red&#39;, &#39;purple&#39;])
+
+    make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
+              [data[&#34;Infected&#34;], data[&#34;Recovered&#34;]],
+              [&#39;red&#39;, &#39;blue&#39;])
+
+    make_plot(&#34;V.png&#34;, &#34;Vaccinated&#34;,
+              [data[&#34;Vaccinated&#34;]],
+              [&#39;cyan&#39;])
+
+    make_plot(&#34;7DI.png&#34;, &#34;Seven Day Incidence&#34;,
+              [data[&#34;seven_day_incidence&#34;]],
+              [&#39;red&#39;])
+
+    make_plot(&#34;D.png&#34;, &#34;Dead&#34;,
+              [data[&#34;Dead&#34;]],
+              [&#39;black&#39;])</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="src.Simulation.Scenarios"><code class="flex name class">
+<span>class <span class="ident">Scenarios</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Scenarios</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Scenarios:
+    &#34;&#34;&#34;
+    TODO Docstring Scenarios
+    &#34;&#34;&#34;
+
+    @staticmethod
+    def single_simulation(settings: dict):
+        &#34;&#34;&#34;
+        TODO Docstring Scenarios single_simulation
+        &#34;&#34;&#34;
+
+        sim = Simulation(settings)
+        sim.start_iteration()
+        sim.end_iteration()
+
+        return sim
+
+    @staticmethod
+    def c_inner_vs_c_outer(settings: dict, n: int = 5):
+        &#34;&#34;&#34;
+        TODO Docstring Scenarios c_inner_vs_c_outer
+        &#34;&#34;&#34;
+
+        from matplotlib.colors import LinearSegmentedColormap, LogNorm
+        custom = LinearSegmentedColormap.from_list(&#39;custom&#39;, [&#39;g&#39;, &#39;yellow&#39;, &#39;r&#39;], N=255)
+
+        sim = Simulation(settings)
+        max_infection_values = np.zeros(shape=(n, n))
+        for x, c_i in enumerate(np.linspace(0, 5, n)):
+            for y, c_o in enumerate(np.linspace(0, 5, n)):
+                settings[&#34;inner_reproduction_number&#34;] = c_i
+                settings[&#34;outer_reproduction_number&#34;] = c_o
+
+                sim.reset()
+                sim.change_settings(settings)
+                sim.start_iteration()
+
+                max_infection_values[y, x] = max(sim.groups[&#34;Infected&#34;].history)
+
+        plt.figure(figsize=(10, 10))
+        plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
+        plt.title(&#34;Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
+        plt.xlabel(&#34;$c_{inner}$&#34;)
+        plt.ylabel(&#34;$c_{outer}$&#34;)
+        plt.xticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
+        plt.yticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
+
+        for (j, i), label in np.ndenumerate(max_infection_values):
+            plt.text(i, j, int(label), ha=&#39;center&#39;, va=&#39;center&#39;)
+
+        plt.savefig(&#34;../out/general/c_inner_vs_c_outer_%dx%d.png&#34; % (n, n))
+        plt.show()
+
+        print(max_infection_values)
+
+    @staticmethod
+    def mitigation_interval(settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10):
+        &#34;&#34;&#34;
+        TODO Docstring Scenarios mitigation_interval
+        &#34;&#34;&#34;
+
+        sim = Simulation(settings)
+        mitigation_interval = np.zeros(samples)
+        interval = np.linspace(interval_boundaries[0], interval_boundaries[1], samples)
+
+        for run in range(1, avg_over + 1):
+            print(&#34;\n&#34; * 25 + &#34;Run %d&#34; % run)
+            for i, c_o in enumerate(interval):
+                settings[&#34;outer_reproduction_number&#34;] = c_o
+
+                sim.reset()
+                sim.change_settings(settings)
+                sim.start_iteration()
+
+                mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+                                         + 1 / run * max(sim.groups[&#34;Infected&#34;].history)
+
+        plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
+        plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
+        plt.xlabel(&#34;$c_{outer}$&#34;)
+        plt.ylabel(&#34;maximal infections&#34;)
+        plt.xticks(ticks=interval, labels=[&#34;%.2f&#34; % i for i in interval])
+        plt.xlim(interval_boundaries)
+        plt.grid()
+        plt.show()</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.Simulation.Scenarios.c_inner_vs_c_outer"><code class="name flex">
+<span>def <span class="ident">c_inner_vs_c_outer</span></span>(<span>settings: dict, n: int = 5)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Scenarios c_inner_vs_c_outer</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def c_inner_vs_c_outer(settings: dict, n: int = 5):
+    &#34;&#34;&#34;
+    TODO Docstring Scenarios c_inner_vs_c_outer
+    &#34;&#34;&#34;
+
+    from matplotlib.colors import LinearSegmentedColormap, LogNorm
+    custom = LinearSegmentedColormap.from_list(&#39;custom&#39;, [&#39;g&#39;, &#39;yellow&#39;, &#39;r&#39;], N=255)
+
+    sim = Simulation(settings)
+    max_infection_values = np.zeros(shape=(n, n))
+    for x, c_i in enumerate(np.linspace(0, 5, n)):
+        for y, c_o in enumerate(np.linspace(0, 5, n)):
+            settings[&#34;inner_reproduction_number&#34;] = c_i
+            settings[&#34;outer_reproduction_number&#34;] = c_o
+
+            sim.reset()
+            sim.change_settings(settings)
+            sim.start_iteration()
+
+            max_infection_values[y, x] = max(sim.groups[&#34;Infected&#34;].history)
+
+    plt.figure(figsize=(10, 10))
+    plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
+    plt.title(&#34;Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
+    plt.xlabel(&#34;$c_{inner}$&#34;)
+    plt.ylabel(&#34;$c_{outer}$&#34;)
+    plt.xticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
+    plt.yticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
+
+    for (j, i), label in np.ndenumerate(max_infection_values):
+        plt.text(i, j, int(label), ha=&#39;center&#39;, va=&#39;center&#39;)
+
+    plt.savefig(&#34;../out/general/c_inner_vs_c_outer_%dx%d.png&#34; % (n, n))
+    plt.show()
+
+    print(max_infection_values)</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.Scenarios.mitigation_interval"><code class="name flex">
+<span>def <span class="ident">mitigation_interval</span></span>(<span>settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Scenarios mitigation_interval</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def mitigation_interval(settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10):
+    &#34;&#34;&#34;
+    TODO Docstring Scenarios mitigation_interval
+    &#34;&#34;&#34;
+
+    sim = Simulation(settings)
+    mitigation_interval = np.zeros(samples)
+    interval = np.linspace(interval_boundaries[0], interval_boundaries[1], samples)
+
+    for run in range(1, avg_over + 1):
+        print(&#34;\n&#34; * 25 + &#34;Run %d&#34; % run)
+        for i, c_o in enumerate(interval):
+            settings[&#34;outer_reproduction_number&#34;] = c_o
+
+            sim.reset()
+            sim.change_settings(settings)
+            sim.start_iteration()
+
+            mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
+                                     + 1 / run * max(sim.groups[&#34;Infected&#34;].history)
+
+    plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
+    plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
+    plt.xlabel(&#34;$c_{outer}$&#34;)
+    plt.ylabel(&#34;maximal infections&#34;)
+    plt.xticks(ticks=interval, labels=[&#34;%.2f&#34; % i for i in interval])
+    plt.xlim(interval_boundaries)
+    plt.grid()
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.Scenarios.single_simulation"><code class="name flex">
+<span>def <span class="ident">single_simulation</span></span>(<span>settings: dict)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Scenarios single_simulation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def single_simulation(settings: dict):
+    &#34;&#34;&#34;
+    TODO Docstring Scenarios single_simulation
+    &#34;&#34;&#34;
+
+    sim = Simulation(settings)
+    sim.start_iteration()
+    sim.end_iteration()
+
+    return sim</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="src.Simulation.Simulation"><code class="flex name class">
+<span>class <span class="ident">Simulation</span></span>
+<span>(</span><span>settings)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation <strong>init</strong></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Simulation:
+    def __init__(self, settings):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation __init__
+        &#34;&#34;&#34;
+
+        self.settings = {&#34;population_file&#34;: &#34;None&#34;}
+        self.change_settings(settings)
+
+        self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
+        self._population_init = self.population.copy()
+        self.groups = {&#34;Infected&#34;: Group(&#34;Infected&#34;),
+                       &#34;Recovered&#34;: Group(&#34;Recovered&#34;),
+                       &#34;Vaccinated&#34;: Group(&#34;Vaccinated&#34;),
+                       &#34;Dead&#34;: Group(&#34;Dead&#34;),
+                       &#34;Quarantined&#34;: Group(&#34;Quarantined&#34;)}
+        self.stats = {&#34;#new_infected&#34;: [0],
+                      &#34;#new_recovered&#34;: [0],
+                      &#34;#new_susceptible&#34;: [0],
+                      &#34;#new_vaccinated&#34;: [0],
+                      &#34;#new_dead&#34;: [0],
+                      &#34;#ill_vaccinated&#34;: [0],
+                      &#34;test_results_-&#34;: [0],
+                      &#34;test_results_+&#34;: [0],
+                      &#34;seven_day_incidence&#34;: [0],
+                      &#34;in_lockdown&#34;: [0]
+                      }
+        self.arrange_lockdown = False
+
+    def start_iteration(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation start_iteration
+        &#34;&#34;&#34;
+
+        def initialize_groups():
+            def put_inits_in_respective_group():
+                gen_params = lambda: {
+                    &#34;incubation_period&#34;: -1,
+                    &#34;infection_period&#34;: np.random.poisson(c_infection),
+                    &#34;immunity_period&#34;: np.random.poisson(c_immunity)
+                }
+
+                for ini_inf in ini_infs:
+                    ini_inf.infect(ini_inf, 0, gen_params())
+                    self.groups[&#34;Infected&#34;].add_member(ini_inf)
+
+                for ini_rec in ini_recs:
+                    ini_rec.make_immune(np.random.poisson(c_immunity))
+                    self.groups[&#34;Recovered&#34;].add_member(ini_rec)
+                    ini_rec.recovered = True
+
+                for ini_vac in ini_vacs:
+                    ini_vac.make_immune(np.random.poisson(c_vac_immunity))
+                    self.groups[&#34;Vaccinated&#34;].add_member(ini_vac)
+                    ini_vac.vaccinated = True
+
+                for group in self.groups.values():
+                    group.counter.save_count()
+                    group.counter.squash_history()
+
+            infs_recs_vacs = np.random.choice(self.population.members,
+                                              size=n_ini_inf + n_ini_recs + n_ini_vacs,
+                                              replace=False)
+
+            ini_infs = infs_recs_vacs[:n_ini_inf]
+            ini_recs = infs_recs_vacs[n_ini_inf:n_ini_inf + n_ini_recs]
+            ini_vacs = infs_recs_vacs[n_ini_inf + n_ini_recs:]
+
+            put_inits_in_respective_group()
+
+        def simulate_group(group: Group):
+            if group.name == &#34;Infected&#34;:
+                for member in group:
+                    if member.make_tick(&#34;infectious&#34;):
+                        n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
+
+                        if self.arrange_lockdown:
+                            n_outer //= 2
+                            n_inner = round(1.5 * n_inner)
+
+                        if member.quarantined:
+                            n_outer = 0
+                            n_inner = round(1.5 * n_inner)
+
+                        gen_params = lambda: {
+                            &#34;infection_probability_heuristic&#34;: infection_heuristic,
+                            &#34;vaccine_failure_probability_heuristic&#34;: vaccine_heuristic,
+                            &#34;incubation_period&#34;: np.random.poisson(c_incubation),
+                            &#34;infection_period&#34;: np.random.poisson(c_infection),
+                            &#34;immunity_period&#34;: np.random.poisson(c_immunity),
+                        }
+
+                        household = self.population.households[member.properties[&#34;household&#34;]]
+                        new_members[&#34;newly_infected&#34;] += household.spread_disease(member, n_inner, tick, gen_params())
+                        new_members[&#34;newly_infected&#34;] += self.population.spread_disease(member, n_outer, tick,
+                                                                                        gen_params())
+
+                        if member.make_tick(&#34;recover&#34;):
+                            new_members[&#34;newly_recovered&#34;] += [member]
+                            member.recovered = True
+
+                        elif np.random.uniform() &lt; mortality_heuristic(member.properties):
+                            new_members[&#34;new_dead&#34;] += [member]
+                            member.make_dead(tick)
+
+                    if member.vaccinated:
+                        member.make_tick(&#34;vaccine&#34;)
+
+                new_members[&#34;newly_infected_vac&#34;] = [m for m in new_members[&#34;newly_infected&#34;] if m.vaccinated]
+
+            elif group.name == &#34;Recovered&#34;:
+                for member in group:
+                    if member.make_tick(&#34;immunity&#34;):
+                        new_members[&#34;newly_susceptible_rec&#34;] += [member]
+                        new_members[&#34;newly_susceptible&#34;] += [member]
+
+            elif group.name == &#34;Vaccinated&#34;:
+                for member in group:
+                    if member.make_tick(&#34;immunity&#34;):
+                        new_members[&#34;newly_susceptible_vac&#34;] += [member]
+                        new_members[&#34;newly_susceptible&#34;] += [member]
+
+                    elif not member.infected:
+                        member.make_tick(&#34;vaccine&#34;)
+
+            elif group.name == &#34;Dead&#34;:
+                pass
+
+            elif group.name == &#34;Quarantined&#34;:
+                for member in group:
+                    if member.make_tick(&#34;quarantine&#34;, tick):
+                        group.remove_member(member)
+
+            else:
+                raise ValueError(&#34;Group &#39;&#34; + group.name + &#34;&#39; does not have an update function&#34;)
+
+        def move_members_to_new_groups():
+            for member in new_members[&#34;newly_susceptible_rec&#34;]:
+                self.groups[&#34;Recovered&#34;].remove_member(member)
+                member.recovered = False
+
+            for member in new_members[&#34;newly_susceptible_vac&#34;]:
+                self.groups[&#34;Vaccinated&#34;].remove_member(member)
+                member.vaccinated = False
+
+            Group.move(new_members[&#34;newly_recovered&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
+
+            Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Dead&#34;])
+            Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Quarantined&#34;], self.groups[&#34;Dead&#34;])
+
+            for member in new_members[&#34;newly_infected&#34;]:
+                self.groups[&#34;Infected&#34;].add_member(member)
+                if member.vaccinated:
+                    self.groups[&#34;Vaccinated&#34;].remove_member(member)
+                    member.vaccinated = False
+
+        def simulate_vaccinations():
+            for member in new_members[&#34;staged_vaccinated&#34;]:
+                gen_params = lambda: {
+                    &#34;t_vac_effect&#34;: np.random.poisson(c_vac_effect),
+                    &#34;t_immunity&#34;: np.random.poisson(c_vac_immunity),
+                    &#34;t_wait_vac&#34;: t_wait_vac,
+                    &#34;t_wait_rec&#34;: t_wait_rec
+                }
+
+                if member.vaccinate(tick, gen_params()):
+                    if member.recovered:
+                        Group.move([member], self.groups[&#34;Recovered&#34;], self.groups[&#34;Vaccinated&#34;])
+                        member.recovered = False
+
+                    elif not member.vaccinated:
+                        self.groups[&#34;Vaccinated&#34;].add_member(member)
+
+                    member.vaccinated = True
+
+                else:
+                    new_members[&#34;not_vaccinated&#34;] += [member]
+
+        def simulate_tests():
+            def test_and_quarantine_procedure(member):
+                result = False
+                if not member.quarantined and tick != member._last_tested:
+                    if (not self.settings[&#34;test_vaccinated&#34;]) and &#34;vaccinations&#34; in member.properties.keys() and \
+                            tick &lt; member.properties[&#34;vaccinations&#34;][-1][0] + self.settings[&#34;vaccination_immunity_time&#34;]:
+                        return False
+
+                    result = member.test(tick)
+                    results[result] += 1
+                    if result:
+                        member.quarantine(self.settings[&#34;quarantine_duration&#34;])
+                        self.groups[&#34;Quarantined&#34;].add_member(member)
+
+                return result
+
+            def backtrack(member, depth):
+                if depth &lt;= 0 or np.random.uniform() &gt; self.settings[&#34;backtracking_probability&#34;]:
+                    return
+
+                for contact in member.recent_contacts:
+                    if test_and_quarantine_procedure(contact):
+                        backtrack(contact, depth - 1)
+
+            n_tests = min(np.random.poisson(c_tests), self.population.size)
+            results = [0, 0]
+            for member in np.random.choice(self.population.members, size=n_tests, replace=False):
+                if test_and_quarantine_procedure(member):
+                    backtrack(member, self.settings[&#34;backtracking_depth&#34;])
+
+            self.stats[&#34;test_results_-&#34;] += [results[0]]
+            self.stats[&#34;test_results_+&#34;] += [results[1]]
+
+        def decide_measure(measure: str):
+            if measure == &#34;lockdown&#34;:
+                if self.settings[&#34;start_lockdown_at&#34;] &lt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
+                    return True
+
+                elif self.settings[&#34;end_lockdown_at&#34;] &gt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
+                    return False
+
+                else:
+                    return self.arrange_lockdown
+
+            else:
+                raise ValueError(&#34;Measure not available&#34;)
+
+        def update_stats():
+            def calc_7di():
+                positive = self.stats[&#34;test_results_+&#34;]
+                if len(positive) &gt;= 7:
+                    return round(sum(positive[-7:]) * 100000 / self.population.size)
+                else:
+                    return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
+
+            self.stats[&#34;#new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
+            self.stats[&#34;#new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
+            self.stats[&#34;#new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
+            self.stats[&#34;#new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
+            self.stats[&#34;#new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
+            self.stats[&#34;#ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
+            self.stats[&#34;seven_day_incidence&#34;] += [calc_7di()]
+            self.stats[&#34;in_lockdown&#34;] += [1 if self.arrange_lockdown else 0]
+
+        def print_stats():
+            color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+            print(
+                color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
+                % (tick,
+                   self.groups[&#34;Infected&#34;].size,
+                   self.groups[&#34;Dead&#34;].size,
+                   self.groups[&#34;Quarantined&#34;].size,
+                   self.stats[&#34;#new_infected&#34;][-1],
+                   self.stats[&#34;#new_recovered&#34;][-1],
+                   self.stats[&#34;#new_vaccinated&#34;][-1],
+                   self.stats[&#34;test_results_+&#34;][-1],
+                   self.stats[&#34;test_results_-&#34;][-1],
+                   self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
+
+        print(&#34;\nInitializing simulation...&#34;)
+
+        # c -&gt; put into poisson, n -&gt; fixed value
+        tick = 0
+        infection_heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
+        mortality_heuristic = self.settings[&#34;mortality_probability_heuristic&#34;]
+        vaccine_heuristic = self.settings[&#34;vaccine_failure_probability_heuristic&#34;]
+        c_inner = self.settings[&#34;inner_reproduction_number&#34;]
+        c_outer = self.settings[&#34;outer_reproduction_number&#34;]
+        n_ini_inf = self.settings[&#34;number_of_initially_infected&#34;]
+        n_ini_recs = self.settings[&#34;number_of_initially_recovered&#34;]
+        n_ini_vacs = self.settings[&#34;number_of_initially_vaccinated&#34;]
+        c_incubation = self.settings[&#34;incubation_time&#34;]
+        c_infection = self.settings[&#34;infection_time&#34;]
+        c_immunity = self.settings[&#34;recovered_immunity_time&#34;]
+        c_vac_effect = self.settings[&#34;vaccination_takes_effect_time&#34;]
+        c_vac_immunity = self.settings[&#34;vaccination_immunity_time&#34;]
+        c_vacs = self.settings[&#34;vaccinations_per_day&#34;]
+        c_tests = self.settings[&#34;tests_per_day&#34;]
+        t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
+        t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
+        max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
+
+        initialize_groups()
+
+        print(&#34;Finished initializing simulation.\n\nStarting simulation...&#34;)
+
+        print_stats()
+
+        while True:
+            tick += 1
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
+                        tick &gt;= self.settings[&#34;vaccine_available_as_of&#34;])
+
+            self.arrange_lockdown = decide_measure(&#34;lockdown&#34;)
+
+            new_members = {
+                &#34;newly_susceptible&#34;: [],
+                &#34;newly_infected&#34;: [],
+                &#34;newly_infected_vac&#34;: [],
+                &#34;newly_recovered&#34;: [],
+                &#34;newly_susceptible_rec&#34;: [],
+                &#34;newly_susceptible_vac&#34;: [],
+                &#34;staged_vaccinated&#34;: np.random.choice(self.population.members, size=n_vacs, replace=False),
+                &#34;not_vaccinated&#34;: [],
+                &#34;new_dead&#34;: []
+            }
+
+            for group in self.groups.values():
+                simulate_group(group)
+
+            move_members_to_new_groups()
+            simulate_vaccinations()
+            simulate_tests()
+
+            for group in self.groups.values():
+                group.counter.save_count()
+
+            update_stats()
+            print_stats()
+
+            if self.groups[&#34;Infected&#34;].size == 0 or tick &gt;= max_t:
+                break
+
+        print(bcolors.ENDC + &#34;\nFinished simulation.&#34;)
+
+    def end_iteration(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation end_iteration
+        &#34;&#34;&#34;
+
+        def set_out_path():
+            path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
+            if not os.path.exists(path):
+                os.mkdir(path)
+
+            newest_iteration = Standalones.get_last_folder(path)
+            override = self.settings[&#34;override_newest&#34;] \
+                if &#34;override_newest&#34; in self.settings.keys() \
+                else newest_iteration == &#34;9999&#34;
+
+            if not newest_iteration:
+                path += &#34;0000&#34; + sep
+                os.mkdir(path)
+            else:
+                if override:
+                    path += newest_iteration + sep
+                else:
+                    path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
+                    os.mkdir(path)
+
+            return path
+
+        def save_disease_progression(path):
+            header = &#34;,&#34;.join([group.name for group in self.groups.values()] + list(self.stats.keys()))
+            rows = np.array([group.history for group in self.groups.values()] +
+                            [np.array(stat_values) for stat_values in self.stats.values()]).T
+            np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+
+        def save_options(path: str):
+            shutil.copyfile(&#34;Settings&#34; + sep + self.settings[&#34;file&#34;], path + &#34;settings.cfg&#34;)
+
+        print(&#34;\nSaving simulation data...&#34;)
+
+        out_path = set_out_path()
+        self.population.save_as_json(out_path)
+        save_disease_progression(out_path)
+        save_options(out_path)
+
+        if self.settings[&#34;override_newest&#34;] and os.path.exists(out_path + &#34;Plots&#34;):
+            shutil.rmtree(out_path + &#34;Plots&#34;)
+
+        print(&#34;Finished saving simulation data.&#34;)
+
+    def change_settings(self, settings):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation change_settings
+        &#34;&#34;&#34;
+
+        def check_settings():
+            must_haves = [&#34;population_file&#34;,
+                          &#34;infection_probability_heuristic&#34;,
+                          &#34;mortality_probability_heuristic&#34;,
+                          &#34;inner_reproduction_number&#34;,
+                          &#34;outer_reproduction_number&#34;,
+                          &#34;incubation_time&#34;,
+                          &#34;infection_time&#34;,
+                          &#34;recovered_immunity_time&#34;,
+                          &#34;number_of_initially_infected&#34;,
+                          &#34;number_of_initially_recovered&#34;,
+                          &#34;number_of_initially_vaccinated&#34;,
+                          &#34;vaccine_available_as_of&#34;,
+                          &#34;vaccination_takes_effect_time&#34;,
+                          &#34;vaccinations_per_day&#34;,
+                          &#34;vaccination_immunity_time&#34;,
+                          &#34;waiting_time_vaccination_until_new_vaccination&#34;,
+                          &#34;waiting_time_recovered_until_vaccination&#34;,
+                          &#34;tests_per_day&#34;,
+                          &#34;test_vaccinated&#34;,
+                          &#34;quarantine_duration&#34;,
+                          &#34;backtracking_depth&#34;,
+                          &#34;backtracking_probability&#34;,
+                          &#34;maximal_simulation_time_interval&#34;,
+                          &#34;start_lockdown_at&#34;,
+                          &#34;end_lockdown_at&#34;]
+
+            for property in must_haves:
+                if property not in settings.keys():
+                    raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+            if settings[&#34;start_lockdown_at&#34;] &lt; settings[&#34;end_lockdown_at&#34;]:
+                raise ValueError(&#34;end_lockdown_at must be smaller than start_lockdown_at&#34;)
+
+            return settings
+
+        self.settings = check_settings()
+
+        if self.settings[&#34;population_file&#34;] != settings[&#34;population_file&#34;]:
+            self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
+
+    def reset(self):
+        &#34;&#34;&#34;
+        TODO Docstring Simulation reset
+        &#34;&#34;&#34;
+
+        self.population = self._population_init.copy()
+
+        for group in self.groups.values():
+            group.reset()
+
+        for stat in self.stats.keys():
+            self.stats[stat] = [0]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="src.Simulation.Simulation.change_settings"><code class="name flex">
+<span>def <span class="ident">change_settings</span></span>(<span>self, settings)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation change_settings</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def change_settings(self, settings):
+    &#34;&#34;&#34;
+    TODO Docstring Simulation change_settings
+    &#34;&#34;&#34;
+
+    def check_settings():
+        must_haves = [&#34;population_file&#34;,
+                      &#34;infection_probability_heuristic&#34;,
+                      &#34;mortality_probability_heuristic&#34;,
+                      &#34;inner_reproduction_number&#34;,
+                      &#34;outer_reproduction_number&#34;,
+                      &#34;incubation_time&#34;,
+                      &#34;infection_time&#34;,
+                      &#34;recovered_immunity_time&#34;,
+                      &#34;number_of_initially_infected&#34;,
+                      &#34;number_of_initially_recovered&#34;,
+                      &#34;number_of_initially_vaccinated&#34;,
+                      &#34;vaccine_available_as_of&#34;,
+                      &#34;vaccination_takes_effect_time&#34;,
+                      &#34;vaccinations_per_day&#34;,
+                      &#34;vaccination_immunity_time&#34;,
+                      &#34;waiting_time_vaccination_until_new_vaccination&#34;,
+                      &#34;waiting_time_recovered_until_vaccination&#34;,
+                      &#34;tests_per_day&#34;,
+                      &#34;test_vaccinated&#34;,
+                      &#34;quarantine_duration&#34;,
+                      &#34;backtracking_depth&#34;,
+                      &#34;backtracking_probability&#34;,
+                      &#34;maximal_simulation_time_interval&#34;,
+                      &#34;start_lockdown_at&#34;,
+                      &#34;end_lockdown_at&#34;]
+
+        for property in must_haves:
+            if property not in settings.keys():
+                raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+
+        if settings[&#34;start_lockdown_at&#34;] &lt; settings[&#34;end_lockdown_at&#34;]:
+            raise ValueError(&#34;end_lockdown_at must be smaller than start_lockdown_at&#34;)
+
+        return settings
+
+    self.settings = check_settings()
+
+    if self.settings[&#34;population_file&#34;] != settings[&#34;population_file&#34;]:
+        self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.Simulation.end_iteration"><code class="name flex">
+<span>def <span class="ident">end_iteration</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation end_iteration</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def end_iteration(self):
+    &#34;&#34;&#34;
+    TODO Docstring Simulation end_iteration
+    &#34;&#34;&#34;
+
+    def set_out_path():
+        path = &#34;..&#34; + sep + &#34;out&#34; + sep + self.population.name + sep
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        newest_iteration = Standalones.get_last_folder(path)
+        override = self.settings[&#34;override_newest&#34;] \
+            if &#34;override_newest&#34; in self.settings.keys() \
+            else newest_iteration == &#34;9999&#34;
+
+        if not newest_iteration:
+            path += &#34;0000&#34; + sep
+            os.mkdir(path)
+        else:
+            if override:
+                path += newest_iteration + sep
+            else:
+                path += f&#34;{int(newest_iteration) + 1 :04d}&#34; + sep
+                os.mkdir(path)
+
+        return path
+
+    def save_disease_progression(path):
+        header = &#34;,&#34;.join([group.name for group in self.groups.values()] + list(self.stats.keys()))
+        rows = np.array([group.history for group in self.groups.values()] +
+                        [np.array(stat_values) for stat_values in self.stats.values()]).T
+        np.savetxt(path + &#34;progression.csv&#34;, rows, fmt=&#39;%d&#39;, delimiter=&#34;,&#34;, header=header, comments=&#39;&#39;)
+
+    def save_options(path: str):
+        shutil.copyfile(&#34;Settings&#34; + sep + self.settings[&#34;file&#34;], path + &#34;settings.cfg&#34;)
+
+    print(&#34;\nSaving simulation data...&#34;)
+
+    out_path = set_out_path()
+    self.population.save_as_json(out_path)
+    save_disease_progression(out_path)
+    save_options(out_path)
+
+    if self.settings[&#34;override_newest&#34;] and os.path.exists(out_path + &#34;Plots&#34;):
+        shutil.rmtree(out_path + &#34;Plots&#34;)
+
+    print(&#34;Finished saving simulation data.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.Simulation.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation reset</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reset(self):
+    &#34;&#34;&#34;
+    TODO Docstring Simulation reset
+    &#34;&#34;&#34;
+
+    self.population = self._population_init.copy()
+
+    for group in self.groups.values():
+        group.reset()
+
+    for stat in self.stats.keys():
+        self.stats[stat] = [0]</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.Simulation.start_iteration"><code class="name flex">
+<span>def <span class="ident">start_iteration</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Simulation start_iteration</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start_iteration(self):
+    &#34;&#34;&#34;
+    TODO Docstring Simulation start_iteration
+    &#34;&#34;&#34;
+
+    def initialize_groups():
+        def put_inits_in_respective_group():
+            gen_params = lambda: {
+                &#34;incubation_period&#34;: -1,
+                &#34;infection_period&#34;: np.random.poisson(c_infection),
+                &#34;immunity_period&#34;: np.random.poisson(c_immunity)
+            }
+
+            for ini_inf in ini_infs:
+                ini_inf.infect(ini_inf, 0, gen_params())
+                self.groups[&#34;Infected&#34;].add_member(ini_inf)
+
+            for ini_rec in ini_recs:
+                ini_rec.make_immune(np.random.poisson(c_immunity))
+                self.groups[&#34;Recovered&#34;].add_member(ini_rec)
+                ini_rec.recovered = True
+
+            for ini_vac in ini_vacs:
+                ini_vac.make_immune(np.random.poisson(c_vac_immunity))
+                self.groups[&#34;Vaccinated&#34;].add_member(ini_vac)
+                ini_vac.vaccinated = True
+
+            for group in self.groups.values():
+                group.counter.save_count()
+                group.counter.squash_history()
+
+        infs_recs_vacs = np.random.choice(self.population.members,
+                                          size=n_ini_inf + n_ini_recs + n_ini_vacs,
+                                          replace=False)
+
+        ini_infs = infs_recs_vacs[:n_ini_inf]
+        ini_recs = infs_recs_vacs[n_ini_inf:n_ini_inf + n_ini_recs]
+        ini_vacs = infs_recs_vacs[n_ini_inf + n_ini_recs:]
+
+        put_inits_in_respective_group()
+
+    def simulate_group(group: Group):
+        if group.name == &#34;Infected&#34;:
+            for member in group:
+                if member.make_tick(&#34;infectious&#34;):
+                    n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
+
+                    if self.arrange_lockdown:
+                        n_outer //= 2
+                        n_inner = round(1.5 * n_inner)
+
+                    if member.quarantined:
+                        n_outer = 0
+                        n_inner = round(1.5 * n_inner)
+
+                    gen_params = lambda: {
+                        &#34;infection_probability_heuristic&#34;: infection_heuristic,
+                        &#34;vaccine_failure_probability_heuristic&#34;: vaccine_heuristic,
+                        &#34;incubation_period&#34;: np.random.poisson(c_incubation),
+                        &#34;infection_period&#34;: np.random.poisson(c_infection),
+                        &#34;immunity_period&#34;: np.random.poisson(c_immunity),
+                    }
+
+                    household = self.population.households[member.properties[&#34;household&#34;]]
+                    new_members[&#34;newly_infected&#34;] += household.spread_disease(member, n_inner, tick, gen_params())
+                    new_members[&#34;newly_infected&#34;] += self.population.spread_disease(member, n_outer, tick,
+                                                                                    gen_params())
+
+                    if member.make_tick(&#34;recover&#34;):
+                        new_members[&#34;newly_recovered&#34;] += [member]
+                        member.recovered = True
+
+                    elif np.random.uniform() &lt; mortality_heuristic(member.properties):
+                        new_members[&#34;new_dead&#34;] += [member]
+                        member.make_dead(tick)
+
+                if member.vaccinated:
+                    member.make_tick(&#34;vaccine&#34;)
+
+            new_members[&#34;newly_infected_vac&#34;] = [m for m in new_members[&#34;newly_infected&#34;] if m.vaccinated]
+
+        elif group.name == &#34;Recovered&#34;:
+            for member in group:
+                if member.make_tick(&#34;immunity&#34;):
+                    new_members[&#34;newly_susceptible_rec&#34;] += [member]
+                    new_members[&#34;newly_susceptible&#34;] += [member]
+
+        elif group.name == &#34;Vaccinated&#34;:
+            for member in group:
+                if member.make_tick(&#34;immunity&#34;):
+                    new_members[&#34;newly_susceptible_vac&#34;] += [member]
+                    new_members[&#34;newly_susceptible&#34;] += [member]
+
+                elif not member.infected:
+                    member.make_tick(&#34;vaccine&#34;)
+
+        elif group.name == &#34;Dead&#34;:
+            pass
+
+        elif group.name == &#34;Quarantined&#34;:
+            for member in group:
+                if member.make_tick(&#34;quarantine&#34;, tick):
+                    group.remove_member(member)
+
+        else:
+            raise ValueError(&#34;Group &#39;&#34; + group.name + &#34;&#39; does not have an update function&#34;)
+
+    def move_members_to_new_groups():
+        for member in new_members[&#34;newly_susceptible_rec&#34;]:
+            self.groups[&#34;Recovered&#34;].remove_member(member)
+            member.recovered = False
+
+        for member in new_members[&#34;newly_susceptible_vac&#34;]:
+            self.groups[&#34;Vaccinated&#34;].remove_member(member)
+            member.vaccinated = False
+
+        Group.move(new_members[&#34;newly_recovered&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
+
+        Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Dead&#34;])
+        Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Quarantined&#34;], self.groups[&#34;Dead&#34;])
+
+        for member in new_members[&#34;newly_infected&#34;]:
+            self.groups[&#34;Infected&#34;].add_member(member)
+            if member.vaccinated:
+                self.groups[&#34;Vaccinated&#34;].remove_member(member)
+                member.vaccinated = False
+
+    def simulate_vaccinations():
+        for member in new_members[&#34;staged_vaccinated&#34;]:
+            gen_params = lambda: {
+                &#34;t_vac_effect&#34;: np.random.poisson(c_vac_effect),
+                &#34;t_immunity&#34;: np.random.poisson(c_vac_immunity),
+                &#34;t_wait_vac&#34;: t_wait_vac,
+                &#34;t_wait_rec&#34;: t_wait_rec
+            }
+
+            if member.vaccinate(tick, gen_params()):
+                if member.recovered:
+                    Group.move([member], self.groups[&#34;Recovered&#34;], self.groups[&#34;Vaccinated&#34;])
+                    member.recovered = False
+
+                elif not member.vaccinated:
+                    self.groups[&#34;Vaccinated&#34;].add_member(member)
+
+                member.vaccinated = True
+
+            else:
+                new_members[&#34;not_vaccinated&#34;] += [member]
+
+    def simulate_tests():
+        def test_and_quarantine_procedure(member):
+            result = False
+            if not member.quarantined and tick != member._last_tested:
+                if (not self.settings[&#34;test_vaccinated&#34;]) and &#34;vaccinations&#34; in member.properties.keys() and \
+                        tick &lt; member.properties[&#34;vaccinations&#34;][-1][0] + self.settings[&#34;vaccination_immunity_time&#34;]:
+                    return False
+
+                result = member.test(tick)
+                results[result] += 1
+                if result:
+                    member.quarantine(self.settings[&#34;quarantine_duration&#34;])
+                    self.groups[&#34;Quarantined&#34;].add_member(member)
+
+            return result
+
+        def backtrack(member, depth):
+            if depth &lt;= 0 or np.random.uniform() &gt; self.settings[&#34;backtracking_probability&#34;]:
+                return
+
+            for contact in member.recent_contacts:
+                if test_and_quarantine_procedure(contact):
+                    backtrack(contact, depth - 1)
+
+        n_tests = min(np.random.poisson(c_tests), self.population.size)
+        results = [0, 0]
+        for member in np.random.choice(self.population.members, size=n_tests, replace=False):
+            if test_and_quarantine_procedure(member):
+                backtrack(member, self.settings[&#34;backtracking_depth&#34;])
+
+        self.stats[&#34;test_results_-&#34;] += [results[0]]
+        self.stats[&#34;test_results_+&#34;] += [results[1]]
+
+    def decide_measure(measure: str):
+        if measure == &#34;lockdown&#34;:
+            if self.settings[&#34;start_lockdown_at&#34;] &lt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
+                return True
+
+            elif self.settings[&#34;end_lockdown_at&#34;] &gt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
+                return False
+
+            else:
+                return self.arrange_lockdown
+
+        else:
+            raise ValueError(&#34;Measure not available&#34;)
+
+    def update_stats():
+        def calc_7di():
+            positive = self.stats[&#34;test_results_+&#34;]
+            if len(positive) &gt;= 7:
+                return round(sum(positive[-7:]) * 100000 / self.population.size)
+            else:
+                return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
+
+        self.stats[&#34;#new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
+        self.stats[&#34;#new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
+        self.stats[&#34;#new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
+        self.stats[&#34;#new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
+        self.stats[&#34;#new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
+        self.stats[&#34;#ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
+        self.stats[&#34;seven_day_incidence&#34;] += [calc_7di()]
+        self.stats[&#34;in_lockdown&#34;] += [1 if self.arrange_lockdown else 0]
+
+    def print_stats():
+        color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+        print(
+            color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
+            % (tick,
+               self.groups[&#34;Infected&#34;].size,
+               self.groups[&#34;Dead&#34;].size,
+               self.groups[&#34;Quarantined&#34;].size,
+               self.stats[&#34;#new_infected&#34;][-1],
+               self.stats[&#34;#new_recovered&#34;][-1],
+               self.stats[&#34;#new_vaccinated&#34;][-1],
+               self.stats[&#34;test_results_+&#34;][-1],
+               self.stats[&#34;test_results_-&#34;][-1],
+               self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
+
+    print(&#34;\nInitializing simulation...&#34;)
+
+    # c -&gt; put into poisson, n -&gt; fixed value
+    tick = 0
+    infection_heuristic = self.settings[&#34;infection_probability_heuristic&#34;]
+    mortality_heuristic = self.settings[&#34;mortality_probability_heuristic&#34;]
+    vaccine_heuristic = self.settings[&#34;vaccine_failure_probability_heuristic&#34;]
+    c_inner = self.settings[&#34;inner_reproduction_number&#34;]
+    c_outer = self.settings[&#34;outer_reproduction_number&#34;]
+    n_ini_inf = self.settings[&#34;number_of_initially_infected&#34;]
+    n_ini_recs = self.settings[&#34;number_of_initially_recovered&#34;]
+    n_ini_vacs = self.settings[&#34;number_of_initially_vaccinated&#34;]
+    c_incubation = self.settings[&#34;incubation_time&#34;]
+    c_infection = self.settings[&#34;infection_time&#34;]
+    c_immunity = self.settings[&#34;recovered_immunity_time&#34;]
+    c_vac_effect = self.settings[&#34;vaccination_takes_effect_time&#34;]
+    c_vac_immunity = self.settings[&#34;vaccination_immunity_time&#34;]
+    c_vacs = self.settings[&#34;vaccinations_per_day&#34;]
+    c_tests = self.settings[&#34;tests_per_day&#34;]
+    t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
+    t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
+    max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
+
+    initialize_groups()
+
+    print(&#34;Finished initializing simulation.\n\nStarting simulation...&#34;)
+
+    print_stats()
+
+    while True:
+        tick += 1
+        n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
+                    tick &gt;= self.settings[&#34;vaccine_available_as_of&#34;])
+
+        self.arrange_lockdown = decide_measure(&#34;lockdown&#34;)
+
+        new_members = {
+            &#34;newly_susceptible&#34;: [],
+            &#34;newly_infected&#34;: [],
+            &#34;newly_infected_vac&#34;: [],
+            &#34;newly_recovered&#34;: [],
+            &#34;newly_susceptible_rec&#34;: [],
+            &#34;newly_susceptible_vac&#34;: [],
+            &#34;staged_vaccinated&#34;: np.random.choice(self.population.members, size=n_vacs, replace=False),
+            &#34;not_vaccinated&#34;: [],
+            &#34;new_dead&#34;: []
+        }
+
+        for group in self.groups.values():
+            simulate_group(group)
+
+        move_members_to_new_groups()
+        simulate_vaccinations()
+        simulate_tests()
+
+        for group in self.groups.values():
+            group.counter.save_count()
+
+        update_stats()
+        print_stats()
+
+        if self.groups[&#34;Infected&#34;].size == 0 or tick &gt;= max_t:
+            break
+
+    print(bcolors.ENDC + &#34;\nFinished simulation.&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src" href="index.html">src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.Simulation.PostProcessing" href="#src.Simulation.PostProcessing">PostProcessing</a></code></h4>
+<ul class="">
+<li><code><a title="src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers" href="#src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers">compare_inner_and_outer_infection_numbers</a></code></li>
+<li><code><a title="src.Simulation.PostProcessing.infection_graph" href="#src.Simulation.PostProcessing.infection_graph">infection_graph</a></code></li>
+<li><code><a title="src.Simulation.PostProcessing.progression_plots" href="#src.Simulation.PostProcessing.progression_plots">progression_plots</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.Simulation.Scenarios" href="#src.Simulation.Scenarios">Scenarios</a></code></h4>
+<ul class="">
+<li><code><a title="src.Simulation.Scenarios.c_inner_vs_c_outer" href="#src.Simulation.Scenarios.c_inner_vs_c_outer">c_inner_vs_c_outer</a></code></li>
+<li><code><a title="src.Simulation.Scenarios.mitigation_interval" href="#src.Simulation.Scenarios.mitigation_interval">mitigation_interval</a></code></li>
+<li><code><a title="src.Simulation.Scenarios.single_simulation" href="#src.Simulation.Scenarios.single_simulation">single_simulation</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.Simulation.Simulation" href="#src.Simulation.Simulation">Simulation</a></code></h4>
+<ul class="">
+<li><code><a title="src.Simulation.Simulation.change_settings" href="#src.Simulation.Simulation.change_settings">change_settings</a></code></li>
+<li><code><a title="src.Simulation.Simulation.end_iteration" href="#src.Simulation.Simulation.end_iteration">end_iteration</a></code></li>
+<li><code><a title="src.Simulation.Simulation.reset" href="#src.Simulation.Simulation.reset">reset</a></code></li>
+<li><code><a title="src.Simulation.Simulation.start_iteration" href="#src.Simulation.Simulation.start_iteration">start_iteration</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

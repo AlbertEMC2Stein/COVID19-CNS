@@ -34,12 +34,12 @@ TODO Docstring Utils
 
 __all__ = [&#39;EmpiricDistribution&#39;, &#39;Samplers&#39;, &#39;ProgressBar&#39;, &#39;Counter&#39;, &#39;Standalones&#39;]
 
-import inspect
 import numpy as np
 from numpy import clip
 from numpy.random import uniform, randint
 import os
 from os.path import sep
+import configparser
 
 
 class EmpiricDistribution:
@@ -145,9 +145,9 @@ class ProgressBar:
             if self.printing:
                 self.printing = False
                 p_as_int = int(percentage)
-                print(&#34;Progress: %s%s (%s%%)&#34; % (p_as_int // 5 * &#39;#&#39;,
-                                                 (20 - p_as_int // 5) * &#39;|&#39;,
-                                                 p_as_int))
+                print(&#34;\rProgress: %s%s (%s%%)&#34; % (p_as_int // 5 * &#39;#&#39;,
+                                                   (20 - p_as_int // 5) * &#39;|&#39;,
+                                                   p_as_int), end=&#34;&#34;)
         else:
             self.printing = True
 
@@ -195,14 +195,29 @@ class Counter:
         return self._step(&#39;dec&#39;, k, return_when)
 
     def save_count(self):
+        &#34;&#34;&#34;
+        TODO Docstring Counter save_count
+        &#34;&#34;&#34;
+
         self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter squash
+        TODO Docstring Counter squash_history
         &#34;&#34;&#34;
 
         self.history = self.history[-1:]
+
+    def copy(self):
+        &#34;&#34;&#34;
+        TODO Docstring Counter copy
+        &#34;&#34;&#34;
+
+        c = Counter(0)
+        c.count = self.count
+        c.history = self.history.copy()
+
+        return c
 
 
 ################################################################################################
@@ -211,10 +226,14 @@ class Counter:
 
 
 class Standalones:
+    &#34;&#34;&#34;
+    TODO Docstring Standalones
+    &#34;&#34;&#34;
+
     @staticmethod
     def get_last_folder(path: str):
         &#34;&#34;&#34;
-        TODO Standalones get_newest
+        TODO Docstring Standalones get_newest
         &#34;&#34;&#34;
 
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -222,15 +241,52 @@ class Standalones:
         return sorted(folders)[-1]
 
     @staticmethod
-    def serialize_function(f: callable):
+    def check_existence(path: str):
         &#34;&#34;&#34;
-        TODO Standalones serialize_function
+        TODO Docstring Standalones check_existence
         &#34;&#34;&#34;
 
-        if f.__name__ == &#39;&lt;lambda&gt;&#39;:
-            return inspect.getsource(f).replace(&#34; &#34;, &#34;&#34;)[50:-3]
+        if not os.path.exists(path):
+            os.mkdir(path)
 
-        return f.__name__</code></pre>
+    @staticmethod
+    def make_settings(settings_file: str):
+        &#34;&#34;&#34;
+        TODO Docstring Standalones make_settings
+        &#34;&#34;&#34;
+
+        config = configparser.RawConfigParser()
+        config.read(&#34;Settings&#34; + sep + settings_file)
+
+        settings = {}
+        for section in config.sections():
+            for setting, value in config.items(section):
+                try:
+                    if value == str(float(value)):
+                        settings[setting] = float(value)
+                    else:
+                        raise ValueError
+
+                except ValueError:
+                    try:
+                        if value == str(int(value)):
+                            settings[setting] = int(value)
+                        else:
+                            raise ValueError
+
+                    except ValueError:
+                        try:
+                            if value in [&#34;True&#34;, &#34;False&#34;]:
+                                settings[setting] = bool(value)
+                            else:
+                                raise ValueError
+
+                        except ValueError:
+                            settings[setting] = value
+
+        settings[&#34;file&#34;] = settings_file
+
+        return settings</code></pre>
 </details>
 </section>
 <section>
@@ -290,17 +346,53 @@ class Standalones:
         return self._step(&#39;dec&#39;, k, return_when)
 
     def save_count(self):
+        &#34;&#34;&#34;
+        TODO Docstring Counter save_count
+        &#34;&#34;&#34;
+
         self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter squash
+        TODO Docstring Counter squash_history
         &#34;&#34;&#34;
 
-        self.history = self.history[-1:]</code></pre>
+        self.history = self.history[-1:]
+
+    def copy(self):
+        &#34;&#34;&#34;
+        TODO Docstring Counter copy
+        &#34;&#34;&#34;
+
+        c = Counter(0)
+        c.count = self.count
+        c.history = self.history.copy()
+
+        return c</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="src.Utils.Counter.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Counter copy</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self):
+    &#34;&#34;&#34;
+    TODO Docstring Counter copy
+    &#34;&#34;&#34;
+
+    c = Counter(0)
+    c.count = self.count
+    c.history = self.history.copy()
+
+    return c</code></pre>
+</details>
+</dd>
 <dt id="src.Utils.Counter.decrement"><code class="name flex">
 <span>def <span class="ident">decrement</span></span>(<span>self, k: int = 1, return_when: str = 'after')</span>
 </code></dt>
@@ -339,12 +431,16 @@ class Standalones:
 <span>def <span class="ident">save_count</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>TODO Docstring Counter save_count</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def save_count(self):
+    &#34;&#34;&#34;
+    TODO Docstring Counter save_count
+    &#34;&#34;&#34;
+
     self.history = np.append(self.history, self.count)</code></pre>
 </details>
 </dd>
@@ -352,14 +448,14 @@ class Standalones:
 <span>def <span class="ident">squash_history</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter squash</p></div>
+<div class="desc"><p>TODO Docstring Counter squash_history</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def squash_history(self):
     &#34;&#34;&#34;
-    TODO Docstring Counter squash
+    TODO Docstring Counter squash_history
     &#34;&#34;&#34;
 
     self.history = self.history[-1:]</code></pre>
@@ -500,9 +596,9 @@ class Standalones:
             if self.printing:
                 self.printing = False
                 p_as_int = int(percentage)
-                print(&#34;Progress: %s%s (%s%%)&#34; % (p_as_int // 5 * &#39;#&#39;,
-                                                 (20 - p_as_int // 5) * &#39;|&#39;,
-                                                 p_as_int))
+                print(&#34;\rProgress: %s%s (%s%%)&#34; % (p_as_int // 5 * &#39;#&#39;,
+                                                   (20 - p_as_int // 5) * &#39;|&#39;,
+                                                   p_as_int), end=&#34;&#34;)
         else:
             self.printing = True</code></pre>
 </details>
@@ -529,9 +625,9 @@ class Standalones:
         if self.printing:
             self.printing = False
             p_as_int = int(percentage)
-            print(&#34;Progress: %s%s (%s%%)&#34; % (p_as_int // 5 * &#39;#&#39;,
-                                             (20 - p_as_int // 5) * &#39;|&#39;,
-                                             p_as_int))
+            print(&#34;\rProgress: %s%s (%s%%)&#34; % (p_as_int // 5 * &#39;#&#39;,
+                                               (20 - p_as_int // 5) * &#39;|&#39;,
+                                               p_as_int), end=&#34;&#34;)
     else:
         self.printing = True</code></pre>
 </details>
@@ -615,16 +711,20 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <span>class <span class="ident">Standalones</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>TODO Docstring Standalones</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Standalones:
+    &#34;&#34;&#34;
+    TODO Docstring Standalones
+    &#34;&#34;&#34;
+
     @staticmethod
     def get_last_folder(path: str):
         &#34;&#34;&#34;
-        TODO Standalones get_newest
+        TODO Docstring Standalones get_newest
         &#34;&#34;&#34;
 
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -632,23 +732,79 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
         return sorted(folders)[-1]
 
     @staticmethod
-    def serialize_function(f: callable):
+    def check_existence(path: str):
         &#34;&#34;&#34;
-        TODO Standalones serialize_function
+        TODO Docstring Standalones check_existence
         &#34;&#34;&#34;
 
-        if f.__name__ == &#39;&lt;lambda&gt;&#39;:
-            return inspect.getsource(f).replace(&#34; &#34;, &#34;&#34;)[50:-3]
+        if not os.path.exists(path):
+            os.mkdir(path)
 
-        return f.__name__</code></pre>
+    @staticmethod
+    def make_settings(settings_file: str):
+        &#34;&#34;&#34;
+        TODO Docstring Standalones make_settings
+        &#34;&#34;&#34;
+
+        config = configparser.RawConfigParser()
+        config.read(&#34;Settings&#34; + sep + settings_file)
+
+        settings = {}
+        for section in config.sections():
+            for setting, value in config.items(section):
+                try:
+                    if value == str(float(value)):
+                        settings[setting] = float(value)
+                    else:
+                        raise ValueError
+
+                except ValueError:
+                    try:
+                        if value == str(int(value)):
+                            settings[setting] = int(value)
+                        else:
+                            raise ValueError
+
+                    except ValueError:
+                        try:
+                            if value in [&#34;True&#34;, &#34;False&#34;]:
+                                settings[setting] = bool(value)
+                            else:
+                                raise ValueError
+
+                        except ValueError:
+                            settings[setting] = value
+
+        settings[&#34;file&#34;] = settings_file
+
+        return settings</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
+<dt id="src.Utils.Standalones.check_existence"><code class="name flex">
+<span>def <span class="ident">check_existence</span></span>(<span>path: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO Docstring Standalones check_existence</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def check_existence(path: str):
+    &#34;&#34;&#34;
+    TODO Docstring Standalones check_existence
+    &#34;&#34;&#34;
+
+    if not os.path.exists(path):
+        os.mkdir(path)</code></pre>
+</details>
+</dd>
 <dt id="src.Utils.Standalones.get_last_folder"><code class="name flex">
 <span>def <span class="ident">get_last_folder</span></span>(<span>path: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Standalones get_newest</p></div>
+<div class="desc"><p>TODO Docstring Standalones get_newest</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -656,7 +812,7 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <pre><code class="python">@staticmethod
 def get_last_folder(path: str):
     &#34;&#34;&#34;
-    TODO Standalones get_newest
+    TODO Docstring Standalones get_newest
     &#34;&#34;&#34;
 
     folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -664,25 +820,53 @@ def get_last_folder(path: str):
     return sorted(folders)[-1]</code></pre>
 </details>
 </dd>
-<dt id="src.Utils.Standalones.serialize_function"><code class="name flex">
-<span>def <span class="ident">serialize_function</span></span>(<span>f: <built-in function callable>)</span>
+<dt id="src.Utils.Standalones.make_settings"><code class="name flex">
+<span>def <span class="ident">make_settings</span></span>(<span>settings_file: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Standalones serialize_function</p></div>
+<div class="desc"><p>TODO Docstring Standalones make_settings</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def serialize_function(f: callable):
+def make_settings(settings_file: str):
     &#34;&#34;&#34;
-    TODO Standalones serialize_function
+    TODO Docstring Standalones make_settings
     &#34;&#34;&#34;
 
-    if f.__name__ == &#39;&lt;lambda&gt;&#39;:
-        return inspect.getsource(f).replace(&#34; &#34;, &#34;&#34;)[50:-3]
+    config = configparser.RawConfigParser()
+    config.read(&#34;Settings&#34; + sep + settings_file)
 
-    return f.__name__</code></pre>
+    settings = {}
+    for section in config.sections():
+        for setting, value in config.items(section):
+            try:
+                if value == str(float(value)):
+                    settings[setting] = float(value)
+                else:
+                    raise ValueError
+
+            except ValueError:
+                try:
+                    if value == str(int(value)):
+                        settings[setting] = int(value)
+                    else:
+                        raise ValueError
+
+                except ValueError:
+                    try:
+                        if value in [&#34;True&#34;, &#34;False&#34;]:
+                            settings[setting] = bool(value)
+                        else:
+                            raise ValueError
+
+                    except ValueError:
+                        settings[setting] = value
+
+    settings[&#34;file&#34;] = settings_file
+
+    return settings</code></pre>
 </details>
 </dd>
 </dl>
@@ -706,6 +890,7 @@ def serialize_function(f: callable):
 <li>
 <h4><code><a title="src.Utils.Counter" href="#src.Utils.Counter">Counter</a></code></h4>
 <ul class="">
+<li><code><a title="src.Utils.Counter.copy" href="#src.Utils.Counter.copy">copy</a></code></li>
 <li><code><a title="src.Utils.Counter.decrement" href="#src.Utils.Counter.decrement">decrement</a></code></li>
 <li><code><a title="src.Utils.Counter.increment" href="#src.Utils.Counter.increment">increment</a></code></li>
 <li><code><a title="src.Utils.Counter.save_count" href="#src.Utils.Counter.save_count">save_count</a></code></li>
@@ -735,8 +920,9 @@ def serialize_function(f: callable):
 <li>
 <h4><code><a title="src.Utils.Standalones" href="#src.Utils.Standalones">Standalones</a></code></h4>
 <ul class="">
+<li><code><a title="src.Utils.Standalones.check_existence" href="#src.Utils.Standalones.check_existence">check_existence</a></code></li>
 <li><code><a title="src.Utils.Standalones.get_last_folder" href="#src.Utils.Standalones.get_last_folder">get_last_folder</a></code></li>
-<li><code><a title="src.Utils.Standalones.serialize_function" href="#src.Utils.Standalones.serialize_function">serialize_function</a></code></li>
+<li><code><a title="src.Utils.Standalones.make_settings" href="#src.Utils.Standalones.make_settings">make_settings</a></code></li>
 </ul>
 </li>
 </ul>
