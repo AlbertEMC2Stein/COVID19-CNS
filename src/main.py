@@ -5,6 +5,7 @@ TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 from src.Simulation import *
 from src.Utils import Standalones
 import numpy as np
+from os.path import sep
 
 if __name__ == "__main__":
     def infection_probability_heuristic(mem_props):
@@ -69,8 +70,10 @@ if __name__ == "__main__":
     simulation_settings["mortality_probability_heuristic"] = heuristic(simulation_settings["mortality_probability_heuristic"])
     simulation_settings["vaccine_failure_probability_heuristic"] = heuristic(simulation_settings["vaccine_failure_probability_heuristic"])
 
-    #sim = Scenarios.single_simulation(simulation_settings)
-    Scenarios.c_inner_vs_c_outer(simulation_settings, 2)
-    #PostProcessing.infection_graph("../out/DE_03_KLLand/0005")
-    #PostProcessing.compare_inner_and_outer_infection_numbers("../out/DE_03_KLLand/0005")
-    #PostProcessing.progression_plots("../out/DE_03_KLLand/0005")
+    sim = Scenarios.single_simulation(simulation_settings)
+
+    out = ".." + sep + "out" + sep + simulation_settings["population_file"].split('.')[0] + sep
+    latest = Standalones.get_last_folder(out)
+    PostProcessing.infection_graph(out + latest)
+    PostProcessing.compare_inner_and_outer_infection_numbers(out + latest)
+    PostProcessing.progression_plots(out + latest)
