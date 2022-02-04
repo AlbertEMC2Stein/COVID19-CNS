@@ -1,5 +1,5 @@
 """
-TODO Docstring Utils
+Collection of different classes for more flexible usability.
 """
 
 __all__ = ['EmpiricDistribution', 'Samplers', 'ProgressBar', 'Counter', 'Standalones']
@@ -15,7 +15,12 @@ import configparser
 class EmpiricDistribution:
     def __init__(self, data_dict: dict):
         """
-        TODO Docstring EmpiricDistribution __init__
+        Creates a custom probability distribution from given data.
+
+        Parameters
+        ----------
+        data_dict : dict
+            Dictionary with value-frequency/occurences pairs.
         """
 
         def normalize(dict_values):
@@ -28,7 +33,12 @@ class EmpiricDistribution:
 
     def quantile(self, p: float):
         """
-        TODO Docstring EmpiricDistribution quantile
+        Calculates quantile of p w.r.t. the given distribution.
+
+        Parameters
+        ----------
+        p : float
+            Value to calculate quantile of \\(0 \\leq p \\leq 1\\).
         """
 
         if not np.all((0 <= p) & (p <= 1)):
@@ -42,7 +52,12 @@ class EmpiricDistribution:
 
     def pick(self, **kwargs):
         """
-        TODO Docstring pick
+        Pick a random sample that follows the given distribution.
+
+        Keyword Args
+        ----------
+        size: int, tuple
+            Number of samples to pick
         """
 
         if 'size' in kwargs.keys():
