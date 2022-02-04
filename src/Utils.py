@@ -85,7 +85,7 @@ class EmpiricDistribution:
 
 class Samplers:
     """
-    TODO Docstring Samplers
+    Class for generating populations from custom property distributions.
     """
 
     basic_sampler = {
@@ -93,13 +93,25 @@ class Samplers:
         "age": lambda: randint(0, 90),
     }
     """
-    TODO Docstring basic_Sampler
+    Most basic population sampler.
+    \nhousehold : uniform distribution in \\([0, \\dots, 20]\\) 
+    \nage : uniform distribution in \\([0, \\dots, 89]\\)
     """
 
     @staticmethod
     def generate_population_data_from_samplers(property_samplers: dict, n: int):
         """
-        TODO Docstring generate_population_data_from_samplers
+        Generates a new random population whose members properties
+        follow the given distributions and saves it as
+        src/Populations/FromSampler_TIMESTAMP.csv
+
+        Parameters
+        ----------
+        property_samplers : dict
+            Dictionary with property-sampler pairs.
+
+        n : int
+            Size of the population generated.
         """
 
         headers = np.array(["id"] + list(property_samplers.keys()))
