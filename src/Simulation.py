@@ -495,6 +495,11 @@ class Scenarios:
         settings : dict
             The dictionary containing all relevant settings for
             the simulation.
+
+        Returns
+        ----------
+        Simulation
+            The simulation object.
         """
 
         sim = Simulation(settings)
