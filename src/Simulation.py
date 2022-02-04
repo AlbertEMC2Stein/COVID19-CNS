@@ -513,7 +513,7 @@ class Scenarios:
         """
         Creates a \\(n \\times n\\)-heatmap containing the peak infection values for
         each simulation in relation to the inner- and outer- reproduction numbers in
-        the range from 0 to 5. Plot is saved in out/general/c_inner_vs_c_outer_nxn.png.
+        the range from 0 to 5. Plot is saved as out/general/c_inner_vs_c_outer_nxn.png.
 
         Parameters
         ----------
@@ -562,7 +562,7 @@ class Scenarios:
     def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), samples: int = 16, avg_over: int = 10):
         """
         Creates a plot containing the (average) peak infection values for simulations
-        with varying outer reproduction numbers in the given range. Plot is saved in
+        with varying outer reproduction numbers in the given range. Plot is saved as
         out/general/c_inner_vs_c_outer_nxn.png.
 
         Parameters
@@ -626,7 +626,7 @@ class PostProcessing:
     def infection_graph(folder: str):
         """
         Creates the infection-graph for the given simulation data and
-        saves it in folder/Plots/Infection_graph.pdf.
+        saves it as folder/Plots/Infection_graph.pdf.
 
         Parameters
         ----------
@@ -684,7 +684,7 @@ class PostProcessing:
     def progression_plots(folder: str):
         """
         Creates various plots showing the disease progression for the given simulation
-        data and saves them in folder/Plots/PLOT_NAME.png.
+        data and saves them as folder/Plots/PLOT_NAME.png.
 
         Parameters
         ----------
@@ -752,7 +752,7 @@ class PostProcessing:
     def compare_inner_and_outer_infection_numbers(folder: str):
         """
         Creates a bar plot comparing the relative numbers of infections that
-        took place inside and outside of households and saves them in
+        took place inside and outside of households and saves them as
         folder/Plots/inner_vs_outer.png.
 
         Parameters
