@@ -130,19 +130,37 @@ class Samplers:
 
 
 class ProgressBar:
-    def __init__(self, start_at: int, minimum: int, maximum: int):
+    def __init__(self, minimum: int, maximum: int, **kwargs):
         """
-        TODO Docstring ProgressBar __init__
+        Prints a simple progressbar.
+
+        Parameters
+        ----------
+        minimum : int
+            Value of minimal progress.
+
+        maximum : int
+            Value of maximal progress.
+
+        Other Parameters
+        ----------
+        start_at : int
+            If not specified progress will start at its minimum value.
         """
 
         self.min = minimum
         self.max = maximum
-        self.current = start_at
+        self.current = kwargs["start_at"] if "start_at" in kwargs.keys() else minimum
         self.printing = True
 
     def update(self, step: int):
         """
-        TODO Docstring ProgressBar update
+        Updates the current progress by the specified amount of steps.
+
+        Parameters
+        ----------
+        step : int
+            Amount of steps to advance progress.
         """
 
         self.current = clip(self.current + step, self.min, self.max)
