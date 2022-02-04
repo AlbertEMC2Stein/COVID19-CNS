@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>src.Utils API documentation</title>
-<meta name="description" content="TODO Docstring Utils" />
+<meta name="description" content="Collection of different classes for more flexible usability." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,13 +23,13 @@
 <h1 class="title">Module <code>src.Utils</code></h1>
 </header>
 <section id="section-intro">
-<p>TODO Docstring Utils</p>
+<p>Collection of different classes for more flexible usability.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34;
-TODO Docstring Utils
+Collection of different classes for more flexible usability.
 &#34;&#34;&#34;
 
 __all__ = [&#39;EmpiricDistribution&#39;, &#39;Samplers&#39;, &#39;ProgressBar&#39;, &#39;Counter&#39;, &#39;Standalones&#39;]
@@ -45,7 +45,12 @@ import configparser
 class EmpiricDistribution:
     def __init__(self, data_dict: dict):
         &#34;&#34;&#34;
-        TODO Docstring EmpiricDistribution __init__
+        Creates a custom probability distribution from given data.
+
+        Parameters
+        ----------
+        data_dict : dict
+            Dictionary with value-frequency/occurences pairs.
         &#34;&#34;&#34;
 
         def normalize(dict_values):
@@ -58,7 +63,17 @@ class EmpiricDistribution:
 
     def quantile(self, p: float):
         &#34;&#34;&#34;
-        TODO Docstring EmpiricDistribution quantile
+        Calculates quantile(s) of p w.r.t. the given distribution.
+
+        Parameters
+        ----------
+        p : float or array_like of float
+            Value(s) to calculate quantile of \\(0 \\leq p \\leq 1\\).
+
+        Returns
+        ----------
+        distribution element or array_like
+            Quantile(s) of given values.
         &#34;&#34;&#34;
 
         if not np.all((0 &lt;= p) &amp; (p &lt;= 1)):
@@ -72,7 +87,17 @@ class EmpiricDistribution:
 
     def pick(self, **kwargs):
         &#34;&#34;&#34;
-        TODO Docstring pick
+        Pick a random sample that follows the given distribution.
+
+        Other Parameters
+        ----------
+        size : int or tuple of int
+            Number of samples to pick.
+
+        Returns
+        ----------
+        distribution element or array_like
+            Sample(s) following the given distribution.
         &#34;&#34;&#34;
 
         if &#39;size&#39; in kwargs.keys():
@@ -90,7 +115,7 @@ class EmpiricDistribution:
 
 class Samplers:
     &#34;&#34;&#34;
-    TODO Docstring Samplers
+    Class for generating populations from custom property distributions.
     &#34;&#34;&#34;
 
     basic_sampler = {
@@ -98,13 +123,25 @@ class Samplers:
         &#34;age&#34;: lambda: randint(0, 90),
     }
     &#34;&#34;&#34;
-    TODO Docstring basic_Sampler
+    Most basic population sampler.
+    \nhousehold : uniform distribution in \\([0, \\dots, 20]\\) 
+    \nage : uniform distribution in \\([0, \\dots, 89]\\)
     &#34;&#34;&#34;
 
     @staticmethod
     def generate_population_data_from_samplers(property_samplers: dict, n: int):
         &#34;&#34;&#34;
-        TODO Docstring generate_population_data_from_samplers
+        Generates a new random population whose members properties
+        follow the given distributions and saves it as
+        src/Populations/FromSampler_TIMESTAMP.csv.
+
+        Parameters
+        ----------
+        property_samplers : dict
+            Dictionary with property-sampler pairs.
+
+        n : int
+            Size of the population generated.
         &#34;&#34;&#34;
 
         headers = np.array([&#34;id&#34;] + list(property_samplers.keys()))
@@ -123,19 +160,37 @@ class Samplers:
 
 
 class ProgressBar:
-    def __init__(self, start_at: int, minimum: int, maximum: int):
+    def __init__(self, minimum: int, maximum: int, **kwargs):
         &#34;&#34;&#34;
-        TODO Docstring ProgressBar __init__
+        Prints a simple progressbar.
+
+        Parameters
+        ----------
+        minimum : int
+            Value of minimal progress.
+
+        maximum : int
+            Value of maximal progress.
+
+        Other Parameters
+        ----------
+        start_at : int
+            If not specified progress will start at its minimum value.
         &#34;&#34;&#34;
 
         self.min = minimum
         self.max = maximum
-        self.current = start_at
+        self.current = kwargs[&#34;start_at&#34;] if &#34;start_at&#34; in kwargs.keys() else minimum
         self.printing = True
 
     def update(self, step: int):
         &#34;&#34;&#34;
-        TODO Docstring ProgressBar update
+        Updates the current progress by the specified amount of steps.
+
+        Parameters
+        ----------
+        step : int
+            Amount of steps to advance progress.
         &#34;&#34;&#34;
 
         self.current = clip(self.current + step, self.min, self.max)
@@ -158,9 +213,9 @@ class ProgressBar:
 
 
 class Counter:
-    def __init__(self, start):
+    def __init__(self, start: int):
         &#34;&#34;&#34;
-        TODO Docstring Counter __init__
+        Creates a simple counter that keeps track of its progress.
         &#34;&#34;&#34;
 
         self.count = start
@@ -182,35 +237,65 @@ class Counter:
 
     def increment(self, k: int = 1, return_when: str = &#39;after&#39;):
         &#34;&#34;&#34;
-        TODO Docstring Counter increment
+        Increments counter by the specified amount of steps.
+
+        Parameters
+        ----------
+        k : int
+            Amount of steps to increment.
+
+        return_when : str
+            If set to &#39;after&#39; the value returned will be tho one
+            after incrementing the counter. If &#39;before&#39; is specified
+            the value returned will be the one before incrementing.
+
+        Returns
+        ----------
+        int
+            Current value of counter.
         &#34;&#34;&#34;
 
         return self._step(&#39;inc&#39;, k, return_when)
 
     def decrement(self, k: int = 1, return_when: str = &#39;after&#39;):
         &#34;&#34;&#34;
-        TODO Docstring Counter decrement
+        Decrements counter by the specified amount of steps but never below 0.
+
+        Parameters
+        ----------
+        k : int
+            Amount of steps to decrement.
+
+        return_when : str
+            If set to &#39;after&#39; the value returned will be tho one
+            after decrementing the counter. If &#39;before&#39; is specified
+            the value returned will be the one before decrementing.
+
+        Returns
+        ----------
+        int
+            Current value of counter.
         &#34;&#34;&#34;
 
         return self._step(&#39;dec&#39;, k, return_when)
 
     def save_count(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter save_count
+        Appends the current counter value to the counter history.
         &#34;&#34;&#34;
 
         self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter squash_history
+        Deletes entire history but its last entry.
         &#34;&#34;&#34;
 
         self.history = self.history[-1:]
 
     def copy(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter copy
+        Creates a copy of the counter.
         &#34;&#34;&#34;
 
         c = Counter(0)
@@ -227,13 +312,24 @@ class Counter:
 
 class Standalones:
     &#34;&#34;&#34;
-    TODO Docstring Standalones
+    Class for miscellaneous functions.
     &#34;&#34;&#34;
 
     @staticmethod
     def get_last_folder(path: str):
         &#34;&#34;&#34;
-        TODO Docstring Standalones get_newest
+        In a directory with enumerated folders, this method selects the one
+        with the highest number.
+
+        Parameters
+        ----------
+        path : str
+            Directory to get last folder from.
+
+        Returns
+        ----------
+        str
+            Name of last folder.
         &#34;&#34;&#34;
 
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -243,7 +339,13 @@ class Standalones:
     @staticmethod
     def check_existence(path: str):
         &#34;&#34;&#34;
-        TODO Docstring Standalones check_existence
+        Checks if the last folder in the given path exists and creates it if that
+        is not the case.
+
+        Parameters
+        ----------
+        path : str
+            Path with its last element being the folder to be checked of its existence.
         &#34;&#34;&#34;
 
         if not os.path.exists(path):
@@ -252,7 +354,13 @@ class Standalones:
     @staticmethod
     def make_settings(settings_file: str):
         &#34;&#34;&#34;
-        TODO Docstring Standalones make_settings
+        Creates a settings-dictionary which is used to initialize simulations
+        from a given .cfg file.
+
+        Parameters
+        ----------
+        settings_file : str
+            Path to the file containing the settings.
         &#34;&#34;&#34;
 
         config = configparser.RawConfigParser()
@@ -300,18 +408,18 @@ class Standalones:
 <dl>
 <dt id="src.Utils.Counter"><code class="flex name class">
 <span>class <span class="ident">Counter</span></span>
-<span>(</span><span>start)</span>
+<span>(</span><span>start: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter <strong>init</strong></p></div>
+<div class="desc"><p>Creates a simple counter that keeps track of its progress.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Counter:
-    def __init__(self, start):
+    def __init__(self, start: int):
         &#34;&#34;&#34;
-        TODO Docstring Counter __init__
+        Creates a simple counter that keeps track of its progress.
         &#34;&#34;&#34;
 
         self.count = start
@@ -333,35 +441,65 @@ class Standalones:
 
     def increment(self, k: int = 1, return_when: str = &#39;after&#39;):
         &#34;&#34;&#34;
-        TODO Docstring Counter increment
+        Increments counter by the specified amount of steps.
+
+        Parameters
+        ----------
+        k : int
+            Amount of steps to increment.
+
+        return_when : str
+            If set to &#39;after&#39; the value returned will be tho one
+            after incrementing the counter. If &#39;before&#39; is specified
+            the value returned will be the one before incrementing.
+
+        Returns
+        ----------
+        int
+            Current value of counter.
         &#34;&#34;&#34;
 
         return self._step(&#39;inc&#39;, k, return_when)
 
     def decrement(self, k: int = 1, return_when: str = &#39;after&#39;):
         &#34;&#34;&#34;
-        TODO Docstring Counter decrement
+        Decrements counter by the specified amount of steps but never below 0.
+
+        Parameters
+        ----------
+        k : int
+            Amount of steps to decrement.
+
+        return_when : str
+            If set to &#39;after&#39; the value returned will be tho one
+            after decrementing the counter. If &#39;before&#39; is specified
+            the value returned will be the one before decrementing.
+
+        Returns
+        ----------
+        int
+            Current value of counter.
         &#34;&#34;&#34;
 
         return self._step(&#39;dec&#39;, k, return_when)
 
     def save_count(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter save_count
+        Appends the current counter value to the counter history.
         &#34;&#34;&#34;
 
         self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter squash_history
+        Deletes entire history but its last entry.
         &#34;&#34;&#34;
 
         self.history = self.history[-1:]
 
     def copy(self):
         &#34;&#34;&#34;
-        TODO Docstring Counter copy
+        Creates a copy of the counter.
         &#34;&#34;&#34;
 
         c = Counter(0)
@@ -376,14 +514,14 @@ class Standalones:
 <span>def <span class="ident">copy</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter copy</p></div>
+<div class="desc"><p>Creates a copy of the counter.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy(self):
     &#34;&#34;&#34;
-    TODO Docstring Counter copy
+    Creates a copy of the counter.
     &#34;&#34;&#34;
 
     c = Counter(0)
@@ -397,14 +535,43 @@ class Standalones:
 <span>def <span class="ident">decrement</span></span>(<span>self, k: int = 1, return_when: str = 'after')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter decrement</p></div>
+<div class="desc"><p>Decrements counter by the specified amount of steps but never below 0.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>Amount of steps to decrement.</dd>
+<dt><strong><code>return_when</code></strong> :&ensp;<code>str</code></dt>
+<dd>If set to 'after' the value returned will be tho one
+after decrementing the counter. If 'before' is specified
+the value returned will be the one before decrementing.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Current value of counter.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def decrement(self, k: int = 1, return_when: str = &#39;after&#39;):
     &#34;&#34;&#34;
-    TODO Docstring Counter decrement
+    Decrements counter by the specified amount of steps but never below 0.
+
+    Parameters
+    ----------
+    k : int
+        Amount of steps to decrement.
+
+    return_when : str
+        If set to &#39;after&#39; the value returned will be tho one
+        after decrementing the counter. If &#39;before&#39; is specified
+        the value returned will be the one before decrementing.
+
+    Returns
+    ----------
+    int
+        Current value of counter.
     &#34;&#34;&#34;
 
     return self._step(&#39;dec&#39;, k, return_when)</code></pre>
@@ -414,14 +581,43 @@ class Standalones:
 <span>def <span class="ident">increment</span></span>(<span>self, k: int = 1, return_when: str = 'after')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter increment</p></div>
+<div class="desc"><p>Increments counter by the specified amount of steps.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>Amount of steps to increment.</dd>
+<dt><strong><code>return_when</code></strong> :&ensp;<code>str</code></dt>
+<dd>If set to 'after' the value returned will be tho one
+after incrementing the counter. If 'before' is specified
+the value returned will be the one before incrementing.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Current value of counter.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def increment(self, k: int = 1, return_when: str = &#39;after&#39;):
     &#34;&#34;&#34;
-    TODO Docstring Counter increment
+    Increments counter by the specified amount of steps.
+
+    Parameters
+    ----------
+    k : int
+        Amount of steps to increment.
+
+    return_when : str
+        If set to &#39;after&#39; the value returned will be tho one
+        after incrementing the counter. If &#39;before&#39; is specified
+        the value returned will be the one before incrementing.
+
+    Returns
+    ----------
+    int
+        Current value of counter.
     &#34;&#34;&#34;
 
     return self._step(&#39;inc&#39;, k, return_when)</code></pre>
@@ -431,14 +627,14 @@ class Standalones:
 <span>def <span class="ident">save_count</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter save_count</p></div>
+<div class="desc"><p>Appends the current counter value to the counter history.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def save_count(self):
     &#34;&#34;&#34;
-    TODO Docstring Counter save_count
+    Appends the current counter value to the counter history.
     &#34;&#34;&#34;
 
     self.history = np.append(self.history, self.count)</code></pre>
@@ -448,14 +644,14 @@ class Standalones:
 <span>def <span class="ident">squash_history</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Counter squash_history</p></div>
+<div class="desc"><p>Deletes entire history but its last entry.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def squash_history(self):
     &#34;&#34;&#34;
-    TODO Docstring Counter squash_history
+    Deletes entire history but its last entry.
     &#34;&#34;&#34;
 
     self.history = self.history[-1:]</code></pre>
@@ -468,7 +664,12 @@ class Standalones:
 <span>(</span><span>data_dict: dict)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring EmpiricDistribution <strong>init</strong></p></div>
+<div class="desc"><p>Creates a custom probability distribution from given data.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_dict</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dictionary with value-frequency/occurences pairs.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -476,7 +677,12 @@ class Standalones:
 <pre><code class="python">class EmpiricDistribution:
     def __init__(self, data_dict: dict):
         &#34;&#34;&#34;
-        TODO Docstring EmpiricDistribution __init__
+        Creates a custom probability distribution from given data.
+
+        Parameters
+        ----------
+        data_dict : dict
+            Dictionary with value-frequency/occurences pairs.
         &#34;&#34;&#34;
 
         def normalize(dict_values):
@@ -489,7 +695,17 @@ class Standalones:
 
     def quantile(self, p: float):
         &#34;&#34;&#34;
-        TODO Docstring EmpiricDistribution quantile
+        Calculates quantile(s) of p w.r.t. the given distribution.
+
+        Parameters
+        ----------
+        p : float or array_like of float
+            Value(s) to calculate quantile of \\(0 \\leq p \\leq 1\\).
+
+        Returns
+        ----------
+        distribution element or array_like
+            Quantile(s) of given values.
         &#34;&#34;&#34;
 
         if not np.all((0 &lt;= p) &amp; (p &lt;= 1)):
@@ -503,7 +719,17 @@ class Standalones:
 
     def pick(self, **kwargs):
         &#34;&#34;&#34;
-        TODO Docstring pick
+        Pick a random sample that follows the given distribution.
+
+        Other Parameters
+        ----------
+        size : int or tuple of int
+            Number of samples to pick.
+
+        Returns
+        ----------
+        distribution element or array_like
+            Sample(s) following the given distribution.
         &#34;&#34;&#34;
 
         if &#39;size&#39; in kwargs.keys():
@@ -519,14 +745,34 @@ class Standalones:
 <span>def <span class="ident">pick</span></span>(<span>self, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring pick</p></div>
+<div class="desc"><p>Pick a random sample that follows the given distribution.</p>
+<h2 id="other-parameters">Other Parameters</h2>
+<dl>
+<dt><strong><code>size</code></strong> :&ensp;<code>int</code> or <code>tuple</code> of <code>int</code></dt>
+<dd>Number of samples to pick.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>distribution element</code> or <code>array_like</code></dt>
+<dd>Sample(s) following the given distribution.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def pick(self, **kwargs):
     &#34;&#34;&#34;
-    TODO Docstring pick
+    Pick a random sample that follows the given distribution.
+
+    Other Parameters
+    ----------
+    size : int or tuple of int
+        Number of samples to pick.
+
+    Returns
+    ----------
+    distribution element or array_like
+        Sample(s) following the given distribution.
     &#34;&#34;&#34;
 
     if &#39;size&#39; in kwargs.keys():
@@ -541,14 +787,34 @@ class Standalones:
 <span>def <span class="ident">quantile</span></span>(<span>self, p: float)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring EmpiricDistribution quantile</p></div>
+<div class="desc"><p>Calculates quantile(s) of p w.r.t. the given distribution.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>p</code></strong> :&ensp;<code>float</code> or <code>array_like</code> of <code>float</code></dt>
+<dd>Value(s) to calculate quantile of <span><span class="MathJax_Preview">0 \leq p \leq 1</span><script type="math/tex">0 \leq p \leq 1</script></span>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>distribution element</code> or <code>array_like</code></dt>
+<dd>Quantile(s) of given values.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def quantile(self, p: float):
     &#34;&#34;&#34;
-    TODO Docstring EmpiricDistribution quantile
+    Calculates quantile(s) of p w.r.t. the given distribution.
+
+    Parameters
+    ----------
+    p : float or array_like of float
+        Value(s) to calculate quantile of \\(0 \\leq p \\leq 1\\).
+
+    Returns
+    ----------
+    distribution element or array_like
+        Quantile(s) of given values.
     &#34;&#34;&#34;
 
     if not np.all((0 &lt;= p) &amp; (p &lt;= 1)):
@@ -565,28 +831,58 @@ class Standalones:
 </dd>
 <dt id="src.Utils.ProgressBar"><code class="flex name class">
 <span>class <span class="ident">ProgressBar</span></span>
-<span>(</span><span>start_at: int, minimum: int, maximum: int)</span>
+<span>(</span><span>minimum: int, maximum: int, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring ProgressBar <strong>init</strong></p></div>
+<div class="desc"><p>Prints a simple progressbar.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>minimum</code></strong> :&ensp;<code>int</code></dt>
+<dd>Value of minimal progress.</dd>
+<dt><strong><code>maximum</code></strong> :&ensp;<code>int</code></dt>
+<dd>Value of maximal progress.</dd>
+</dl>
+<h2 id="other-parameters">Other Parameters</h2>
+<dl>
+<dt><strong><code>start_at</code></strong> :&ensp;<code>int</code></dt>
+<dd>If not specified progress will start at its minimum value.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ProgressBar:
-    def __init__(self, start_at: int, minimum: int, maximum: int):
+    def __init__(self, minimum: int, maximum: int, **kwargs):
         &#34;&#34;&#34;
-        TODO Docstring ProgressBar __init__
+        Prints a simple progressbar.
+
+        Parameters
+        ----------
+        minimum : int
+            Value of minimal progress.
+
+        maximum : int
+            Value of maximal progress.
+
+        Other Parameters
+        ----------
+        start_at : int
+            If not specified progress will start at its minimum value.
         &#34;&#34;&#34;
 
         self.min = minimum
         self.max = maximum
-        self.current = start_at
+        self.current = kwargs[&#34;start_at&#34;] if &#34;start_at&#34; in kwargs.keys() else minimum
         self.printing = True
 
     def update(self, step: int):
         &#34;&#34;&#34;
-        TODO Docstring ProgressBar update
+        Updates the current progress by the specified amount of steps.
+
+        Parameters
+        ----------
+        step : int
+            Amount of steps to advance progress.
         &#34;&#34;&#34;
 
         self.current = clip(self.current + step, self.min, self.max)
@@ -608,14 +904,24 @@ class Standalones:
 <span>def <span class="ident">update</span></span>(<span>self, step: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring ProgressBar update</p></div>
+<div class="desc"><p>Updates the current progress by the specified amount of steps.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>step</code></strong> :&ensp;<code>int</code></dt>
+<dd>Amount of steps to advance progress.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def update(self, step: int):
     &#34;&#34;&#34;
-    TODO Docstring ProgressBar update
+    Updates the current progress by the specified amount of steps.
+
+    Parameters
+    ----------
+    step : int
+        Amount of steps to advance progress.
     &#34;&#34;&#34;
 
     self.current = clip(self.current + step, self.min, self.max)
@@ -638,14 +944,14 @@ class Standalones:
 <span>class <span class="ident">Samplers</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Samplers</p></div>
+<div class="desc"><p>Class for generating populations from custom property distributions.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Samplers:
     &#34;&#34;&#34;
-    TODO Docstring Samplers
+    Class for generating populations from custom property distributions.
     &#34;&#34;&#34;
 
     basic_sampler = {
@@ -653,13 +959,25 @@ class Standalones:
         &#34;age&#34;: lambda: randint(0, 90),
     }
     &#34;&#34;&#34;
-    TODO Docstring basic_Sampler
+    Most basic population sampler.
+    \nhousehold : uniform distribution in \\([0, \\dots, 20]\\) 
+    \nage : uniform distribution in \\([0, \\dots, 89]\\)
     &#34;&#34;&#34;
 
     @staticmethod
     def generate_population_data_from_samplers(property_samplers: dict, n: int):
         &#34;&#34;&#34;
-        TODO Docstring generate_population_data_from_samplers
+        Generates a new random population whose members properties
+        follow the given distributions and saves it as
+        src/Populations/FromSampler_TIMESTAMP.csv.
+
+        Parameters
+        ----------
+        property_samplers : dict
+            Dictionary with property-sampler pairs.
+
+        n : int
+            Size of the population generated.
         &#34;&#34;&#34;
 
         headers = np.array([&#34;id&#34;] + list(property_samplers.keys()))
@@ -675,7 +993,9 @@ class Standalones:
 <dl>
 <dt id="src.Utils.Samplers.basic_sampler"><code class="name">var <span class="ident">basic_sampler</span></code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring basic_Sampler</p></div>
+<div class="desc"><p>Most basic population sampler.</p>
+<p>household : uniform distribution in <span><span class="MathJax_Preview">[0, \dots, 20]</span><script type="math/tex">[0, \dots, 20]</script></span> </p>
+<p>age : uniform distribution in <span><span class="MathJax_Preview">[0, \dots, 89]</span><script type="math/tex">[0, \dots, 89]</script></span></p></div>
 </dd>
 </dl>
 <h3>Static methods</h3>
@@ -684,7 +1004,16 @@ class Standalones:
 <span>def <span class="ident">generate_population_data_from_samplers</span></span>(<span>property_samplers: dict, n: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring generate_population_data_from_samplers</p></div>
+<div class="desc"><p>Generates a new random population whose members properties
+follow the given distributions and saves it as
+src/Populations/FromSampler_TIMESTAMP.csv.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>property_samplers</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dictionary with property-sampler pairs.</dd>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>Size of the population generated.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -692,7 +1021,17 @@ class Standalones:
 <pre><code class="python">@staticmethod
 def generate_population_data_from_samplers(property_samplers: dict, n: int):
     &#34;&#34;&#34;
-    TODO Docstring generate_population_data_from_samplers
+    Generates a new random population whose members properties
+    follow the given distributions and saves it as
+    src/Populations/FromSampler_TIMESTAMP.csv.
+
+    Parameters
+    ----------
+    property_samplers : dict
+        Dictionary with property-sampler pairs.
+
+    n : int
+        Size of the population generated.
     &#34;&#34;&#34;
 
     headers = np.array([&#34;id&#34;] + list(property_samplers.keys()))
@@ -711,20 +1050,31 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <span>class <span class="ident">Standalones</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Standalones</p></div>
+<div class="desc"><p>Class for miscellaneous functions.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Standalones:
     &#34;&#34;&#34;
-    TODO Docstring Standalones
+    Class for miscellaneous functions.
     &#34;&#34;&#34;
 
     @staticmethod
     def get_last_folder(path: str):
         &#34;&#34;&#34;
-        TODO Docstring Standalones get_newest
+        In a directory with enumerated folders, this method selects the one
+        with the highest number.
+
+        Parameters
+        ----------
+        path : str
+            Directory to get last folder from.
+
+        Returns
+        ----------
+        str
+            Name of last folder.
         &#34;&#34;&#34;
 
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -734,7 +1084,13 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
     @staticmethod
     def check_existence(path: str):
         &#34;&#34;&#34;
-        TODO Docstring Standalones check_existence
+        Checks if the last folder in the given path exists and creates it if that
+        is not the case.
+
+        Parameters
+        ----------
+        path : str
+            Path with its last element being the folder to be checked of its existence.
         &#34;&#34;&#34;
 
         if not os.path.exists(path):
@@ -743,7 +1099,13 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
     @staticmethod
     def make_settings(settings_file: str):
         &#34;&#34;&#34;
-        TODO Docstring Standalones make_settings
+        Creates a settings-dictionary which is used to initialize simulations
+        from a given .cfg file.
+
+        Parameters
+        ----------
+        settings_file : str
+            Path to the file containing the settings.
         &#34;&#34;&#34;
 
         config = configparser.RawConfigParser()
@@ -785,7 +1147,13 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <span>def <span class="ident">check_existence</span></span>(<span>path: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Standalones check_existence</p></div>
+<div class="desc"><p>Checks if the last folder in the given path exists and creates it if that
+is not the case.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Path with its last element being the folder to be checked of its existence.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -793,7 +1161,13 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
 <pre><code class="python">@staticmethod
 def check_existence(path: str):
     &#34;&#34;&#34;
-    TODO Docstring Standalones check_existence
+    Checks if the last folder in the given path exists and creates it if that
+    is not the case.
+
+    Parameters
+    ----------
+    path : str
+        Path with its last element being the folder to be checked of its existence.
     &#34;&#34;&#34;
 
     if not os.path.exists(path):
@@ -804,7 +1178,18 @@ def check_existence(path: str):
 <span>def <span class="ident">get_last_folder</span></span>(<span>path: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Standalones get_newest</p></div>
+<div class="desc"><p>In a directory with enumerated folders, this method selects the one
+with the highest number.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Directory to get last folder from.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>Name of last folder.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -812,7 +1197,18 @@ def check_existence(path: str):
 <pre><code class="python">@staticmethod
 def get_last_folder(path: str):
     &#34;&#34;&#34;
-    TODO Docstring Standalones get_newest
+    In a directory with enumerated folders, this method selects the one
+    with the highest number.
+
+    Parameters
+    ----------
+    path : str
+        Directory to get last folder from.
+
+    Returns
+    ----------
+    str
+        Name of last folder.
     &#34;&#34;&#34;
 
     folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -824,7 +1220,13 @@ def get_last_folder(path: str):
 <span>def <span class="ident">make_settings</span></span>(<span>settings_file: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TODO Docstring Standalones make_settings</p></div>
+<div class="desc"><p>Creates a settings-dictionary which is used to initialize simulations
+from a given .cfg file.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>settings_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Path to the file containing the settings.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -832,7 +1234,13 @@ def get_last_folder(path: str):
 <pre><code class="python">@staticmethod
 def make_settings(settings_file: str):
     &#34;&#34;&#34;
-    TODO Docstring Standalones make_settings
+    Creates a settings-dictionary which is used to initialize simulations
+    from a given .cfg file.
+
+    Parameters
+    ----------
+    settings_file : str
+        Path to the file containing the settings.
     &#34;&#34;&#34;
 
     config = configparser.RawConfigParser()

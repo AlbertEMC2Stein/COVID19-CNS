@@ -529,6 +529,11 @@ class Scenarios:
         settings : dict
             The dictionary containing all relevant settings for
             the simulation.
+
+        Returns
+        ----------
+        Simulation
+            The simulation object.
         &#34;&#34;&#34;
 
         sim = Simulation(settings)
@@ -542,7 +547,7 @@ class Scenarios:
         &#34;&#34;&#34;
         Creates a \\(n \\times n\\)-heatmap containing the peak infection values for
         each simulation in relation to the inner- and outer- reproduction numbers in
-        the range from 0 to 5. Plot is saved in out/general/c_inner_vs_c_outer_nxn.png.
+        the range from 0 to 5. Plot is saved as out/general/c_inner_vs_c_outer_nxn.png.
 
         Parameters
         ----------
@@ -591,7 +596,7 @@ class Scenarios:
     def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), samples: int = 16, avg_over: int = 10):
         &#34;&#34;&#34;
         Creates a plot containing the (average) peak infection values for simulations
-        with varying outer reproduction numbers in the given range. Plot is saved in
+        with varying outer reproduction numbers in the given range. Plot is saved as
         out/general/c_inner_vs_c_outer_nxn.png.
 
         Parameters
@@ -655,7 +660,7 @@ class PostProcessing:
     def infection_graph(folder: str):
         &#34;&#34;&#34;
         Creates the infection-graph for the given simulation data and
-        saves it in folder/Plots/Infection_graph.pdf.
+        saves it as folder/Plots/Infection_graph.pdf.
 
         Parameters
         ----------
@@ -713,7 +718,7 @@ class PostProcessing:
     def progression_plots(folder: str):
         &#34;&#34;&#34;
         Creates various plots showing the disease progression for the given simulation
-        data and saves them in folder/Plots/PLOT_NAME.png.
+        data and saves them as folder/Plots/PLOT_NAME.png.
 
         Parameters
         ----------
@@ -781,7 +786,7 @@ class PostProcessing:
     def compare_inner_and_outer_infection_numbers(folder: str):
         &#34;&#34;&#34;
         Creates a bar plot comparing the relative numbers of infections that
-        took place inside and outside of households and saves them in
+        took place inside and outside of households and saves them as
         folder/Plots/inner_vs_outer.png.
 
         Parameters
@@ -871,7 +876,7 @@ class bcolors:
     def infection_graph(folder: str):
         &#34;&#34;&#34;
         Creates the infection-graph for the given simulation data and
-        saves it in folder/Plots/Infection_graph.pdf.
+        saves it as folder/Plots/Infection_graph.pdf.
 
         Parameters
         ----------
@@ -929,7 +934,7 @@ class bcolors:
     def progression_plots(folder: str):
         &#34;&#34;&#34;
         Creates various plots showing the disease progression for the given simulation
-        data and saves them in folder/Plots/PLOT_NAME.png.
+        data and saves them as folder/Plots/PLOT_NAME.png.
 
         Parameters
         ----------
@@ -997,7 +1002,7 @@ class bcolors:
     def compare_inner_and_outer_infection_numbers(folder: str):
         &#34;&#34;&#34;
         Creates a bar plot comparing the relative numbers of infections that
-        took place inside and outside of households and saves them in
+        took place inside and outside of households and saves them as
         folder/Plots/inner_vs_outer.png.
 
         Parameters
@@ -1049,7 +1054,7 @@ class bcolors:
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a bar plot comparing the relative numbers of infections that
-took place inside and outside of households and saves them in
+took place inside and outside of households and saves them as
 folder/Plots/inner_vs_outer.png.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1064,7 +1069,7 @@ folder/Plots/inner_vs_outer.png.</p>
 def compare_inner_and_outer_infection_numbers(folder: str):
     &#34;&#34;&#34;
     Creates a bar plot comparing the relative numbers of infections that
-    took place inside and outside of households and saves them in
+    took place inside and outside of households and saves them as
     folder/Plots/inner_vs_outer.png.
 
     Parameters
@@ -1115,7 +1120,7 @@ def compare_inner_and_outer_infection_numbers(folder: str):
 </code></dt>
 <dd>
 <div class="desc"><p>Creates the infection-graph for the given simulation data and
-saves it in folder/Plots/Infection_graph.pdf.</p>
+saves it as folder/Plots/Infection_graph.pdf.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>folder</code></strong> :&ensp;<code>Folder with simulation data to process</code></dt>
@@ -1129,7 +1134,7 @@ saves it in folder/Plots/Infection_graph.pdf.</p>
 def infection_graph(folder: str):
     &#34;&#34;&#34;
     Creates the infection-graph for the given simulation data and
-    saves it in folder/Plots/Infection_graph.pdf.
+    saves it as folder/Plots/Infection_graph.pdf.
 
     Parameters
     ----------
@@ -1189,7 +1194,7 @@ def infection_graph(folder: str):
 </code></dt>
 <dd>
 <div class="desc"><p>Creates various plots showing the disease progression for the given simulation
-data and saves them in folder/Plots/PLOT_NAME.png.</p>
+data and saves them as folder/Plots/PLOT_NAME.png.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>folder</code></strong> :&ensp;<code>Folder with simulation data to process</code></dt>
@@ -1203,7 +1208,7 @@ data and saves them in folder/Plots/PLOT_NAME.png.</p>
 def progression_plots(folder: str):
     &#34;&#34;&#34;
     Creates various plots showing the disease progression for the given simulation
-    data and saves them in folder/Plots/PLOT_NAME.png.
+    data and saves them as folder/Plots/PLOT_NAME.png.
 
     Parameters
     ----------
@@ -1294,6 +1299,11 @@ def progression_plots(folder: str):
         settings : dict
             The dictionary containing all relevant settings for
             the simulation.
+
+        Returns
+        ----------
+        Simulation
+            The simulation object.
         &#34;&#34;&#34;
 
         sim = Simulation(settings)
@@ -1307,7 +1317,7 @@ def progression_plots(folder: str):
         &#34;&#34;&#34;
         Creates a \\(n \\times n\\)-heatmap containing the peak infection values for
         each simulation in relation to the inner- and outer- reproduction numbers in
-        the range from 0 to 5. Plot is saved in out/general/c_inner_vs_c_outer_nxn.png.
+        the range from 0 to 5. Plot is saved as out/general/c_inner_vs_c_outer_nxn.png.
 
         Parameters
         ----------
@@ -1356,7 +1366,7 @@ def progression_plots(folder: str):
     def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), samples: int = 16, avg_over: int = 10):
         &#34;&#34;&#34;
         Creates a plot containing the (average) peak infection values for simulations
-        with varying outer reproduction numbers in the given range. Plot is saved in
+        with varying outer reproduction numbers in the given range. Plot is saved as
         out/general/c_inner_vs_c_outer_nxn.png.
 
         Parameters
@@ -1413,7 +1423,7 @@ def progression_plots(folder: str):
 <dd>
 <div class="desc"><p>Creates a <span><span class="MathJax_Preview">n \times n</span><script type="math/tex">n \times n</script></span>-heatmap containing the peak infection values for
 each simulation in relation to the inner- and outer- reproduction numbers in
-the range from 0 to 5. Plot is saved in out/general/c_inner_vs_c_outer_nxn.png.</p>
+the range from 0 to 5. Plot is saved as out/general/c_inner_vs_c_outer_nxn.png.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>settings</code></strong> :&ensp;<code>dict</code></dt>
@@ -1432,7 +1442,7 @@ def c_inner_vs_c_outer(settings: dict, n: int = 5):
     &#34;&#34;&#34;
     Creates a \\(n \\times n\\)-heatmap containing the peak infection values for
     each simulation in relation to the inner- and outer- reproduction numbers in
-    the range from 0 to 5. Plot is saved in out/general/c_inner_vs_c_outer_nxn.png.
+    the range from 0 to 5. Plot is saved as out/general/c_inner_vs_c_outer_nxn.png.
 
     Parameters
     ----------
@@ -1483,7 +1493,7 @@ def c_inner_vs_c_outer(settings: dict, n: int = 5):
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a plot containing the (average) peak infection values for simulations
-with varying outer reproduction numbers in the given range. Plot is saved in
+with varying outer reproduction numbers in the given range. Plot is saved as
 out/general/c_inner_vs_c_outer_nxn.png.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1509,7 +1519,7 @@ Defaulted to 10.</dd>
 def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), samples: int = 16, avg_over: int = 10):
     &#34;&#34;&#34;
     Creates a plot containing the (average) peak infection values for simulations
-    with varying outer reproduction numbers in the given range. Plot is saved in
+    with varying outer reproduction numbers in the given range. Plot is saved as
     out/general/c_inner_vs_c_outer_nxn.png.
 
     Parameters
@@ -1569,6 +1579,11 @@ def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), s
 <dt><strong><code>settings</code></strong> :&ensp;<code>dict</code></dt>
 <dd>The dictionary containing all relevant settings for
 the simulation.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="src.Simulation.Simulation" href="#src.Simulation.Simulation">Simulation</a></code></dt>
+<dd>The simulation object.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1584,6 +1599,11 @@ def single_simulation(settings: dict):
     settings : dict
         The dictionary containing all relevant settings for
         the simulation.
+
+    Returns
+    ----------
+    Simulation
+        The simulation object.
     &#34;&#34;&#34;
 
     sim = Simulation(settings)
