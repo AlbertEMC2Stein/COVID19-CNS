@@ -1,5 +1,5 @@
 """
-TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
+Main script for executing simulations, scenarios and post processing.
 """
 
 from src.Simulation import *
