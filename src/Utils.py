@@ -62,12 +62,12 @@ class EmpiricDistribution:
         Other Parameters
         ----------
         size : int or tuple of int
-            Number of samples to pick
+            Number of samples to pick.
 
         Returns
         ----------
         distribution element or array_like
-            Sample(s) following the given distribution
+            Sample(s) following the given distribution.
         """
 
         if 'size' in kwargs.keys():
@@ -103,7 +103,7 @@ class Samplers:
         """
         Generates a new random population whose members properties
         follow the given distributions and saves it as
-        src/Populations/FromSampler_TIMESTAMP.csv
+        src/Populations/FromSampler_TIMESTAMP.csv.
 
         Parameters
         ----------
@@ -234,13 +234,24 @@ class Counter:
 
 class Standalones:
     """
-    TODO Docstring Standalones
+    Class for miscellaneous functions.
     """
 
     @staticmethod
     def get_last_folder(path: str):
         """
-        TODO Docstring Standalones get_newest
+        In a directory with enumerated folders, this method selects the one
+        with the highest number.
+
+        Parameters
+        ----------
+        path : str
+            Directory to get last folder from.
+
+        Returns
+        ----------
+        str
+            Name of last folder.
         """
 
         folders = [folder for folder in os.listdir(path) if os.path.isdir(path + sep + folder)]
@@ -250,7 +261,13 @@ class Standalones:
     @staticmethod
     def check_existence(path: str):
         """
-        TODO Docstring Standalones check_existence
+        Checks if the last folder in the given path exists and creates it if that
+        is not the case.
+
+        Parameters
+        ----------
+        path : str
+            Path with its last element being the folder to be checked of its existence.
         """
 
         if not os.path.exists(path):
@@ -259,7 +276,13 @@ class Standalones:
     @staticmethod
     def make_settings(settings_file: str):
         """
-        TODO Docstring Standalones make_settings
+        Creates a settings-dictionary which is used to initialize simulations
+        from a given .cfg file.
+
+        Parameters
+        ----------
+        settings_file : str
+            Path to the file containing the settings.
         """
 
         config = configparser.RawConfigParser()
