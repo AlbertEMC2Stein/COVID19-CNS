@@ -31,11 +31,11 @@
 <pre><code class="python">&#34;&#34;&#34;
 TODO Docstring main \\(\\int_a^b f(x) \\ \\mathrm{d}x\\)
 &#34;&#34;&#34;
-import os
 
 from src.Simulation import *
 from src.Utils import Standalones
 import numpy as np
+from os.path import sep
 
 if __name__ == &#34;__main__&#34;:
     def infection_probability_heuristic(mem_props):
@@ -101,9 +101,12 @@ if __name__ == &#34;__main__&#34;:
     simulation_settings[&#34;vaccine_failure_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;vaccine_failure_probability_heuristic&#34;])
 
     sim = Scenarios.single_simulation(simulation_settings)
-    #PostProcessing.infection_graph(&#34;../out/DE_03_KLLand/0000&#34;)
-    #PostProcessing.compare_inner_and_outer_infection_numbers(&#34;../out/DE_03_KLLand/0000&#34;)
-    #PostProcessing.progression_plots(&#34;../out/DE_03_KLLand/0000&#34;)</code></pre>
+
+    out = &#34;..&#34; + sep + &#34;out&#34; + sep + simulation_settings[&#34;population_file&#34;].split(&#39;.&#39;)[0] + sep
+    latest = Standalones.get_last_folder(out)
+    PostProcessing.infection_graph(out + latest)
+    PostProcessing.compare_inner_and_outer_infection_numbers(out + latest)
+    PostProcessing.progression_plots(out + latest)</code></pre>
 </details>
 </section>
 <section>

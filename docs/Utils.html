@@ -277,7 +277,7 @@ class Standalones:
                     except ValueError:
                         try:
                             if value in [&#34;True&#34;, &#34;False&#34;]:
-                                settings[setting] = bool(value)
+                                settings[setting] = value == &#34;True&#34;
                             else:
                                 raise ValueError
 
@@ -768,7 +768,7 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
                     except ValueError:
                         try:
                             if value in [&#34;True&#34;, &#34;False&#34;]:
-                                settings[setting] = bool(value)
+                                settings[setting] = value == &#34;True&#34;
                             else:
                                 raise ValueError
 
@@ -857,7 +857,7 @@ def make_settings(settings_file: str):
                 except ValueError:
                     try:
                         if value in [&#34;True&#34;, &#34;False&#34;]:
-                            settings[setting] = bool(value)
+                            settings[setting] = value == &#34;True&#34;
                         else:
                             raise ValueError
 
