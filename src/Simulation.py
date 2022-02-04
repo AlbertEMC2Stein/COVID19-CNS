@@ -614,13 +614,18 @@ class Scenarios:
 
 class PostProcessing:
     """
-    TODO Docstring PostProcessing
+    Class for post processing generated simulation data
     """
 
     @staticmethod
     def infection_graph(folder: str):
         """
-        TODO Docstring PostProcessing infection_graph
+        Creates the infection-graph for the given simulation data and
+        saves it in folder/Plots/Infection_graph.pdf.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
         """
 
         def get_plot_elements():
@@ -673,7 +678,12 @@ class PostProcessing:
     @staticmethod
     def progression_plots(folder: str):
         """
-        TODO Docstring PostProcessing progression_plots
+        Creates various plots showing the disease progression for the given simulation
+        data and saves them in folder/Plots/PLOT_NAME.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
         """
 
         def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
@@ -736,7 +746,13 @@ class PostProcessing:
     @staticmethod
     def compare_inner_and_outer_infection_numbers(folder: str):
         """
-        TODO Docstring PostProcessing compare_inner_and_outer_infection_numbers
+        Creates a bar plot comparing the relative numbers of infections that
+        took place inside and outside of households and saves them in
+        folder/Plots/inner_vs_outer.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
         """
 
         def get_infection_data():
