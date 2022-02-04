@@ -183,9 +183,9 @@ class ProgressBar:
 
 
 class Counter:
-    def __init__(self, start):
+    def __init__(self, start: int):
         """
-        TODO Docstring Counter __init__
+        Creates a simple counter that keeps track of its progress.
         """
 
         self.count = start
@@ -207,35 +207,65 @@ class Counter:
 
     def increment(self, k: int = 1, return_when: str = 'after'):
         """
-        TODO Docstring Counter increment
+        Increments counter by the specified amount of steps.
+
+        Parameters
+        ----------
+        k : int
+            Amount of steps to increment.
+
+        return_when : str
+            If set to 'after' the value returned will be tho one
+            after incrementing the counter. If 'before' is specified
+            the value returned will be the one before incrementing.
+
+        Returns
+        ----------
+        int
+            Current value of counter.
         """
 
         return self._step('inc', k, return_when)
 
     def decrement(self, k: int = 1, return_when: str = 'after'):
         """
-        TODO Docstring Counter decrement
+        Decrements counter by the specified amount of steps but never below 0.
+
+        Parameters
+        ----------
+        k : int
+            Amount of steps to decrement.
+
+        return_when : str
+            If set to 'after' the value returned will be tho one
+            after decrementing the counter. If 'before' is specified
+            the value returned will be the one before decrementing.
+
+        Returns
+        ----------
+        int
+            Current value of counter.
         """
 
         return self._step('dec', k, return_when)
 
     def save_count(self):
         """
-        TODO Docstring Counter save_count
+        Appends the current counter value to the counter history.
         """
 
         self.history = np.append(self.history, self.count)
 
     def squash_history(self):
         """
-        TODO Docstring Counter squash_history
+        Deletes entire history but its last entry.
         """
 
         self.history = self.history[-1:]
 
     def copy(self):
         """
-        TODO Docstring Counter copy
+        Creates a copy of the counter.
         """
 
         c = Counter(0)
