@@ -1,5 +1,7 @@
 """
-TODO Docstring Simulation
+Allows user to run single simulations or whole scenarios
+with different custom settings, which then can be analysed
+with various postprocessing methods.
 """
 
 __all__ = ['Simulation', 'Scenarios', 'PostProcessing']
@@ -22,9 +24,15 @@ from src.Utils import ProgressBar, Standalones
 
 
 class Simulation:
-    def __init__(self, settings):
+    def __init__(self, settings: dict):
         """
-        TODO Docstring Simulation __init__
+        Create a Simulation object with the given settings.
+
+        Parameters
+        ----------
+        settings : dict
+            The dictionary containing all relevant settings for
+            the simulation.
         """
 
         self.settings = {"population_file": "None"}
@@ -52,7 +60,9 @@ class Simulation:
 
     def start_iteration(self):
         """
-        TODO Docstring Simulation start_iteration
+        Starts the simulation and runs it until infection numbers
+        drop to zero or time given in 'maximal_simulation_time_interval'
+        is reached.
         """
 
         def initialize_groups():
@@ -346,7 +356,12 @@ class Simulation:
 
     def end_iteration(self):
         """
-        TODO Docstring Simulation end_iteration
+        Ends the simulation and saves the population data as
+        population.json, the progression data as progression.csv
+        and the used settings as settings.cfg in out/POPULATION_NAME/xxxx/.
+
+        If 'override_newest' is set to True, then the latest saved simulation
+        is overridden.
         """
 
         def set_out_path():
@@ -392,9 +407,17 @@ class Simulation:
 
         print("Finished saving simulation data.")
 
-    def change_settings(self, settings):
+    def change_settings(self, settings: dict):
         """
-        TODO Docstring Simulation change_settings
+        Change the settings of the current simulation.
+
+        If 'population_file' does not change, loading it is omitted.
+
+        Parameters
+        ----------
+        settings : dict
+            The dictionary containing all relevant settings for
+            the simulation.
         """
 
         def check_settings():
@@ -440,7 +463,7 @@ class Simulation:
 
     def reset(self):
         """
-        TODO Docstring Simulation reset
+        Resets simulation to its state of initialization.
         """
 
         self.population = self._population_init.copy()
