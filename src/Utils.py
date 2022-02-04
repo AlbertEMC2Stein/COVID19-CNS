@@ -33,12 +33,17 @@ class EmpiricDistribution:
 
     def quantile(self, p: float):
         """
-        Calculates quantile of p w.r.t. the given distribution.
+        Calculates quantile(s) of p w.r.t. the given distribution.
 
         Parameters
         ----------
-        p : float
-            Value to calculate quantile of \\(0 \\leq p \\leq 1\\).
+        p : float or array_like of float
+            Value(s) to calculate quantile of \\(0 \\leq p \\leq 1\\).
+
+        Returns
+        ----------
+        distribution element or array_like
+            Quantile(s) of given values.
         """
 
         if not np.all((0 <= p) & (p <= 1)):
@@ -54,10 +59,15 @@ class EmpiricDistribution:
         """
         Pick a random sample that follows the given distribution.
 
-        Keyword Args
+        Other Parameters
         ----------
-        size: int, tuple
+        size : int or tuple of int
             Number of samples to pick
+
+        Returns
+        ----------
+        distribution element or array_like
+            Sample(s) following the given distribution
         """
 
         if 'size' in kwargs.keys():
