@@ -482,13 +482,19 @@ class Simulation:
 
 class Scenarios:
     """
-    TODO Docstring Scenarios
+    Class for simulating various scenarios
     """
 
     @staticmethod
     def single_simulation(settings: dict):
         """
-        TODO Docstring Scenarios single_simulation
+        Run a single simulation with given settings.
+
+        Parameters
+        ----------
+        settings : dict
+            The dictionary containing all relevant settings for
+            the simulation.
         """
 
         sim = Simulation(settings)
@@ -500,7 +506,19 @@ class Scenarios:
     @staticmethod
     def c_inner_vs_c_outer(settings: dict, n: int = 5):
         """
-        TODO Docstring Scenarios c_inner_vs_c_outer
+        Creates a \\(n \\times n\\)-heatmap containing the peak infection values for
+        each simulation in relation to the inner- and outer- reproduction numbers in
+        the range from 0 to 5. Plot is saved in out/general/c_inner_vs_c_outer_nxn.png.
+
+        Parameters
+        ----------
+        settings : dict
+            The dictionary containing all relevant settings for
+            the simulation.
+
+        n : int
+            Number of simulations along each axis.
+            Defaulted to 5.
         """
 
         from matplotlib.colors import LinearSegmentedColormap, LogNorm
@@ -536,9 +554,30 @@ class Scenarios:
         print(max_infection_values)
 
     @staticmethod
-    def mitigation_interval(settings: dict, interval_boundaries: tuple, samples: int, avg_over: int = 10):
+    def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), samples: int = 16, avg_over: int = 10):
         """
-        TODO Docstring Scenarios mitigation_interval
+        Creates a plot containing the (average) peak infection values for simulations
+        with varying outer reproduction numbers in the given range. Plot is saved in
+        out/general/c_inner_vs_c_outer_nxn.png.
+
+        Parameters
+        ----------
+        settings : dict
+            The dictionary containing all relevant settings for
+            the simulation.
+
+        interval_boundaries : tuple
+            Range of outer reproduction numbers to simulate.
+            Defaulted to (1.5, 3).
+
+        samples: int
+            Number of (equidistant) values for outer reproduction number to
+            be simulated.
+            Defaulted to 16.
+
+        avg_over: int
+            Number of runs to average peak values over.
+            Defaulted to 10.
         """
 
         sim = Simulation(settings)
@@ -564,6 +603,7 @@ class Scenarios:
         plt.xticks(ticks=interval, labels=["%.2f" % i for i in interval])
         plt.xlim(interval_boundaries)
         plt.grid()
+        plt.savefig("../out/general/mitigation%.2f-%.2f_%d.png" % (interval_boundaries[0], interval_boundaries[1], avg_over))
         plt.show()
 
 
