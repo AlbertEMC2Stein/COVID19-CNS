@@ -1,5 +1,25 @@
 """
-TODO Docstring Network
+Collection of the fundamental classes of the network-model of infection.
+These are:
+
+    Member:
+        A representation of a person. Consists of a dict 'properties'
+        containing all relevant data on this person, several attributes used
+        only within the simulation and some private counters used only in
+        functions in the 'Member'-class called during simulation.
+
+    Group:
+        A base class for sets of several persons. Consists of a name-string,
+        an array containing its members and a counter saving the amounts of
+        members in the group.
+
+    Household:
+        A representation of a household of people. A subclass of Group, where
+        the name is the string of the household-id.
+
+    Population:
+        A representation of a larger set of people from several households.
+        A subclass of Group, additionally consisting of a list of households.
 """
 
 __all__ = ['Member', 'Household', 'Population', 'Group']
@@ -20,7 +40,19 @@ from src.Utils import ProgressBar, Counter
 class Member:
     def __init__(self, properties: dict):
         """
-        TODO Docstring Member __init__
+        Creat a new member with the given attributes in 'properties'.
+
+        Parameters
+        ----------
+        properties : dict
+            Dictionary containing all pre-defined attributes of the new member.
+
+        Raises
+        ------
+        KeyError
+            The properties-dict is expected to contain the keys 'id' and
+            'household'. If properties does not meet the expectation,
+            a KeyError will be raised.
         """
 
         def check(_properties: dict):
@@ -52,7 +84,27 @@ class Member:
 
     def infect(self, infectant: 'Member', timestamp: int, disease_parameters: dict):
         """
-        TODO Docstring Member infect
+        Infect the member, if it is infectable.
+
+        Parameters
+        ----------
+        infectant : 'Member'
+            The infectious member that infects the member on which 'infect' is
+            applied.
+        timestamp : int
+            Current day in the simulation.
+        disease_parameters : dict
+            Dictionary containing all relevant infection parameters.
+            Is expected to contain the keys
+            'incubation_period',
+            'infection_period',
+            'vaccine_failure_probability_heuristic',
+            'immunity_period'.
+
+        Returns
+        -------
+        bool
+            Whether the member has been infected.
         """
 
         n_incubation = disease_parameters["incubation_period"]
@@ -89,7 +141,24 @@ class Member:
 
     def vaccinate(self, timestamp: int, vaccine_parameters: dict):
         """
-        TODO Docstring Member vaccinate
+        Vaccinate the member, if it is allowed to be vaccinated.
+
+        Parameters
+        ----------
+        timestamp : int
+            Current day in the simulation.
+        vaccine_parameters : dict
+            Dictionary containing all relevant vaccination parameters.
+            Is expected to contain the keys
+            't_wait_vac',
+            't_wait_rec',
+            't_vac_effect',
+            't_immunity'.
+
+        Returns
+        -------
+        bool
+            Whether the member has been vaccinated.
         """
 
         vaccine_unavailable = self.infected or self.dead or self.quarantined or \
@@ -123,7 +192,17 @@ class Member:
 
     def test(self, timestamp: int):
         """
-        TODO Docstring Member test
+        Test the member for an infection.
+
+        Parameters
+        ----------
+        timestamp : int
+            Current day in the simulation.
+
+        Returns
+        -------
+        result : bool
+            Whether the test is positive.
         """
 
         result = self.infected * (np.random.uniform() < 0.99)
@@ -138,15 +217,35 @@ class Member:
 
     def quarantine(self, days: int):
         """
-        TODO Docstring Member quarantine
+        Place the member in quarantine.
+
+        Parameters
+        ----------
+        days : int
+            Amount of days (in the simulation) the member has to stay in
+            quarantine.
+
+        Returns
+        -------
+        None.
         """
 
         self.quarantined = True
         self._released_in = days
 
-    def add_to_contacts(self, other):
+    def add_to_contacts(self, other: 'Member'):
         """
-        TODO Docstring Member add_to_contacts
+        Add 'other' to the list of recent contacts of the member.
+
+        Parameters
+        ----------
+        other : 'Member'
+            The member which is to be added to the list of recent contacts of
+            the member on which 'add_to_contacts' is called.
+
+        Returns
+        -------
+        None.
         """
 
         if len(self.recent_contacts) < 5:
@@ -157,11 +256,24 @@ class Member:
 
     def make_immune(self, immunity_duration: int):
         """
-        TODO Docstring Member make_immune
+        Make the member immune.
+        Not to be used in the simulation other than in the initialization of
+        groups ('put_inits_in_respective_group' in 'initialize_groups' in
+        'start_iteration'in the Simulation-class).
+
+        Parameters
+        ----------
+        immunity_duration : int
+            Amount of days (in the simulation) the member is to be immune.
+
+        Returns
+        -------
+        bool
+            Whether the member was infected before it has been made immune.
+            This should never be the case.
         """
 
-        if self.infected:
-            raise RuntimeError
+        if self.infected: # This should never be the case.
             self.infected = False
             self._infectious_in = -1
             self._recovers_in = -1
@@ -178,7 +290,16 @@ class Member:
 
     def make_dead(self, timestamp: int):
         """
-        TODO Docstring Member make_dead
+        Kill the member.
+
+        Parameters
+        ----------
+        timestamp : int
+            Current day in the simulation.
+
+        Returns
+        -------
+        None.
         """
 
         self.infected = False
@@ -194,7 +315,35 @@ class Member:
 
     def make_tick(self, option: str, timestamp: int = None):
         """
-        TODO Docstring Member make_tick
+        Update the private counters of the member depending on the group or the
+        stage the member is in.
+
+        Parameters
+        ----------
+        option : str
+            The type of update to be made.
+            
+        timestamp : int, optional
+            Current day in the simulation.
+            The default is None.
+
+        Raises
+        ------
+        ValueError
+            The 'option'-string is expected to be one of the following strings:
+            'infectious',
+            'immunity',
+            'vaccine',
+            'recover',
+            'quarantine'.
+            If 'option' does not meet the expectation,
+            a ValueError will be raised.
+
+        Returns
+        -------
+        bool
+            Whether a change of attributes has been reached.
+            No returns if option is 'vaccine'.
         """
 
         if option == "infectious":
@@ -251,7 +400,13 @@ class Member:
 
     def copy(self):
         """
-        TODO Docstring Member copy
+        Create a member as a copy of the member.
+        (Deep copy)
+
+        Returns
+        -------
+        m : 'Member'
+            The copy of the member.
         """
 
         m = Member(self.properties.copy())
@@ -275,7 +430,12 @@ class Member:
 class Group:
     def __init__(self, name: str):
         """
-        TODO Docstring Group __init__
+        Create a new group named 'name'.
+
+        Parameters
+        ----------
+        name : str
+            The name of the new group.
         """
 
         self.name = name
@@ -292,26 +452,66 @@ class Group:
     def __iter__(self):
         return iter(self.members)
 
-    def add_member(self, member: Member):
+    def add_member(self, member: 'Member'):
         """
-        TODO Docstring Group add_member
+        Add 'member' to the group.
+
+        Parameters
+        ----------
+        member : 'Member'
+            The member to be added to the group.
+
+        Returns
+        -------
+        None.
         """
 
         self.members = np.append(self.members, member)
         self.counter.increment()
 
-    def remove_member(self, member: Member):
+    def remove_member(self, member: 'Member'):
         """
-        TODO Docstring Group remove_member
+        Remove 'member' from the group.
+
+        Parameters
+        ----------
+        member : 'Member'
+            The member to be removed from the group.
+
+        Returns
+        -------
+        None.
         """
 
         old_size = self.members.size
         self.members = self.members[self.members != member]
         self.counter.decrement(old_size - self.members.size)
 
-    def spread_disease(self, infectant: Member, n: int, timestamp: int, disease_parameters: dict):
+    def spread_disease(self, infectant: 'Member', n: int, timestamp: int, disease_parameters: dict):
         """
-        TODO Docstring Group spread_disease
+        Let 'infectant' infect randomly chosen members of the group.
+
+        Parameters
+        ----------
+        infectant : 'Member'
+            The infectious member to be infecting members of the group.
+        n : int
+            The amount of members to be infected.
+        timestamp : int
+            Current day in the simulation.
+        disease_parameters : dict
+            Dictionary containing all relevant disease parameters.
+            Is expected to contain the keys
+            'infection_probability_heuristic',
+            'incubation_period',
+            'infection_period',
+            'vaccine_failure_probability_heuristic',
+            'immunity_period'.
+
+        Returns
+        -------
+        result : list
+            List of members which have been infected by 'infectant'.
         """
 
         result = []
@@ -329,7 +529,11 @@ class Group:
 
     def reset(self):
         """
-        TODO Docstring Group reset
+        Reset the group.
+
+        Returns
+        -------
+        None.
         """
 
         self.members = np.array([])
@@ -338,7 +542,21 @@ class Group:
     @staticmethod
     def move(members: iter, origin: 'Group', destination: 'Group'):
         """
-        TODO Docstring Group move
+        Remove all members in 'members' from 'origin' and add them to
+        'destination'.
+
+        Parameters
+        ----------
+        members : iter
+            Iterable of members to be moved from 'origin' to 'destination'.
+        origin : 'Group'
+            Group from which the members in 'members' are to be removed.
+        destination : 'Group'
+            Group to which the members i 'members' are to be added.
+
+        Returns
+        -------
+        None.
         """
 
         for member in members:
@@ -362,7 +580,12 @@ class Group:
 class Household(Group):
     def __init__(self, identifier: int):
         """
-        TODO Docstring Household __init__
+        Create a new household with household-id 'identifier'.
+
+        Parameters
+        ----------
+        identifier : int
+            The id of the new household.
         """
 
         super().__init__(str(identifier))
@@ -380,29 +603,32 @@ class Household(Group):
 class Population(Group):
     def __init__(self, name: str):
         """
-        TODO Docstring Population __init__
+        Create a new population named 'name'.
+
+        Parameters
+        ----------
+        name : str
+            The name of the new population.
         """
 
         super().__init__(name)
         self.households = {}
 
-    def add_member(self, member: Member, count: int = True):
+    def add_member(self, member: 'Member'):
         """
-        Adds member as a Member to the Population
+        Add 'member' as a Member to the Population
         and to its Household within the Population.
 
         Parameters
         ----------
-        member : Member
-            The Member to be added to the Population.
-        count :
-            Option whether to increase population counter or not.
+        member : 'Member'
+            The member to be added to the Population.
 
         Raises
         ------
         KeyError
-            member is expected to have the property 'household'.
-            If member does not meet the expectations,
+            The member 'member' is expected to have the property 'household'.
+            If 'member' does not meet the expectations,
             a KeyError will be raised.
 
         Returns
@@ -425,9 +651,25 @@ class Population(Group):
 
         self.counter.increment()
 
-    def save_as_json(self, path: str) -> None:
+    def save_as_json(self, path: str):
         """
-        TODO Docstring Population save_as_json
+        Save the population as population.json at the given 'path'.
+
+        Parameters
+        ----------
+        path : str
+            The path at which the population-file is to be saved.
+
+        Raises
+        ------
+        ValueError
+            The population is expected to contain members.
+            If the population does not meet the expectation,
+            a ValueError will be raised.
+
+        Returns
+        -------
+        None.
         """
 
         if len(self.members) == 0:
@@ -447,7 +689,13 @@ class Population(Group):
 
     def copy(self):
         """
-        TODO Docstring Population copy
+        Create a population as a copy of the population.
+        (deep copy)
+
+        Returns
+        -------
+        p : 'Population'
+            The copy of the population.
         """
 
         p = Population(self.name)
@@ -476,7 +724,7 @@ class Population(Group):
 
         Returns
         -------
-        p : Population
+        p : 'Population'
             A Population object containing the data for the given file.
         """
 
@@ -515,7 +763,7 @@ class Population(Group):
 
         Returns
         -------
-        p : Population
+        p : 'Population'
             A Population object containing the data for the given file.
         """
 
@@ -561,7 +809,7 @@ class Population(Group):
 
         Returns
         -------
-        Population
+        'Population'
             A Population object containing the data for the given file.
         """
 
