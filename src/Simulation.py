@@ -58,6 +58,7 @@ class Simulation:
                       }
         self.arrange_lockdown = False
         self.lockdown_duration = 0
+        self.lockdown_ended = 0
 
     def start_iteration(self):
         """
@@ -245,6 +246,7 @@ class Simulation:
 
         def decide_measure(measure: str):
             if measure == "lockdown":
+                # Would a lockdown be arranged/prolonged?
                 if self.settings["start_lockdown_at"] <= self.stats["seven_day_incidence"][-1]:
                     result = True
 
@@ -254,9 +256,11 @@ class Simulation:
                 else:
                     result = self.arrange_lockdown
 
+                # If it is (not) prolonged, is it still in the allowed duration interval?
                 if result:
                     if self.lockdown_duration >= self.settings["maximal_lockdown_duration"]:
                         self.lockdown_duration = 0
+                        self.lockdown_ended = tick
                         result = False
 
                 else:
@@ -264,7 +268,14 @@ class Simulation:
                         result = True
 
                     else:
+                        if self.arrange_lockdown:
+                            self.lockdown_ended = tick
+                            
                         self.lockdown_duration = 0
+
+                # If a new lockdown is arranged, is it sufficiently spaced from the last?
+                if result and not self.arrange_lockdown:
+                    result = tick - self.lockdown_ended > self.settings["lockdown_gap"]
 
                 self.lockdown_duration += result
 
@@ -304,7 +315,7 @@ class Simulation:
                    self.stats["test_results_+"][-1],
                    self.stats["test_results_-"][-1],
                    self.stats["seven_day_incidence"][-1],
-                   self.lockdown_duration), end="")
+                   tick - self.lockdown_ended), end="")
 
         print("\nInitializing simulation...")
 
@@ -465,7 +476,8 @@ class Simulation:
                           "start_lockdown_at",
                           "end_lockdown_at",
                           "minimal_lockdown_duration",
-                          "maximal_lockdown_duration"]
+                          "maximal_lockdown_duration",
+                          "lockdown_gap"]
 
             for property in must_haves:
                 if property not in settings.keys():
