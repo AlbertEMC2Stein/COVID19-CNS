@@ -40,7 +40,7 @@ from src.Utils import ProgressBar, Counter
 class Member:
     def __init__(self, properties: dict):
         """
-        Creat a new member with the given attributes in 'properties'.
+        Create a new member with the given attributes in 'properties'.
 
         Parameters
         ----------
@@ -91,8 +91,10 @@ class Member:
         infectant : 'Member'
             The infectious member that infects the member on which 'infect' is
             applied.
+
         timestamp : int
             Current day in the simulation.
+
         disease_parameters : dict
             Dictionary containing all relevant infection parameters.
             Is expected to contain the keys
@@ -147,6 +149,7 @@ class Member:
         ----------
         timestamp : int
             Current day in the simulation.
+
         vaccine_parameters : dict
             Dictionary containing all relevant vaccination parameters.
             Is expected to contain the keys
@@ -201,7 +204,7 @@ class Member:
 
         Returns
         -------
-        result : bool
+        bool
             Whether the test is positive.
         """
 
@@ -224,10 +227,6 @@ class Member:
         days : int
             Amount of days (in the simulation) the member has to stay in
             quarantine.
-
-        Returns
-        -------
-        None.
         """
 
         self.quarantined = True
@@ -242,10 +241,6 @@ class Member:
         other : 'Member'
             The member which is to be added to the list of recent contacts of
             the member on which 'add_to_contacts' is called.
-
-        Returns
-        -------
-        None.
         """
 
         if len(self.recent_contacts) < 5:
@@ -274,6 +269,7 @@ class Member:
         """
 
         if self.infected: # This should never be the case.
+            print("THIS SHOULD NOT APPEAR ON CONSOLE")
             self.infected = False
             self._infectious_in = -1
             self._recovers_in = -1
@@ -296,10 +292,6 @@ class Member:
         ----------
         timestamp : int
             Current day in the simulation.
-
-        Returns
-        -------
-        None.
         """
 
         self.infected = False
@@ -405,7 +397,7 @@ class Member:
 
         Returns
         -------
-        m : 'Member'
+        Member
             The copy of the member.
         """
 
@@ -458,12 +450,8 @@ class Group:
 
         Parameters
         ----------
-        member : 'Member'
+        member : Member
             The member to be added to the group.
-
-        Returns
-        -------
-        None.
         """
 
         self.members = np.append(self.members, member)
@@ -475,12 +463,8 @@ class Group:
 
         Parameters
         ----------
-        member : 'Member'
+        member : Member
             The member to be removed from the group.
-
-        Returns
-        -------
-        None.
         """
 
         old_size = self.members.size
@@ -495,10 +479,13 @@ class Group:
         ----------
         infectant : 'Member'
             The infectious member to be infecting members of the group.
+
         n : int
             The amount of members to be infected.
+
         timestamp : int
             Current day in the simulation.
+
         disease_parameters : dict
             Dictionary containing all relevant disease parameters.
             Is expected to contain the keys
@@ -510,7 +497,7 @@ class Group:
 
         Returns
         -------
-        result : list
+        list
             List of members which have been infected by 'infectant'.
         """
 
@@ -530,10 +517,6 @@ class Group:
     def reset(self):
         """
         Reset the group.
-
-        Returns
-        -------
-        None.
         """
 
         self.members = np.array([])
@@ -549,14 +532,12 @@ class Group:
         ----------
         members : iter
             Iterable of members to be moved from 'origin' to 'destination'.
-        origin : 'Group'
-            Group from which the members in 'members' are to be removed.
-        destination : 'Group'
-            Group to which the members i 'members' are to be added.
 
-        Returns
-        -------
-        None.
+        origin : Group
+            Group from which the members in 'members' are to be removed.
+
+        destination : Group
+            Group to which the members i 'members' are to be added.
         """
 
         for member in members:
@@ -621,7 +602,7 @@ class Population(Group):
 
         Parameters
         ----------
-        member : 'Member'
+        member : Member
             The member to be added to the Population.
 
         Raises
@@ -630,10 +611,6 @@ class Population(Group):
             The member 'member' is expected to have the property 'household'.
             If 'member' does not meet the expectations,
             a KeyError will be raised.
-
-        Returns
-        -------
-        None.
         """
 
         household_id = member.properties["household"]
@@ -666,10 +643,6 @@ class Population(Group):
             The population is expected to contain members.
             If the population does not meet the expectation,
             a ValueError will be raised.
-
-        Returns
-        -------
-        None.
         """
 
         if len(self.members) == 0:
@@ -694,7 +667,7 @@ class Population(Group):
 
         Returns
         -------
-        p : 'Population'
+        Population
             The copy of the population.
         """
 
@@ -718,20 +691,21 @@ class Population(Group):
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .csv.
+
         path : str, optional
             The path to the file named file_name.
             The default is "Populations" + sep.
 
         Returns
         -------
-        p : 'Population'
+        Population
             A Population object containing the data for the given file.
         """
 
         p = Population(file_name[:-4])
         p.members = []
         with open(path + file_name, newline='') as f:
-            progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
+            progress = ProgressBar(1, sum(1 for _ in f) - 1)
 
         print("Loading population data...")
 
@@ -757,13 +731,14 @@ class Population(Group):
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .json.
+
         path : str, optional
             The path to the file named file_name.
             The default is "Populations" + sep.
 
         Returns
         -------
-        p : 'Population'
+        Population
             A Population object containing the data for the given file.
         """
 
@@ -774,7 +749,7 @@ class Population(Group):
             data = json.load(f)
             print("Finished loading.\n\nAdding members to population...")
 
-            progress = ProgressBar(1, 1, len(data["members"]))
+            progress = ProgressBar(1, len(data["members"]))
             progress.update(0)
             for member in data["members"]:
                 progress.update(1)
@@ -796,6 +771,7 @@ class Population(Group):
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .csv or .json.
+
         path : str, optional
             The path to the file named file_name.
             The default is "Populations" + sep.
@@ -809,7 +785,7 @@ class Population(Group):
 
         Returns
         -------
-        'Population'
+        Population
             A Population object containing the data for the given file.
         """
 
