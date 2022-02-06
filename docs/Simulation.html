@@ -79,18 +79,20 @@ class Simulation:
                        &#34;Vaccinated&#34;: Group(&#34;Vaccinated&#34;),
                        &#34;Dead&#34;: Group(&#34;Dead&#34;),
                        &#34;Quarantined&#34;: Group(&#34;Quarantined&#34;)}
-        self.stats = {&#34;#new_infected&#34;: [0],
-                      &#34;#new_recovered&#34;: [0],
-                      &#34;#new_susceptible&#34;: [0],
-                      &#34;#new_vaccinated&#34;: [0],
-                      &#34;#new_dead&#34;: [0],
-                      &#34;#ill_vaccinated&#34;: [0],
+        self.stats = {&#34;new_infected&#34;: [0],
+                      &#34;new_recovered&#34;: [0],
+                      &#34;new_susceptible&#34;: [0],
+                      &#34;new_vaccinated&#34;: [0],
+                      &#34;new_dead&#34;: [0],
+                      &#34;ill_vaccinated&#34;: [0],
                       &#34;test_results_-&#34;: [0],
                       &#34;test_results_+&#34;: [0],
                       &#34;seven_day_incidence&#34;: [0],
                       &#34;in_lockdown&#34;: [0]
                       }
         self.arrange_lockdown = False
+        self.lockdown_duration = 0
+        self.lockdown_ended = 0
 
     def start_iteration(self):
         &#34;&#34;&#34;
@@ -278,14 +280,40 @@ class Simulation:
 
         def decide_measure(measure: str):
             if measure == &#34;lockdown&#34;:
+                # Would a lockdown be arranged/prolonged?
                 if self.settings[&#34;start_lockdown_at&#34;] &lt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
-                    return True
+                    result = True
 
                 elif self.settings[&#34;end_lockdown_at&#34;] &gt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
-                    return False
+                    result = False
 
                 else:
-                    return self.arrange_lockdown
+                    result = self.arrange_lockdown
+
+                # If it is (not) prolonged, is it still in the allowed duration interval?
+                if result:
+                    if self.lockdown_duration &gt;= self.settings[&#34;maximal_lockdown_duration&#34;]:
+                        self.lockdown_duration = 0
+                        self.lockdown_ended = tick
+                        result = False
+
+                else:
+                    if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimal_lockdown_duration&#34;]:
+                        result = True
+
+                    else:
+                        if self.arrange_lockdown:
+                            self.lockdown_ended = tick
+
+                        self.lockdown_duration = 0
+
+                # If a new lockdown is arranged, is it sufficiently spaced from the last?
+                if result and not self.arrange_lockdown:
+                    result = tick - self.lockdown_ended &gt; self.settings[&#34;lockdown_gap&#34;]
+
+                self.lockdown_duration += result
+
+                return result
 
             else:
                 raise ValueError(&#34;Measure not available&#34;)
@@ -298,12 +326,12 @@ class Simulation:
                 else:
                     return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
 
-            self.stats[&#34;#new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
-            self.stats[&#34;#new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
-            self.stats[&#34;#new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
-            self.stats[&#34;#new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
-            self.stats[&#34;#new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
-            self.stats[&#34;#ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
+            self.stats[&#34;new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
+            self.stats[&#34;new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
+            self.stats[&#34;new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
+            self.stats[&#34;new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
+            self.stats[&#34;new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
+            self.stats[&#34;ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
             self.stats[&#34;seven_day_incidence&#34;] += [calc_7di()]
             self.stats[&#34;in_lockdown&#34;] += [1 if self.arrange_lockdown else 0]
 
@@ -315,9 +343,9 @@ class Simulation:
                    self.groups[&#34;Infected&#34;].size,
                    self.groups[&#34;Dead&#34;].size,
                    self.groups[&#34;Quarantined&#34;].size,
-                   self.stats[&#34;#new_infected&#34;][-1],
-                   self.stats[&#34;#new_recovered&#34;][-1],
-                   self.stats[&#34;#new_vaccinated&#34;][-1],
+                   self.stats[&#34;new_infected&#34;][-1],
+                   self.stats[&#34;new_recovered&#34;][-1],
+                   self.stats[&#34;new_vaccinated&#34;][-1],
                    self.stats[&#34;test_results_+&#34;][-1],
                    self.stats[&#34;test_results_-&#34;][-1],
                    self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
@@ -479,7 +507,10 @@ class Simulation:
                           &#34;backtracking_probability&#34;,
                           &#34;maximal_simulation_time_interval&#34;,
                           &#34;start_lockdown_at&#34;,
-                          &#34;end_lockdown_at&#34;]
+                          &#34;end_lockdown_at&#34;,
+                          &#34;minimal_lockdown_duration&#34;,
+                          &#34;maximal_lockdown_duration&#34;,
+                          &#34;lockdown_gap&#34;]
 
             for property in must_haves:
                 if property not in settings.keys():
@@ -763,7 +794,7 @@ class PostProcessing:
                   [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
 
         make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
-                  [data[&#34;#new_infected&#34;], data[&#34;#ill_vaccinated&#34;]],
+                  [data[&#34;new_infected&#34;], data[&#34;ill_vaccinated&#34;]],
                   [&#39;red&#39;, &#39;purple&#39;])
 
         make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
@@ -979,7 +1010,7 @@ class bcolors:
                   [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
 
         make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
-                  [data[&#34;#new_infected&#34;], data[&#34;#ill_vaccinated&#34;]],
+                  [data[&#34;new_infected&#34;], data[&#34;ill_vaccinated&#34;]],
                   [&#39;red&#39;, &#39;purple&#39;])
 
         make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
@@ -1253,7 +1284,7 @@ def progression_plots(folder: str):
               [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
 
     make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
-              [data[&#34;#new_infected&#34;], data[&#34;#ill_vaccinated&#34;]],
+              [data[&#34;new_infected&#34;], data[&#34;ill_vaccinated&#34;]],
               [&#39;red&#39;, &#39;purple&#39;])
 
     make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
@@ -1653,18 +1684,20 @@ the simulation.</dd>
                        &#34;Vaccinated&#34;: Group(&#34;Vaccinated&#34;),
                        &#34;Dead&#34;: Group(&#34;Dead&#34;),
                        &#34;Quarantined&#34;: Group(&#34;Quarantined&#34;)}
-        self.stats = {&#34;#new_infected&#34;: [0],
-                      &#34;#new_recovered&#34;: [0],
-                      &#34;#new_susceptible&#34;: [0],
-                      &#34;#new_vaccinated&#34;: [0],
-                      &#34;#new_dead&#34;: [0],
-                      &#34;#ill_vaccinated&#34;: [0],
+        self.stats = {&#34;new_infected&#34;: [0],
+                      &#34;new_recovered&#34;: [0],
+                      &#34;new_susceptible&#34;: [0],
+                      &#34;new_vaccinated&#34;: [0],
+                      &#34;new_dead&#34;: [0],
+                      &#34;ill_vaccinated&#34;: [0],
                       &#34;test_results_-&#34;: [0],
                       &#34;test_results_+&#34;: [0],
                       &#34;seven_day_incidence&#34;: [0],
                       &#34;in_lockdown&#34;: [0]
                       }
         self.arrange_lockdown = False
+        self.lockdown_duration = 0
+        self.lockdown_ended = 0
 
     def start_iteration(self):
         &#34;&#34;&#34;
@@ -1852,14 +1885,40 @@ the simulation.</dd>
 
         def decide_measure(measure: str):
             if measure == &#34;lockdown&#34;:
+                # Would a lockdown be arranged/prolonged?
                 if self.settings[&#34;start_lockdown_at&#34;] &lt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
-                    return True
+                    result = True
 
                 elif self.settings[&#34;end_lockdown_at&#34;] &gt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
-                    return False
+                    result = False
 
                 else:
-                    return self.arrange_lockdown
+                    result = self.arrange_lockdown
+
+                # If it is (not) prolonged, is it still in the allowed duration interval?
+                if result:
+                    if self.lockdown_duration &gt;= self.settings[&#34;maximal_lockdown_duration&#34;]:
+                        self.lockdown_duration = 0
+                        self.lockdown_ended = tick
+                        result = False
+
+                else:
+                    if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimal_lockdown_duration&#34;]:
+                        result = True
+
+                    else:
+                        if self.arrange_lockdown:
+                            self.lockdown_ended = tick
+
+                        self.lockdown_duration = 0
+
+                # If a new lockdown is arranged, is it sufficiently spaced from the last?
+                if result and not self.arrange_lockdown:
+                    result = tick - self.lockdown_ended &gt; self.settings[&#34;lockdown_gap&#34;]
+
+                self.lockdown_duration += result
+
+                return result
 
             else:
                 raise ValueError(&#34;Measure not available&#34;)
@@ -1872,12 +1931,12 @@ the simulation.</dd>
                 else:
                     return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
 
-            self.stats[&#34;#new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
-            self.stats[&#34;#new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
-            self.stats[&#34;#new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
-            self.stats[&#34;#new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
-            self.stats[&#34;#new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
-            self.stats[&#34;#ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
+            self.stats[&#34;new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
+            self.stats[&#34;new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
+            self.stats[&#34;new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
+            self.stats[&#34;new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
+            self.stats[&#34;new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
+            self.stats[&#34;ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
             self.stats[&#34;seven_day_incidence&#34;] += [calc_7di()]
             self.stats[&#34;in_lockdown&#34;] += [1 if self.arrange_lockdown else 0]
 
@@ -1889,9 +1948,9 @@ the simulation.</dd>
                    self.groups[&#34;Infected&#34;].size,
                    self.groups[&#34;Dead&#34;].size,
                    self.groups[&#34;Quarantined&#34;].size,
-                   self.stats[&#34;#new_infected&#34;][-1],
-                   self.stats[&#34;#new_recovered&#34;][-1],
-                   self.stats[&#34;#new_vaccinated&#34;][-1],
+                   self.stats[&#34;new_infected&#34;][-1],
+                   self.stats[&#34;new_recovered&#34;][-1],
+                   self.stats[&#34;new_vaccinated&#34;][-1],
                    self.stats[&#34;test_results_+&#34;][-1],
                    self.stats[&#34;test_results_-&#34;][-1],
                    self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
@@ -2053,7 +2112,10 @@ the simulation.</dd>
                           &#34;backtracking_probability&#34;,
                           &#34;maximal_simulation_time_interval&#34;,
                           &#34;start_lockdown_at&#34;,
-                          &#34;end_lockdown_at&#34;]
+                          &#34;end_lockdown_at&#34;,
+                          &#34;minimal_lockdown_duration&#34;,
+                          &#34;maximal_lockdown_duration&#34;,
+                          &#34;lockdown_gap&#34;]
 
             for property in must_haves:
                 if property not in settings.keys():
@@ -2138,7 +2200,10 @@ the simulation.</dd>
                       &#34;backtracking_probability&#34;,
                       &#34;maximal_simulation_time_interval&#34;,
                       &#34;start_lockdown_at&#34;,
-                      &#34;end_lockdown_at&#34;]
+                      &#34;end_lockdown_at&#34;,
+                      &#34;minimal_lockdown_duration&#34;,
+                      &#34;maximal_lockdown_duration&#34;,
+                      &#34;lockdown_gap&#34;]
 
         for property in must_haves:
             if property not in settings.keys():
@@ -2442,14 +2507,40 @@ is reached.</p></div>
 
     def decide_measure(measure: str):
         if measure == &#34;lockdown&#34;:
+            # Would a lockdown be arranged/prolonged?
             if self.settings[&#34;start_lockdown_at&#34;] &lt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
-                return True
+                result = True
 
             elif self.settings[&#34;end_lockdown_at&#34;] &gt;= self.stats[&#34;seven_day_incidence&#34;][-1]:
-                return False
+                result = False
 
             else:
-                return self.arrange_lockdown
+                result = self.arrange_lockdown
+
+            # If it is (not) prolonged, is it still in the allowed duration interval?
+            if result:
+                if self.lockdown_duration &gt;= self.settings[&#34;maximal_lockdown_duration&#34;]:
+                    self.lockdown_duration = 0
+                    self.lockdown_ended = tick
+                    result = False
+
+            else:
+                if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimal_lockdown_duration&#34;]:
+                    result = True
+
+                else:
+                    if self.arrange_lockdown:
+                        self.lockdown_ended = tick
+
+                    self.lockdown_duration = 0
+
+            # If a new lockdown is arranged, is it sufficiently spaced from the last?
+            if result and not self.arrange_lockdown:
+                result = tick - self.lockdown_ended &gt; self.settings[&#34;lockdown_gap&#34;]
+
+            self.lockdown_duration += result
+
+            return result
 
         else:
             raise ValueError(&#34;Measure not available&#34;)
@@ -2462,12 +2553,12 @@ is reached.</p></div>
             else:
                 return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
 
-        self.stats[&#34;#new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
-        self.stats[&#34;#new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
-        self.stats[&#34;#new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
-        self.stats[&#34;#new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
-        self.stats[&#34;#new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
-        self.stats[&#34;#ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
+        self.stats[&#34;new_infected&#34;] += [len(new_members[&#34;newly_infected&#34;])]
+        self.stats[&#34;new_recovered&#34;] += [len(new_members[&#34;newly_recovered&#34;])]
+        self.stats[&#34;new_susceptible&#34;] += [len(new_members[&#34;newly_susceptible&#34;])]
+        self.stats[&#34;new_vaccinated&#34;] += [n_vacs - len(new_members[&#34;not_vaccinated&#34;])]
+        self.stats[&#34;new_dead&#34;] += [len(new_members[&#34;new_dead&#34;])]
+        self.stats[&#34;ill_vaccinated&#34;] += [len(new_members[&#34;newly_infected_vac&#34;])]
         self.stats[&#34;seven_day_incidence&#34;] += [calc_7di()]
         self.stats[&#34;in_lockdown&#34;] += [1 if self.arrange_lockdown else 0]
 
@@ -2479,9 +2570,9 @@ is reached.</p></div>
                self.groups[&#34;Infected&#34;].size,
                self.groups[&#34;Dead&#34;].size,
                self.groups[&#34;Quarantined&#34;].size,
-               self.stats[&#34;#new_infected&#34;][-1],
-               self.stats[&#34;#new_recovered&#34;][-1],
-               self.stats[&#34;#new_vaccinated&#34;][-1],
+               self.stats[&#34;new_infected&#34;][-1],
+               self.stats[&#34;new_recovered&#34;][-1],
+               self.stats[&#34;new_vaccinated&#34;][-1],
                self.stats[&#34;test_results_+&#34;][-1],
                self.stats[&#34;test_results_-&#34;][-1],
                self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
