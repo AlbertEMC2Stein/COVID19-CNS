@@ -671,7 +671,7 @@ class PostProcessing:
             f = json.load(open(folder + &#34;population.json&#34;))
             member_id_dict = {member[&#34;id&#34;]: i for i, member in enumerate(f[&#34;members&#34;])}
 
-            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
             for member in f[&#34;members&#34;]:
                 self = member_id_dict[member[&#34;id&#34;]]
                 if &#34;infections&#34; not in member.keys():
@@ -797,7 +797,7 @@ class PostProcessing:
         def get_infection_data():
             f = json.load(open(folder + &#34;population.json&#34;))
 
-            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
             for member in f[&#34;members&#34;]:
                 if &#34;infections&#34; not in member.keys():
                     p.update(1)
@@ -887,7 +887,7 @@ class bcolors:
             f = json.load(open(folder + &#34;population.json&#34;))
             member_id_dict = {member[&#34;id&#34;]: i for i, member in enumerate(f[&#34;members&#34;])}
 
-            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
             for member in f[&#34;members&#34;]:
                 self = member_id_dict[member[&#34;id&#34;]]
                 if &#34;infections&#34; not in member.keys():
@@ -1013,7 +1013,7 @@ class bcolors:
         def get_infection_data():
             f = json.load(open(folder + &#34;population.json&#34;))
 
-            p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
             for member in f[&#34;members&#34;]:
                 if &#34;infections&#34; not in member.keys():
                     p.update(1)
@@ -1080,7 +1080,7 @@ def compare_inner_and_outer_infection_numbers(folder: str):
     def get_infection_data():
         f = json.load(open(folder + &#34;population.json&#34;))
 
-        p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+        p = ProgressBar(0, len(f[&#34;members&#34;]))
         for member in f[&#34;members&#34;]:
             if &#34;infections&#34; not in member.keys():
                 p.update(1)
@@ -1145,7 +1145,7 @@ def infection_graph(folder: str):
         f = json.load(open(folder + &#34;population.json&#34;))
         member_id_dict = {member[&#34;id&#34;]: i for i, member in enumerate(f[&#34;members&#34;])}
 
-        p = ProgressBar(0, 0, len(f[&#34;members&#34;]))
+        p = ProgressBar(0, len(f[&#34;members&#34;]))
         for member in f[&#34;members&#34;]:
             self = member_id_dict[member[&#34;id&#34;]]
             if &#34;infections&#34; not in member.keys():

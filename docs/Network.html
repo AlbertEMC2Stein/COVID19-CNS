@@ -91,7 +91,7 @@ from src.Utils import ProgressBar, Counter
 class Member:
     def __init__(self, properties: dict):
         &#34;&#34;&#34;
-        Creat a new member with the given attributes in &#39;properties&#39;.
+        Create a new member with the given attributes in &#39;properties&#39;.
 
         Parameters
         ----------
@@ -142,8 +142,10 @@ class Member:
         infectant : &#39;Member&#39;
             The infectious member that infects the member on which &#39;infect&#39; is
             applied.
+
         timestamp : int
             Current day in the simulation.
+
         disease_parameters : dict
             Dictionary containing all relevant infection parameters.
             Is expected to contain the keys
@@ -198,6 +200,7 @@ class Member:
         ----------
         timestamp : int
             Current day in the simulation.
+
         vaccine_parameters : dict
             Dictionary containing all relevant vaccination parameters.
             Is expected to contain the keys
@@ -252,7 +255,7 @@ class Member:
 
         Returns
         -------
-        result : bool
+        bool
             Whether the test is positive.
         &#34;&#34;&#34;
 
@@ -275,10 +278,6 @@ class Member:
         days : int
             Amount of days (in the simulation) the member has to stay in
             quarantine.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.quarantined = True
@@ -293,10 +292,6 @@ class Member:
         other : &#39;Member&#39;
             The member which is to be added to the list of recent contacts of
             the member on which &#39;add_to_contacts&#39; is called.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         if len(self.recent_contacts) &lt; 5:
@@ -325,6 +320,7 @@ class Member:
         &#34;&#34;&#34;
 
         if self.infected: # This should never be the case.
+            print(&#34;THIS SHOULD NOT APPEAR ON CONSOLE&#34;)
             self.infected = False
             self._infectious_in = -1
             self._recovers_in = -1
@@ -347,10 +343,6 @@ class Member:
         ----------
         timestamp : int
             Current day in the simulation.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.infected = False
@@ -456,7 +448,7 @@ class Member:
 
         Returns
         -------
-        m : &#39;Member&#39;
+        Member
             The copy of the member.
         &#34;&#34;&#34;
 
@@ -509,12 +501,8 @@ class Group:
 
         Parameters
         ----------
-        member : &#39;Member&#39;
+        member : Member
             The member to be added to the group.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.members = np.append(self.members, member)
@@ -526,12 +514,8 @@ class Group:
 
         Parameters
         ----------
-        member : &#39;Member&#39;
+        member : Member
             The member to be removed from the group.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         old_size = self.members.size
@@ -546,10 +530,13 @@ class Group:
         ----------
         infectant : &#39;Member&#39;
             The infectious member to be infecting members of the group.
+
         n : int
             The amount of members to be infected.
+
         timestamp : int
             Current day in the simulation.
+
         disease_parameters : dict
             Dictionary containing all relevant disease parameters.
             Is expected to contain the keys
@@ -561,7 +548,7 @@ class Group:
 
         Returns
         -------
-        result : list
+        list
             List of members which have been infected by &#39;infectant&#39;.
         &#34;&#34;&#34;
 
@@ -581,10 +568,6 @@ class Group:
     def reset(self):
         &#34;&#34;&#34;
         Reset the group.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.members = np.array([])
@@ -600,14 +583,12 @@ class Group:
         ----------
         members : iter
             Iterable of members to be moved from &#39;origin&#39; to &#39;destination&#39;.
-        origin : &#39;Group&#39;
-            Group from which the members in &#39;members&#39; are to be removed.
-        destination : &#39;Group&#39;
-            Group to which the members i &#39;members&#39; are to be added.
 
-        Returns
-        -------
-        None.
+        origin : Group
+            Group from which the members in &#39;members&#39; are to be removed.
+
+        destination : Group
+            Group to which the members i &#39;members&#39; are to be added.
         &#34;&#34;&#34;
 
         for member in members:
@@ -672,7 +653,7 @@ class Population(Group):
 
         Parameters
         ----------
-        member : &#39;Member&#39;
+        member : Member
             The member to be added to the Population.
 
         Raises
@@ -681,10 +662,6 @@ class Population(Group):
             The member &#39;member&#39; is expected to have the property &#39;household&#39;.
             If &#39;member&#39; does not meet the expectations,
             a KeyError will be raised.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         household_id = member.properties[&#34;household&#34;]
@@ -717,10 +694,6 @@ class Population(Group):
             The population is expected to contain members.
             If the population does not meet the expectation,
             a ValueError will be raised.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         if len(self.members) == 0:
@@ -745,7 +718,7 @@ class Population(Group):
 
         Returns
         -------
-        p : &#39;Population&#39;
+        Population
             The copy of the population.
         &#34;&#34;&#34;
 
@@ -769,20 +742,21 @@ class Population(Group):
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .csv.
+
         path : str, optional
             The path to the file named file_name.
             The default is &#34;Populations&#34; + sep.
 
         Returns
         -------
-        p : &#39;Population&#39;
+        Population
             A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
         p = Population(file_name[:-4])
         p.members = []
         with open(path + file_name, newline=&#39;&#39;) as f:
-            progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
+            progress = ProgressBar(1, sum(1 for _ in f) - 1)
 
         print(&#34;Loading population data...&#34;)
 
@@ -808,13 +782,14 @@ class Population(Group):
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .json.
+
         path : str, optional
             The path to the file named file_name.
             The default is &#34;Populations&#34; + sep.
 
         Returns
         -------
-        p : &#39;Population&#39;
+        Population
             A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
@@ -825,7 +800,7 @@ class Population(Group):
             data = json.load(f)
             print(&#34;Finished loading.\n\nAdding members to population...&#34;)
 
-            progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
+            progress = ProgressBar(1, len(data[&#34;members&#34;]))
             progress.update(0)
             for member in data[&#34;members&#34;]:
                 progress.update(1)
@@ -847,6 +822,7 @@ class Population(Group):
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .csv or .json.
+
         path : str, optional
             The path to the file named file_name.
             The default is &#34;Populations&#34; + sep.
@@ -860,7 +836,7 @@ class Population(Group):
 
         Returns
         -------
-        &#39;Population&#39;
+        Population
             A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
@@ -932,12 +908,8 @@ class Population(Group):
 
         Parameters
         ----------
-        member : &#39;Member&#39;
+        member : Member
             The member to be added to the group.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.members = np.append(self.members, member)
@@ -949,12 +921,8 @@ class Population(Group):
 
         Parameters
         ----------
-        member : &#39;Member&#39;
+        member : Member
             The member to be removed from the group.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         old_size = self.members.size
@@ -969,10 +937,13 @@ class Population(Group):
         ----------
         infectant : &#39;Member&#39;
             The infectious member to be infecting members of the group.
+
         n : int
             The amount of members to be infected.
+
         timestamp : int
             Current day in the simulation.
+
         disease_parameters : dict
             Dictionary containing all relevant disease parameters.
             Is expected to contain the keys
@@ -984,7 +955,7 @@ class Population(Group):
 
         Returns
         -------
-        result : list
+        list
             List of members which have been infected by &#39;infectant&#39;.
         &#34;&#34;&#34;
 
@@ -1004,10 +975,6 @@ class Population(Group):
     def reset(self):
         &#34;&#34;&#34;
         Reset the group.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.members = np.array([])
@@ -1023,14 +990,12 @@ class Population(Group):
         ----------
         members : iter
             Iterable of members to be moved from &#39;origin&#39; to &#39;destination&#39;.
-        origin : &#39;Group&#39;
-            Group from which the members in &#39;members&#39; are to be removed.
-        destination : &#39;Group&#39;
-            Group to which the members i &#39;members&#39; are to be added.
 
-        Returns
-        -------
-        None.
+        origin : Group
+            Group from which the members in &#39;members&#39; are to be removed.
+
+        destination : Group
+            Group to which the members i &#39;members&#39; are to be added.
         &#34;&#34;&#34;
 
         for member in members:
@@ -1062,13 +1027,11 @@ class Population(Group):
 <dl>
 <dt><strong><code>members</code></strong> :&ensp;<code>iter</code></dt>
 <dd>Iterable of members to be moved from 'origin' to 'destination'.</dd>
-<dt><strong><code>origin</code></strong> :&ensp;<code>'Group'</code></dt>
+<dt><strong><code>origin</code></strong> :&ensp;<code><a title="src.Network.Group" href="#src.Network.Group">Group</a></code></dt>
 <dd>Group from which the members in 'members' are to be removed.</dd>
-<dt><strong><code>destination</code></strong> :&ensp;<code>'Group'</code></dt>
+<dt><strong><code>destination</code></strong> :&ensp;<code><a title="src.Network.Group" href="#src.Network.Group">Group</a></code></dt>
 <dd>Group to which the members i 'members' are to be added.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1083,14 +1046,12 @@ def move(members: iter, origin: &#39;Group&#39;, destination: &#39;Group&#39;):
     ----------
     members : iter
         Iterable of members to be moved from &#39;origin&#39; to &#39;destination&#39;.
-    origin : &#39;Group&#39;
-        Group from which the members in &#39;members&#39; are to be removed.
-    destination : &#39;Group&#39;
-        Group to which the members i &#39;members&#39; are to be added.
 
-    Returns
-    -------
-    None.
+    origin : Group
+        Group from which the members in &#39;members&#39; are to be removed.
+
+    destination : Group
+        Group to which the members i &#39;members&#39; are to be added.
     &#34;&#34;&#34;
 
     for member in members:
@@ -1135,11 +1096,9 @@ def size(self):
 <div class="desc"><p>Add 'member' to the group.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>member</code></strong> :&ensp;<code>'Member'</code></dt>
+<dt><strong><code>member</code></strong> :&ensp;<code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></dt>
 <dd>The member to be added to the group.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1150,12 +1109,8 @@ def size(self):
 
     Parameters
     ----------
-    member : &#39;Member&#39;
+    member : Member
         The member to be added to the group.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     self.members = np.append(self.members, member)
@@ -1169,11 +1124,9 @@ def size(self):
 <div class="desc"><p>Remove 'member' from the group.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>member</code></strong> :&ensp;<code>'Member'</code></dt>
+<dt><strong><code>member</code></strong> :&ensp;<code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></dt>
 <dd>The member to be removed from the group.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1184,12 +1137,8 @@ def size(self):
 
     Parameters
     ----------
-    member : &#39;Member&#39;
+    member : Member
         The member to be removed from the group.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     old_size = self.members.size
@@ -1201,9 +1150,7 @@ def size(self):
 <span>def <span class="ident">reset</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Reset the group.</p>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+<div class="desc"><p>Reset the group.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1211,10 +1158,6 @@ def size(self):
 <pre><code class="python">def reset(self):
     &#34;&#34;&#34;
     Reset the group.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     self.members = np.array([])
@@ -1245,7 +1188,7 @@ Is expected to contain the keys
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>result</code></strong> :&ensp;<code>list</code></dt>
+<dt><code>list</code></dt>
 <dd>List of members which have been infected by 'infectant'.</dd>
 </dl></div>
 <details class="source">
@@ -1260,10 +1203,13 @@ Is expected to contain the keys
     ----------
     infectant : &#39;Member&#39;
         The infectious member to be infecting members of the group.
+
     n : int
         The amount of members to be infected.
+
     timestamp : int
         Current day in the simulation.
+
     disease_parameters : dict
         Dictionary containing all relevant disease parameters.
         Is expected to contain the keys
@@ -1275,7 +1221,7 @@ Is expected to contain the keys
 
     Returns
     -------
-    result : list
+    list
         List of members which have been infected by &#39;infectant&#39;.
     &#34;&#34;&#34;
 
@@ -1364,7 +1310,7 @@ def id(self):
 <span>(</span><span>properties: dict)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creat a new member with the given attributes in 'properties'.</p>
+<div class="desc"><p>Create a new member with the given attributes in 'properties'.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>properties</code></strong> :&ensp;<code>dict</code></dt>
@@ -1384,7 +1330,7 @@ a KeyError will be raised.</dd>
 <pre><code class="python">class Member:
     def __init__(self, properties: dict):
         &#34;&#34;&#34;
-        Creat a new member with the given attributes in &#39;properties&#39;.
+        Create a new member with the given attributes in &#39;properties&#39;.
 
         Parameters
         ----------
@@ -1435,8 +1381,10 @@ a KeyError will be raised.</dd>
         infectant : &#39;Member&#39;
             The infectious member that infects the member on which &#39;infect&#39; is
             applied.
+
         timestamp : int
             Current day in the simulation.
+
         disease_parameters : dict
             Dictionary containing all relevant infection parameters.
             Is expected to contain the keys
@@ -1491,6 +1439,7 @@ a KeyError will be raised.</dd>
         ----------
         timestamp : int
             Current day in the simulation.
+
         vaccine_parameters : dict
             Dictionary containing all relevant vaccination parameters.
             Is expected to contain the keys
@@ -1545,7 +1494,7 @@ a KeyError will be raised.</dd>
 
         Returns
         -------
-        result : bool
+        bool
             Whether the test is positive.
         &#34;&#34;&#34;
 
@@ -1568,10 +1517,6 @@ a KeyError will be raised.</dd>
         days : int
             Amount of days (in the simulation) the member has to stay in
             quarantine.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.quarantined = True
@@ -1586,10 +1531,6 @@ a KeyError will be raised.</dd>
         other : &#39;Member&#39;
             The member which is to be added to the list of recent contacts of
             the member on which &#39;add_to_contacts&#39; is called.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         if len(self.recent_contacts) &lt; 5:
@@ -1618,6 +1559,7 @@ a KeyError will be raised.</dd>
         &#34;&#34;&#34;
 
         if self.infected: # This should never be the case.
+            print(&#34;THIS SHOULD NOT APPEAR ON CONSOLE&#34;)
             self.infected = False
             self._infectious_in = -1
             self._recovers_in = -1
@@ -1640,10 +1582,6 @@ a KeyError will be raised.</dd>
         ----------
         timestamp : int
             Current day in the simulation.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         self.infected = False
@@ -1749,7 +1687,7 @@ a KeyError will be raised.</dd>
 
         Returns
         -------
-        m : &#39;Member&#39;
+        Member
             The copy of the member.
         &#34;&#34;&#34;
 
@@ -1777,9 +1715,7 @@ a KeyError will be raised.</dd>
 <dt><strong><code>other</code></strong> :&ensp;<code>'Member'</code></dt>
 <dd>The member which is to be added to the list of recent contacts of
 the member on which 'add_to_contacts' is called.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1793,10 +1729,6 @@ the member on which 'add_to_contacts' is called.</dd>
     other : &#39;Member&#39;
         The member which is to be added to the list of recent contacts of
         the member on which &#39;add_to_contacts&#39; is called.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     if len(self.recent_contacts) &lt; 5:
@@ -1814,7 +1746,7 @@ the member on which 'add_to_contacts' is called.</dd>
 (Deep copy)</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>m</code></strong> :&ensp;<code>'Member'</code></dt>
+<dt><code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></dt>
 <dd>The copy of the member.</dd>
 </dl></div>
 <details class="source">
@@ -1828,7 +1760,7 @@ the member on which 'add_to_contacts' is called.</dd>
 
     Returns
     -------
-    m : &#39;Member&#39;
+    Member
         The copy of the member.
     &#34;&#34;&#34;
 
@@ -1883,8 +1815,10 @@ Is expected to contain the keys
     infectant : &#39;Member&#39;
         The infectious member that infects the member on which &#39;infect&#39; is
         applied.
+
     timestamp : int
         Current day in the simulation.
+
     disease_parameters : dict
         Dictionary containing all relevant infection parameters.
         Is expected to contain the keys
@@ -1941,9 +1875,7 @@ Is expected to contain the keys
 <dl>
 <dt><strong><code>timestamp</code></strong> :&ensp;<code>int</code></dt>
 <dd>Current day in the simulation.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1956,10 +1888,6 @@ Is expected to contain the keys
     ----------
     timestamp : int
         Current day in the simulation.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     self.infected = False
@@ -2017,6 +1945,7 @@ This should never be the case.</dd>
     &#34;&#34;&#34;
 
     if self.infected: # This should never be the case.
+        print(&#34;THIS SHOULD NOT APPEAR ON CONSOLE&#34;)
         self.infected = False
         self._infectious_in = -1
         self._recovers_in = -1
@@ -2164,9 +2093,7 @@ No returns if option is 'vaccine'.</dd>
 <dt><strong><code>days</code></strong> :&ensp;<code>int</code></dt>
 <dd>Amount of days (in the simulation) the member has to stay in
 quarantine.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2180,10 +2107,6 @@ quarantine.</dd>
     days : int
         Amount of days (in the simulation) the member has to stay in
         quarantine.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     self.quarantined = True
@@ -2202,7 +2125,7 @@ quarantine.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>result</code></strong> :&ensp;<code>bool</code></dt>
+<dt><code>bool</code></dt>
 <dd>Whether the test is positive.</dd>
 </dl></div>
 <details class="source">
@@ -2220,7 +2143,7 @@ quarantine.</dd>
 
     Returns
     -------
-    result : bool
+    bool
         Whether the test is positive.
     &#34;&#34;&#34;
 
@@ -2269,6 +2192,7 @@ Is expected to contain the keys
     ----------
     timestamp : int
         Current day in the simulation.
+
     vaccine_parameters : dict
         Dictionary containing all relevant vaccination parameters.
         Is expected to contain the keys
@@ -2351,7 +2275,7 @@ Is expected to contain the keys
 
         Parameters
         ----------
-        member : &#39;Member&#39;
+        member : Member
             The member to be added to the Population.
 
         Raises
@@ -2360,10 +2284,6 @@ Is expected to contain the keys
             The member &#39;member&#39; is expected to have the property &#39;household&#39;.
             If &#39;member&#39; does not meet the expectations,
             a KeyError will be raised.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         household_id = member.properties[&#34;household&#34;]
@@ -2396,10 +2316,6 @@ Is expected to contain the keys
             The population is expected to contain members.
             If the population does not meet the expectation,
             a ValueError will be raised.
-
-        Returns
-        -------
-        None.
         &#34;&#34;&#34;
 
         if len(self.members) == 0:
@@ -2424,7 +2340,7 @@ Is expected to contain the keys
 
         Returns
         -------
-        p : &#39;Population&#39;
+        Population
             The copy of the population.
         &#34;&#34;&#34;
 
@@ -2448,20 +2364,21 @@ Is expected to contain the keys
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .csv.
+
         path : str, optional
             The path to the file named file_name.
             The default is &#34;Populations&#34; + sep.
 
         Returns
         -------
-        p : &#39;Population&#39;
+        Population
             A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
         p = Population(file_name[:-4])
         p.members = []
         with open(path + file_name, newline=&#39;&#39;) as f:
-            progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
+            progress = ProgressBar(1, sum(1 for _ in f) - 1)
 
         print(&#34;Loading population data...&#34;)
 
@@ -2487,13 +2404,14 @@ Is expected to contain the keys
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .json.
+
         path : str, optional
             The path to the file named file_name.
             The default is &#34;Populations&#34; + sep.
 
         Returns
         -------
-        p : &#39;Population&#39;
+        Population
             A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
@@ -2504,7 +2422,7 @@ Is expected to contain the keys
             data = json.load(f)
             print(&#34;Finished loading.\n\nAdding members to population...&#34;)
 
-            progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
+            progress = ProgressBar(1, len(data[&#34;members&#34;]))
             progress.update(0)
             for member in data[&#34;members&#34;]:
                 progress.update(1)
@@ -2526,6 +2444,7 @@ Is expected to contain the keys
         file_name : str
             The name of the file containing the data of the population.
             Expected to end in .csv or .json.
+
         path : str, optional
             The path to the file named file_name.
             The default is &#34;Populations&#34; + sep.
@@ -2539,7 +2458,7 @@ Is expected to contain the keys
 
         Returns
         -------
-        &#39;Population&#39;
+        Population
             A Population object containing the data for the given file.
         &#34;&#34;&#34;
 
@@ -2572,7 +2491,7 @@ The default is "Populations" + sep.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>p</code></strong> :&ensp;<code>'Population'</code></dt>
+<dt><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
 <dd>A Population object containing the data for the given file.</dd>
 </dl></div>
 <details class="source">
@@ -2589,20 +2508,21 @@ def load_from_csv(file_name: str, path: str = &#34;Populations&#34; + sep):
     file_name : str
         The name of the file containing the data of the population.
         Expected to end in .csv.
+
     path : str, optional
         The path to the file named file_name.
         The default is &#34;Populations&#34; + sep.
 
     Returns
     -------
-    p : &#39;Population&#39;
+    Population
         A Population object containing the data for the given file.
     &#34;&#34;&#34;
 
     p = Population(file_name[:-4])
     p.members = []
     with open(path + file_name, newline=&#39;&#39;) as f:
-        progress = ProgressBar(1, 1, sum(1 for _ in f) - 1)
+        progress = ProgressBar(1, sum(1 for _ in f) - 1)
 
     print(&#34;Loading population data...&#34;)
 
@@ -2641,8 +2561,10 @@ If file_name does not meet the expectation,
 a ValueError will be raised.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>'Population'
-A Population object containing the data for the given file.</p></div>
+<dl>
+<dt><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
+<dd>A Population object containing the data for the given file.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2657,6 +2579,7 @@ def load_from_file(file_name: str, path: str = &#34;Populations&#34; + sep):
     file_name : str
         The name of the file containing the data of the population.
         Expected to end in .csv or .json.
+
     path : str, optional
         The path to the file named file_name.
         The default is &#34;Populations&#34; + sep.
@@ -2670,7 +2593,7 @@ def load_from_file(file_name: str, path: str = &#34;Populations&#34; + sep):
 
     Returns
     -------
-    &#39;Population&#39;
+    Population
         A Population object containing the data for the given file.
     &#34;&#34;&#34;
 
@@ -2698,7 +2621,7 @@ The default is "Populations" + sep.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>p</code></strong> :&ensp;<code>'Population'</code></dt>
+<dt><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
 <dd>A Population object containing the data for the given file.</dd>
 </dl></div>
 <details class="source">
@@ -2715,13 +2638,14 @@ def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
     file_name : str
         The name of the file containing the data of the population.
         Expected to end in .json.
+
     path : str, optional
         The path to the file named file_name.
         The default is &#34;Populations&#34; + sep.
 
     Returns
     -------
-    p : &#39;Population&#39;
+    Population
         A Population object containing the data for the given file.
     &#34;&#34;&#34;
 
@@ -2732,7 +2656,7 @@ def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
         data = json.load(f)
         print(&#34;Finished loading.\n\nAdding members to population...&#34;)
 
-        progress = ProgressBar(1, 1, len(data[&#34;members&#34;]))
+        progress = ProgressBar(1, len(data[&#34;members&#34;]))
         progress.update(0)
         for member in data[&#34;members&#34;]:
             progress.update(1)
@@ -2756,7 +2680,7 @@ def load_from_json(file_name: str, path: str = &#34;Populations&#34; + sep):
 and to its Household within the Population.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>member</code></strong> :&ensp;<code>'Member'</code></dt>
+<dt><strong><code>member</code></strong> :&ensp;<code><a title="src.Network.Member" href="#src.Network.Member">Member</a></code></dt>
 <dd>The member to be added to the Population.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
@@ -2765,9 +2689,7 @@ and to its Household within the Population.</p>
 <dd>The member 'member' is expected to have the property 'household'.
 If 'member' does not meet the expectations,
 a KeyError will be raised.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2779,7 +2701,7 @@ a KeyError will be raised.</dd>
 
     Parameters
     ----------
-    member : &#39;Member&#39;
+    member : Member
         The member to be added to the Population.
 
     Raises
@@ -2788,10 +2710,6 @@ a KeyError will be raised.</dd>
         The member &#39;member&#39; is expected to have the property &#39;household&#39;.
         If &#39;member&#39; does not meet the expectations,
         a KeyError will be raised.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     household_id = member.properties[&#34;household&#34;]
@@ -2818,7 +2736,7 @@ a KeyError will be raised.</dd>
 (deep copy)</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>p</code></strong> :&ensp;<code>'Population'</code></dt>
+<dt><code><a title="src.Network.Population" href="#src.Network.Population">Population</a></code></dt>
 <dd>The copy of the population.</dd>
 </dl></div>
 <details class="source">
@@ -2832,7 +2750,7 @@ a KeyError will be raised.</dd>
 
     Returns
     -------
-    p : &#39;Population&#39;
+    Population
         The copy of the population.
     &#34;&#34;&#34;
 
@@ -2863,9 +2781,7 @@ a KeyError will be raised.</dd>
 <dd>The population is expected to contain members.
 If the population does not meet the expectation,
 a ValueError will be raised.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>None.</p></div>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2885,10 +2801,6 @@ a ValueError will be raised.</dd>
         The population is expected to contain members.
         If the population does not meet the expectation,
         a ValueError will be raised.
-
-    Returns
-    -------
-    None.
     &#34;&#34;&#34;
 
     if len(self.members) == 0:
