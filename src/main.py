@@ -64,6 +64,28 @@ if __name__ == "__main__":
         else:
             raise ValueError("Heuristic not available")
 
+    def post_processing(option):
+        out = ".." + sep + "out" + sep + simulation_settings["population_file"].split('.')[0] + sep
+        latest = Standalones.get_last_folder(out)
+        all_methods = [item[1] for item in PostProcessing.__dict__.items() if not item[0].startswith('__')]
+
+        if option == 'All':
+            for method in all_methods:
+                method(out + latest)
+
+        elif option == 'None':
+            return
+
+        else:
+            specified_methods = option.split(',')
+            for name in specified_methods:
+                for method in all_methods:
+                    if method.__name__ == name.replace(' ', ''):
+                        method(out + latest)
+                        break
+
+                raise ValueError('Post processing method \'%s\' not found' % name.replace(' ', ''))
+
     settings_name = "Template.cfg"
     simulation_settings = Standalones.make_settings(settings_name)
     simulation_settings["infection_probability_heuristic"] = heuristic(simulation_settings["infection_probability_heuristic"])
@@ -72,8 +94,4 @@ if __name__ == "__main__":
 
     sim = Scenarios.single_simulation(simulation_settings)
 
-    out = ".." + sep + "out" + sep + simulation_settings["population_file"].split('.')[0] + sep
-    latest = Standalones.get_last_folder(out)
-    PostProcessing.infection_graph(out + latest)
-    PostProcessing.compare_inner_and_outer_infection_numbers(out + latest)
-    PostProcessing.progression_plots(out + latest)
+    post_processing(simulation_settings["post_processing"])
