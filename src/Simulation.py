@@ -637,7 +637,7 @@ class PostProcessing:
             f = json.load(open(folder + "population.json"))
             member_id_dict = {member["id"]: i for i, member in enumerate(f["members"])}
 
-            p = ProgressBar(0, 0, len(f["members"]))
+            p = ProgressBar(0, len(f["members"]))
             for member in f["members"]:
                 self = member_id_dict[member["id"]]
                 if "infections" not in member.keys():
@@ -763,7 +763,7 @@ class PostProcessing:
         def get_infection_data():
             f = json.load(open(folder + "population.json"))
 
-            p = ProgressBar(0, 0, len(f["members"]))
+            p = ProgressBar(0, len(f["members"]))
             for member in f["members"]:
                 if "infections" not in member.keys():
                     p.update(1)
