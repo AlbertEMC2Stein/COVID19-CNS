@@ -270,7 +270,7 @@ class Simulation:
                     else:
                         if self.arrange_lockdown:
                             self.lockdown_ended = tick
-                            
+
                         self.lockdown_duration = 0
 
                 # If a new lockdown is arranged, is it sufficiently spaced from the last?
