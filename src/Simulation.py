@@ -57,6 +57,7 @@ class Simulation:
                       "in_lockdown": [0]
                       }
         self.arrange_lockdown = False
+        self.lockdown_duration = 0
 
     def start_iteration(self):
         """
@@ -245,13 +246,29 @@ class Simulation:
         def decide_measure(measure: str):
             if measure == "lockdown":
                 if self.settings["start_lockdown_at"] <= self.stats["seven_day_incidence"][-1]:
-                    return True
+                    result = True
 
                 elif self.settings["end_lockdown_at"] >= self.stats["seven_day_incidence"][-1]:
-                    return False
+                    result = False
 
                 else:
-                    return self.arrange_lockdown
+                    result = self.arrange_lockdown
+
+                if result:
+                    if self.lockdown_duration >= self.settings["maximal_lockdown_duration"]:
+                        self.lockdown_duration = 0
+                        result = False
+
+                else:
+                    if self.arrange_lockdown and self.lockdown_duration < self.settings["minimal_lockdown_duration"]:
+                        result = True
+
+                    else:
+                        self.lockdown_duration = 0
+
+                self.lockdown_duration += result
+
+                return result
 
             else:
                 raise ValueError("Measure not available")
@@ -276,7 +293,7 @@ class Simulation:
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
             print(
-                color + "\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d"
+                color + "\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d, %d                    "
                 % (tick,
                    self.groups["Infected"].size,
                    self.groups["Dead"].size,
@@ -286,7 +303,8 @@ class Simulation:
                    self.stats["#new_vaccinated"][-1],
                    self.stats["test_results_+"][-1],
                    self.stats["test_results_-"][-1],
-                   self.stats["seven_day_incidence"][-1]), end="")
+                   self.stats["seven_day_incidence"][-1],
+                   self.lockdown_duration), end="")
 
         print("\nInitializing simulation...")
 
@@ -445,7 +463,9 @@ class Simulation:
                           "backtracking_probability",
                           "maximal_simulation_time_interval",
                           "start_lockdown_at",
-                          "end_lockdown_at"]
+                          "end_lockdown_at",
+                          "minimal_lockdown_duration",
+                          "maximal_lockdown_duration"]
 
             for property in must_haves:
                 if property not in settings.keys():
