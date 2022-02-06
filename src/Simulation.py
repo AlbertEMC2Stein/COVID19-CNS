@@ -45,12 +45,12 @@ class Simulation:
                        "Vaccinated": Group("Vaccinated"),
                        "Dead": Group("Dead"),
                        "Quarantined": Group("Quarantined")}
-        self.stats = {"#new_infected": [0],
-                      "#new_recovered": [0],
-                      "#new_susceptible": [0],
-                      "#new_vaccinated": [0],
-                      "#new_dead": [0],
-                      "#ill_vaccinated": [0],
+        self.stats = {"new_infected": [0],
+                      "new_recovered": [0],
+                      "new_susceptible": [0],
+                      "new_vaccinated": [0],
+                      "new_dead": [0],
+                      "ill_vaccinated": [0],
                       "test_results_-": [0],
                       "test_results_+": [0],
                       "seven_day_incidence": [0],
@@ -292,12 +292,12 @@ class Simulation:
                 else:
                     return round(sum(positive) * 7 / len(positive) * 100000 / self.population.size)
 
-            self.stats["#new_infected"] += [len(new_members["newly_infected"])]
-            self.stats["#new_recovered"] += [len(new_members["newly_recovered"])]
-            self.stats["#new_susceptible"] += [len(new_members["newly_susceptible"])]
-            self.stats["#new_vaccinated"] += [n_vacs - len(new_members["not_vaccinated"])]
-            self.stats["#new_dead"] += [len(new_members["new_dead"])]
-            self.stats["#ill_vaccinated"] += [len(new_members["newly_infected_vac"])]
+            self.stats["new_infected"] += [len(new_members["newly_infected"])]
+            self.stats["new_recovered"] += [len(new_members["newly_recovered"])]
+            self.stats["new_susceptible"] += [len(new_members["newly_susceptible"])]
+            self.stats["new_vaccinated"] += [n_vacs - len(new_members["not_vaccinated"])]
+            self.stats["new_dead"] += [len(new_members["new_dead"])]
+            self.stats["ill_vaccinated"] += [len(new_members["newly_infected_vac"])]
             self.stats["seven_day_incidence"] += [calc_7di()]
             self.stats["in_lockdown"] += [1 if self.arrange_lockdown else 0]
 
@@ -309,9 +309,9 @@ class Simulation:
                    self.groups["Infected"].size,
                    self.groups["Dead"].size,
                    self.groups["Quarantined"].size,
-                   self.stats["#new_infected"][-1],
-                   self.stats["#new_recovered"][-1],
-                   self.stats["#new_vaccinated"][-1],
+                   self.stats["new_infected"][-1],
+                   self.stats["new_recovered"][-1],
+                   self.stats["new_vaccinated"][-1],
                    self.stats["test_results_+"][-1],
                    self.stats["test_results_-"][-1],
                    self.stats["seven_day_incidence"][-1]), end="")
@@ -760,7 +760,7 @@ class PostProcessing:
                   ['green', 'red', 'blue', 'cyan', 'black'])
 
         make_plot("NewI.png", "New Infections",
-                  [data["#new_infected"], data["#ill_vaccinated"]],
+                  [data["new_infected"], data["ill_vaccinated"]],
                   ['red', 'purple'])
 
         make_plot("IR.png", "Infected & Recovered",
