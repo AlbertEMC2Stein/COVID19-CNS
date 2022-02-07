@@ -325,7 +325,7 @@ class Standalones:
     def make_settings(settings_file: str):
         """
         Creates a settings-dictionary which is used to initialize simulations
-        from a given .cfg file.
+        from a given .cfg file located in src/Settings.
 
         Parameters
         ----------
