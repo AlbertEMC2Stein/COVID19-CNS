@@ -14,8 +14,8 @@ from os.path import sep
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 import numpy as np
-from Network import Group, Population
-from Utils import ProgressBar, Standalones
+from src.Network import Group, Population
+from src.Utils import ProgressBar, Standalones
 
 
 ################################################################################################

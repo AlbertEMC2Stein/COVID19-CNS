@@ -3,10 +3,15 @@ Main script for executing simulations, scenarios and post processing.
 """
 
 import sys
+import os
 from os.path import sep
+
+if os.getcwd().split(sep)[-1] == "src":
+    sys.path.insert(0, sep.join(os.getcwd().split(sep)[:-1]))
+
 import numpy as np
-from Simulation import *
-from Utils import Standalones
+from src.Simulation import *
+from src.Utils import Standalones
 
 if __name__ == "__main__":
     def infection_probability_heuristic(mem_props):
@@ -88,7 +93,6 @@ if __name__ == "__main__":
                 raise ValueError('Post processing method \'%s\' not found' % name.replace(' ', ''))
 
     args = sys.argv[1:]
-
     print(sys.path)
 
     settings_name = args[0] if len(args) > 0 else "Template.cfg"

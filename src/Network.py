@@ -29,7 +29,7 @@ import numpy as np
 import csv
 import json
 from os.path import sep
-from Utils import ProgressBar, Counter
+from src.Utils import ProgressBar, Counter
 
 
 ################################################################################################
