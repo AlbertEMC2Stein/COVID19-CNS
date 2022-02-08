@@ -93,7 +93,6 @@ if __name__ == "__main__":
                 raise ValueError('Post processing method \'%s\' not found' % name.replace(' ', ''))
 
     args = sys.argv[1:]
-    print(sys.path)
 
     settings_name = args[0] if len(args) > 0 else "Template.cfg"
     simulation_settings = Standalones.make_settings(settings_name)
