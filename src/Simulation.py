@@ -35,7 +35,7 @@ class Simulation:
             the simulation.
         """
 
-        self.settings = {"population_file": "None"}
+        self.settings = None
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings["population_file"])
@@ -449,38 +449,11 @@ class Simulation:
         """
 
         def check_settings():
-            must_haves = ["population_file",
-                          "infection_probability_heuristic",
-                          "mortality_probability_heuristic",
-                          "inner_reproduction_number",
-                          "outer_reproduction_number",
-                          "incubation_time",
-                          "infection_time",
-                          "recovered_immunity_time",
-                          "number_of_initially_infected",
-                          "number_of_initially_recovered",
-                          "number_of_initially_vaccinated",
-                          "vaccine_available_as_of",
-                          "vaccination_takes_effect_time",
-                          "vaccinations_per_day",
-                          "vaccination_immunity_time",
-                          "waiting_time_vaccination_until_new_vaccination",
-                          "waiting_time_recovered_until_vaccination",
-                          "tests_per_day",
-                          "test_vaccinated",
-                          "quarantine_duration",
-                          "backtracking_depth",
-                          "backtracking_probability",
-                          "maximal_simulation_time_interval",
-                          "start_lockdown_at",
-                          "end_lockdown_at",
-                          "minimal_lockdown_duration",
-                          "maximal_lockdown_duration",
-                          "lockdown_gap"]
+            all_settings = Standalones.make_settings("Template.cfg")
 
-            for property in must_haves:
+            for property in all_settings.keys():
                 if property not in settings.keys():
-                    raise KeyError("Settings have to contain '" + property + "'.")
+                    settings[property] = all_settings[property]
 
             if settings["start_lockdown_at"] < settings["end_lockdown_at"]:
                 raise ValueError("end_lockdown_at must be smaller than start_lockdown_at")
