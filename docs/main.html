@@ -32,10 +32,15 @@
 Main script for executing simulations, scenarios and post processing.
 &#34;&#34;&#34;
 
-from src.Simulation import *
-from src.Utils import Standalones
-import numpy as np
+import os, sys
 from os.path import sep
+
+if os.getcwd().split(sep)[-1] == &#34;src&#34;:
+    os.chdir(&#34;..&#34;)
+
+import numpy as np
+#from src.Simulation import *
+#from src.Utils import Standalones
 
 if __name__ == &#34;__main__&#34;:
     def infection_probability_heuristic(mem_props):
@@ -116,7 +121,10 @@ if __name__ == &#34;__main__&#34;:
 
                 raise ValueError(&#39;Post processing method \&#39;%s\&#39; not found&#39; % name.replace(&#39; &#39;, &#39;&#39;))
 
-    settings_name = &#34;Template.cfg&#34;
+    args = sys.argv[1:]
+    print(sys.path)
+
+    settings_name = args[0] if len(args) &gt; 0 else &#34;Template.cfg&#34;
     simulation_settings = Standalones.make_settings(settings_name)
     simulation_settings[&#34;infection_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;infection_probability_heuristic&#34;])
     simulation_settings[&#34;mortality_probability_heuristic&#34;] = heuristic(simulation_settings[&#34;mortality_probability_heuristic&#34;])
