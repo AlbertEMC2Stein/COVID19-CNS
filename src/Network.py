@@ -1,25 +1,5 @@
 """
 Collection of the fundamental classes of the network-model of infection.
-These are:
-
-    Member:
-        A representation of a person. Consists of a dict 'properties'
-        containing all relevant data on this person, several attributes used
-        only within the simulation and some private counters used only in
-        functions in the 'Member'-class called during simulation.
-
-    Group:
-        A base class for sets of several persons. Consists of a name-string,
-        an array containing its members and a counter saving the amounts of
-        members in the group.
-
-    Household:
-        A representation of a household of people. A subclass of Group, where
-        the name is the string of the household-id.
-
-    Population:
-        A representation of a larger set of people from several households.
-        A subclass of Group, additionally consisting of a list of households.
 """
 
 __all__ = ['Member', 'Household', 'Population', 'Group']
@@ -40,6 +20,11 @@ from src.Utils import ProgressBar, Counter
 class Member:
     def __init__(self, properties: dict):
         """
+        A representation of a person. Consists of a dict 'properties'
+        containing all relevant data on this person, several attributes used
+        only within the simulation and some private counters used only in
+        functions in the 'Member'-class called during simulation.
+
         Create a new member with the given attributes in 'properties'.
 
         Parameters
@@ -422,6 +407,10 @@ class Member:
 class Group:
     def __init__(self, name: str):
         """
+        A base class for sets of several persons. Consists of a name-string,
+        an array containing its members and a counter saving the amounts of
+        members in the group.
+
         Create a new group named 'name'.
 
         Parameters
@@ -561,6 +550,9 @@ class Group:
 class Household(Group):
     def __init__(self, identifier: int):
         """
+        A representation of a household of people. A subclass of Group, where
+        the name is the string of the household-id.
+
         Create a new household with household-id 'identifier'.
 
         Parameters
@@ -584,6 +576,9 @@ class Household(Group):
 class Population(Group):
     def __init__(self, name: str):
         """
+        A representation of a larger set of people from several households.
+        A subclass of Group, additionally consisting of a list of households.
+        
         Create a new population named 'name'.
 
         Parameters

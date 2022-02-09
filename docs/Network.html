@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>src.Network API documentation</title>
-<meta name="description" content="Collection of the fundamental classes of the network-model of infection.
-These are: …" />
+<meta name="description" content="Collection of the fundamental classes of the network-model of infection." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -24,53 +23,13 @@ These are: …" />
 <h1 class="title">Module <code>src.Network</code></h1>
 </header>
 <section id="section-intro">
-<p>Collection of the fundamental classes of the network-model of infection.
-These are:</p>
-<pre><code>Member:
-    A representation of a person. Consists of a dict 'properties'
-    containing all relevant data on this person, several attributes used
-    only within the simulation and some private counters used only in
-    functions in the 'Member'-class called during simulation.
-
-Group:
-    A base class for sets of several persons. Consists of a name-string,
-    an array containing its members and a counter saving the amounts of
-    members in the group.
-
-Household:
-    A representation of a household of people. A subclass of Group, where
-    the name is the string of the household-id.
-
-Population:
-    A representation of a larger set of people from several households.
-    A subclass of Group, additionally consisting of a list of households.
-</code></pre>
+<p>Collection of the fundamental classes of the network-model of infection.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34;
 Collection of the fundamental classes of the network-model of infection.
-These are:
-
-    Member:
-        A representation of a person. Consists of a dict &#39;properties&#39;
-        containing all relevant data on this person, several attributes used
-        only within the simulation and some private counters used only in
-        functions in the &#39;Member&#39;-class called during simulation.
-
-    Group:
-        A base class for sets of several persons. Consists of a name-string,
-        an array containing its members and a counter saving the amounts of
-        members in the group.
-
-    Household:
-        A representation of a household of people. A subclass of Group, where
-        the name is the string of the household-id.
-
-    Population:
-        A representation of a larger set of people from several households.
-        A subclass of Group, additionally consisting of a list of households.
 &#34;&#34;&#34;
 
 __all__ = [&#39;Member&#39;, &#39;Household&#39;, &#39;Population&#39;, &#39;Group&#39;]
@@ -91,6 +50,11 @@ from src.Utils import ProgressBar, Counter
 class Member:
     def __init__(self, properties: dict):
         &#34;&#34;&#34;
+        A representation of a person. Consists of a dict &#39;properties&#39;
+        containing all relevant data on this person, several attributes used
+        only within the simulation and some private counters used only in
+        functions in the &#39;Member&#39;-class called during simulation.
+
         Create a new member with the given attributes in &#39;properties&#39;.
 
         Parameters
@@ -473,6 +437,10 @@ class Member:
 class Group:
     def __init__(self, name: str):
         &#34;&#34;&#34;
+        A base class for sets of several persons. Consists of a name-string,
+        an array containing its members and a counter saving the amounts of
+        members in the group.
+
         Create a new group named &#39;name&#39;.
 
         Parameters
@@ -612,6 +580,9 @@ class Group:
 class Household(Group):
     def __init__(self, identifier: int):
         &#34;&#34;&#34;
+        A representation of a household of people. A subclass of Group, where
+        the name is the string of the household-id.
+
         Create a new household with household-id &#39;identifier&#39;.
 
         Parameters
@@ -635,6 +606,9 @@ class Household(Group):
 class Population(Group):
     def __init__(self, name: str):
         &#34;&#34;&#34;
+        A representation of a larger set of people from several households.
+        A subclass of Group, additionally consisting of a list of households.
+        
         Create a new population named &#39;name&#39;.
 
         Parameters
@@ -867,7 +841,10 @@ class Population(Group):
 <span>(</span><span>name: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a new group named 'name'.</p>
+<div class="desc"><p>A base class for sets of several persons. Consists of a name-string,
+an array containing its members and a counter saving the amounts of
+members in the group.</p>
+<p>Create a new group named 'name'.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
@@ -880,6 +857,10 @@ class Population(Group):
 <pre><code class="python">class Group:
     def __init__(self, name: str):
         &#34;&#34;&#34;
+        A base class for sets of several persons. Consists of a name-string,
+        an array containing its members and a counter saving the amounts of
+        members in the group.
+
         Create a new group named &#39;name&#39;.
 
         Parameters
@@ -1246,7 +1227,9 @@ Is expected to contain the keys
 <span>(</span><span>identifier: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a new household with household-id 'identifier'.</p>
+<div class="desc"><p>A representation of a household of people. A subclass of Group, where
+the name is the string of the household-id.</p>
+<p>Create a new household with household-id 'identifier'.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>identifier</code></strong> :&ensp;<code>int</code></dt>
@@ -1259,6 +1242,9 @@ Is expected to contain the keys
 <pre><code class="python">class Household(Group):
     def __init__(self, identifier: int):
         &#34;&#34;&#34;
+        A representation of a household of people. A subclass of Group, where
+        the name is the string of the household-id.
+
         Create a new household with household-id &#39;identifier&#39;.
 
         Parameters
@@ -1310,7 +1296,11 @@ def id(self):
 <span>(</span><span>properties: dict)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a new member with the given attributes in 'properties'.</p>
+<div class="desc"><p>A representation of a person. Consists of a dict 'properties'
+containing all relevant data on this person, several attributes used
+only within the simulation and some private counters used only in
+functions in the 'Member'-class called during simulation.</p>
+<p>Create a new member with the given attributes in 'properties'.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>properties</code></strong> :&ensp;<code>dict</code></dt>
@@ -1330,6 +1320,11 @@ a KeyError will be raised.</dd>
 <pre><code class="python">class Member:
     def __init__(self, properties: dict):
         &#34;&#34;&#34;
+        A representation of a person. Consists of a dict &#39;properties&#39;
+        containing all relevant data on this person, several attributes used
+        only within the simulation and some private counters used only in
+        functions in the &#39;Member&#39;-class called during simulation.
+
         Create a new member with the given attributes in &#39;properties&#39;.
 
         Parameters
@@ -2244,7 +2239,9 @@ Is expected to contain the keys
 <span>(</span><span>name: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a new population named 'name'.</p>
+<div class="desc"><p>A representation of a larger set of people from several households.
+A subclass of Group, additionally consisting of a list of households.</p>
+<p>Create a new population named 'name'.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
@@ -2257,6 +2254,9 @@ Is expected to contain the keys
 <pre><code class="python">class Population(Group):
     def __init__(self, name: str):
         &#34;&#34;&#34;
+        A representation of a larger set of people from several households.
+        A subclass of Group, additionally consisting of a list of households.
+        
         Create a new population named &#39;name&#39;.
 
         Parameters
