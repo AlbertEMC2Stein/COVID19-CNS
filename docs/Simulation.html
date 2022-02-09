@@ -69,7 +69,7 @@ class Simulation:
             the simulation.
         &#34;&#34;&#34;
 
-        self.settings = {&#34;population_file&#34;: &#34;None&#34;}
+        self.settings = None
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
@@ -337,6 +337,7 @@ class Simulation:
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+            print(&#34;\r\033[K&#34;, end=&#34;&#34;)
             print(
                 color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
                 % (tick,
@@ -483,38 +484,11 @@ class Simulation:
         &#34;&#34;&#34;
 
         def check_settings():
-            must_haves = [&#34;population_file&#34;,
-                          &#34;infection_probability_heuristic&#34;,
-                          &#34;mortality_probability_heuristic&#34;,
-                          &#34;inner_reproduction_number&#34;,
-                          &#34;outer_reproduction_number&#34;,
-                          &#34;incubation_time&#34;,
-                          &#34;infection_time&#34;,
-                          &#34;recovered_immunity_time&#34;,
-                          &#34;number_of_initially_infected&#34;,
-                          &#34;number_of_initially_recovered&#34;,
-                          &#34;number_of_initially_vaccinated&#34;,
-                          &#34;vaccine_available_as_of&#34;,
-                          &#34;vaccination_takes_effect_time&#34;,
-                          &#34;vaccinations_per_day&#34;,
-                          &#34;vaccination_immunity_time&#34;,
-                          &#34;waiting_time_vaccination_until_new_vaccination&#34;,
-                          &#34;waiting_time_recovered_until_vaccination&#34;,
-                          &#34;tests_per_day&#34;,
-                          &#34;test_vaccinated&#34;,
-                          &#34;quarantine_duration&#34;,
-                          &#34;backtracking_depth&#34;,
-                          &#34;backtracking_probability&#34;,
-                          &#34;maximal_simulation_time_interval&#34;,
-                          &#34;start_lockdown_at&#34;,
-                          &#34;end_lockdown_at&#34;,
-                          &#34;minimal_lockdown_duration&#34;,
-                          &#34;maximal_lockdown_duration&#34;,
-                          &#34;lockdown_gap&#34;]
+            all_settings = Standalones.make_settings(&#34;Template.cfg&#34;)
 
-            for property in must_haves:
+            for property in all_settings.keys():
                 if property not in settings.keys():
-                    raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+                    settings[property] = all_settings[property]
 
             if settings[&#34;start_lockdown_at&#34;] &lt; settings[&#34;end_lockdown_at&#34;]:
                 raise ValueError(&#34;end_lockdown_at must be smaller than start_lockdown_at&#34;)
@@ -862,6 +836,65 @@ class PostProcessing:
         plt.savefig(folder + &#34;Plots&#34; + sep + &#34;inner_vs_outer.png&#34;)
         plt.show()
 
+    @staticmethod
+    def mean_latency_period(folder: str):
+        &#34;&#34;&#34;
+        Creates a bar plot comparing the latency periods and
+        evaluating the overall mean latency time and saves them as
+        folder/Plots/latency_periods.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_infection_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;infections&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member[&#34;infections&#34;]:
+                    if infection[0] != member[&#34;id&#34;]:
+                        if infection[0] not in infection_data.keys():
+                            infection_data[infection[0]] = []
+
+                        infection_data[infection[0]] += [int(infection[2])]
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        infection_data = {}
+        get_infection_data()
+
+        latency_periods = {}
+        mean = 0.0
+        for i, infections in enumerate(infection_data.values()):
+            infections = sorted(infections)
+            for j in range(len(infections) - 1):
+                period = infections[j+1] - infections[j]
+
+                if period &lt; 30:
+                    if period not in latency_periods.keys():
+                        latency_periods[period] = 0
+
+                    latency_periods[period] += 1
+                    mean = i / (i + 1) * mean + period / (i + 1)
+
+        plt.bar(*zip(*latency_periods.items()))
+        plt.axvline(x=mean, color=&#39;r&#39;)
+        plt.title(&#34;mean = %.2f&#34; % mean)
+        plt.xlabel(&#34;Latency period (days)&#34;)
+        plt.ylabel(&#34;#&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;latency_periods.png&#34;)
+        plt.show()
 
 ################################################################################################
 ################################################################################################
@@ -1076,6 +1109,66 @@ class bcolors:
 
         plt.ylabel(&#39;Total&#39;)
         plt.savefig(folder + &#34;Plots&#34; + sep + &#34;inner_vs_outer.png&#34;)
+        plt.show()
+
+    @staticmethod
+    def mean_latency_period(folder: str):
+        &#34;&#34;&#34;
+        Creates a bar plot comparing the latency periods and
+        evaluating the overall mean latency time and saves them as
+        folder/Plots/latency_periods.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_infection_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;infections&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member[&#34;infections&#34;]:
+                    if infection[0] != member[&#34;id&#34;]:
+                        if infection[0] not in infection_data.keys():
+                            infection_data[infection[0]] = []
+
+                        infection_data[infection[0]] += [int(infection[2])]
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        infection_data = {}
+        get_infection_data()
+
+        latency_periods = {}
+        mean = 0.0
+        for i, infections in enumerate(infection_data.values()):
+            infections = sorted(infections)
+            for j in range(len(infections) - 1):
+                period = infections[j+1] - infections[j]
+
+                if period &lt; 30:
+                    if period not in latency_periods.keys():
+                        latency_periods[period] = 0
+
+                    latency_periods[period] += 1
+                    mean = i / (i + 1) * mean + period / (i + 1)
+
+        plt.bar(*zip(*latency_periods.items()))
+        plt.axvline(x=mean, color=&#39;r&#39;)
+        plt.title(&#34;mean = %.2f&#34; % mean)
+        plt.xlabel(&#34;Latency period (days)&#34;)
+        plt.ylabel(&#34;#&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;latency_periods.png&#34;)
         plt.show()</code></pre>
 </details>
 <h3>Static methods</h3>
@@ -1217,6 +1310,83 @@ def infection_graph(folder: str):
     plt.xlabel(&#39;Population&#39;)
     plt.ylabel(&#39;Day&#39;)
     plt.savefig(folder + &#34;Plots&#34; + sep + &#34;Infection_graph.pdf&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.PostProcessing.mean_latency_period"><code class="name flex">
+<span>def <span class="ident">mean_latency_period</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a bar plot comparing the latency periods and
+evaluating the overall mean latency time and saves them as
+folder/Plots/latency_periods.png.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>folder</code></strong> :&ensp;<code>Folder with simulation data to process</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def mean_latency_period(folder: str):
+    &#34;&#34;&#34;
+    Creates a bar plot comparing the latency periods and
+    evaluating the overall mean latency time and saves them as
+    folder/Plots/latency_periods.png.
+
+    Parameters
+    ----------
+    folder : Folder with simulation data to process
+    &#34;&#34;&#34;
+
+    def get_infection_data():
+        f = json.load(open(folder + &#34;population.json&#34;))
+
+        p = ProgressBar(0, len(f[&#34;members&#34;]))
+        for member in f[&#34;members&#34;]:
+            if &#34;infections&#34; not in member.keys():
+                p.update(1)
+                continue
+
+            for infection in member[&#34;infections&#34;]:
+                if infection[0] != member[&#34;id&#34;]:
+                    if infection[0] not in infection_data.keys():
+                        infection_data[infection[0]] = []
+
+                    infection_data[infection[0]] += [int(infection[2])]
+
+            p.update(1)
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    infection_data = {}
+    get_infection_data()
+
+    latency_periods = {}
+    mean = 0.0
+    for i, infections in enumerate(infection_data.values()):
+        infections = sorted(infections)
+        for j in range(len(infections) - 1):
+            period = infections[j+1] - infections[j]
+
+            if period &lt; 30:
+                if period not in latency_periods.keys():
+                    latency_periods[period] = 0
+
+                latency_periods[period] += 1
+                mean = i / (i + 1) * mean + period / (i + 1)
+
+    plt.bar(*zip(*latency_periods.items()))
+    plt.axvline(x=mean, color=&#39;r&#39;)
+    plt.title(&#34;mean = %.2f&#34; % mean)
+    plt.xlabel(&#34;Latency period (days)&#34;)
+    plt.ylabel(&#34;#&#34;)
+    plt.savefig(folder + &#34;Plots&#34; + sep + &#34;latency_periods.png&#34;)
     plt.show()</code></pre>
 </details>
 </dd>
@@ -1674,7 +1844,7 @@ the simulation.</dd>
             the simulation.
         &#34;&#34;&#34;
 
-        self.settings = {&#34;population_file&#34;: &#34;None&#34;}
+        self.settings = None
         self.change_settings(settings)
 
         self.population = Population.load_from_file(self.settings[&#34;population_file&#34;])
@@ -1942,6 +2112,7 @@ the simulation.</dd>
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+            print(&#34;\r\033[K&#34;, end=&#34;&#34;)
             print(
                 color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
                 % (tick,
@@ -2088,38 +2259,11 @@ the simulation.</dd>
         &#34;&#34;&#34;
 
         def check_settings():
-            must_haves = [&#34;population_file&#34;,
-                          &#34;infection_probability_heuristic&#34;,
-                          &#34;mortality_probability_heuristic&#34;,
-                          &#34;inner_reproduction_number&#34;,
-                          &#34;outer_reproduction_number&#34;,
-                          &#34;incubation_time&#34;,
-                          &#34;infection_time&#34;,
-                          &#34;recovered_immunity_time&#34;,
-                          &#34;number_of_initially_infected&#34;,
-                          &#34;number_of_initially_recovered&#34;,
-                          &#34;number_of_initially_vaccinated&#34;,
-                          &#34;vaccine_available_as_of&#34;,
-                          &#34;vaccination_takes_effect_time&#34;,
-                          &#34;vaccinations_per_day&#34;,
-                          &#34;vaccination_immunity_time&#34;,
-                          &#34;waiting_time_vaccination_until_new_vaccination&#34;,
-                          &#34;waiting_time_recovered_until_vaccination&#34;,
-                          &#34;tests_per_day&#34;,
-                          &#34;test_vaccinated&#34;,
-                          &#34;quarantine_duration&#34;,
-                          &#34;backtracking_depth&#34;,
-                          &#34;backtracking_probability&#34;,
-                          &#34;maximal_simulation_time_interval&#34;,
-                          &#34;start_lockdown_at&#34;,
-                          &#34;end_lockdown_at&#34;,
-                          &#34;minimal_lockdown_duration&#34;,
-                          &#34;maximal_lockdown_duration&#34;,
-                          &#34;lockdown_gap&#34;]
+            all_settings = Standalones.make_settings(&#34;Template.cfg&#34;)
 
-            for property in must_haves:
+            for property in all_settings.keys():
                 if property not in settings.keys():
-                    raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+                    settings[property] = all_settings[property]
 
             if settings[&#34;start_lockdown_at&#34;] &lt; settings[&#34;end_lockdown_at&#34;]:
                 raise ValueError(&#34;end_lockdown_at must be smaller than start_lockdown_at&#34;)
@@ -2176,38 +2320,11 @@ the simulation.</dd>
     &#34;&#34;&#34;
 
     def check_settings():
-        must_haves = [&#34;population_file&#34;,
-                      &#34;infection_probability_heuristic&#34;,
-                      &#34;mortality_probability_heuristic&#34;,
-                      &#34;inner_reproduction_number&#34;,
-                      &#34;outer_reproduction_number&#34;,
-                      &#34;incubation_time&#34;,
-                      &#34;infection_time&#34;,
-                      &#34;recovered_immunity_time&#34;,
-                      &#34;number_of_initially_infected&#34;,
-                      &#34;number_of_initially_recovered&#34;,
-                      &#34;number_of_initially_vaccinated&#34;,
-                      &#34;vaccine_available_as_of&#34;,
-                      &#34;vaccination_takes_effect_time&#34;,
-                      &#34;vaccinations_per_day&#34;,
-                      &#34;vaccination_immunity_time&#34;,
-                      &#34;waiting_time_vaccination_until_new_vaccination&#34;,
-                      &#34;waiting_time_recovered_until_vaccination&#34;,
-                      &#34;tests_per_day&#34;,
-                      &#34;test_vaccinated&#34;,
-                      &#34;quarantine_duration&#34;,
-                      &#34;backtracking_depth&#34;,
-                      &#34;backtracking_probability&#34;,
-                      &#34;maximal_simulation_time_interval&#34;,
-                      &#34;start_lockdown_at&#34;,
-                      &#34;end_lockdown_at&#34;,
-                      &#34;minimal_lockdown_duration&#34;,
-                      &#34;maximal_lockdown_duration&#34;,
-                      &#34;lockdown_gap&#34;]
+        all_settings = Standalones.make_settings(&#34;Template.cfg&#34;)
 
-        for property in must_haves:
+        for property in all_settings.keys():
             if property not in settings.keys():
-                raise KeyError(&#34;Settings have to contain &#39;&#34; + property + &#34;&#39;.&#34;)
+                settings[property] = all_settings[property]
 
         if settings[&#34;start_lockdown_at&#34;] &lt; settings[&#34;end_lockdown_at&#34;]:
             raise ValueError(&#34;end_lockdown_at must be smaller than start_lockdown_at&#34;)
@@ -2564,6 +2681,7 @@ is reached.</p></div>
 
     def print_stats():
         color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
+        print(&#34;\r\033[K&#34;, end=&#34;&#34;)
         print(
             color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
             % (tick,
@@ -2667,6 +2785,7 @@ is reached.</p></div>
 <ul class="">
 <li><code><a title="src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers" href="#src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers">compare_inner_and_outer_infection_numbers</a></code></li>
 <li><code><a title="src.Simulation.PostProcessing.infection_graph" href="#src.Simulation.PostProcessing.infection_graph">infection_graph</a></code></li>
+<li><code><a title="src.Simulation.PostProcessing.mean_latency_period" href="#src.Simulation.PostProcessing.mean_latency_period">mean_latency_period</a></code></li>
 <li><code><a title="src.Simulation.PostProcessing.progression_plots" href="#src.Simulation.PostProcessing.progression_plots">progression_plots</a></code></li>
 </ul>
 </li>
