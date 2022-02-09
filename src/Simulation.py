@@ -802,6 +802,65 @@ class PostProcessing:
         plt.savefig(folder + "Plots" + sep + "inner_vs_outer.png")
         plt.show()
 
+    @staticmethod
+    def mean_latency_period(folder: str):
+        """
+        Creates a bar plot comparing the latency periods and
+        evaluating the overall mean latency time and saves them as
+        folder/Plots/latency_periods.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        """
+
+        def get_infection_data():
+            f = json.load(open(folder + "population.json"))
+
+            p = ProgressBar(0, len(f["members"]))
+            for member in f["members"]:
+                if "infections" not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member["infections"]:
+                    if infection[0] != member["id"]:
+                        if infection[0] not in infection_data.keys():
+                            infection_data[infection[0]] = []
+
+                        infection_data[infection[0]] += [int(infection[2])]
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + "Plots")
+
+        infection_data = {}
+        get_infection_data()
+
+        latency_periods = {}
+        mean = 0.0
+        for i, infections in enumerate(infection_data.values()):
+            infections = sorted(infections)
+            for j in range(len(infections) - 1):
+                period = infections[j+1] - infections[j]
+
+                if period < 30:
+                    if period not in latency_periods.keys():
+                        latency_periods[period] = 0
+
+                    latency_periods[period] += 1
+                    mean = i / (i + 1) * mean + period / (i + 1)
+
+        plt.bar(*zip(*latency_periods.items()))
+        plt.axvline(x=mean, color='r')
+        plt.title("mean = %.2f" % mean)
+        plt.xlabel("Latency period (days)")
+        plt.ylabel("#")
+        plt.savefig(folder + "Plots" + sep + "latency_periods.png")
+        plt.show()
 
 ################################################################################################
 ################################################################################################

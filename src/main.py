@@ -70,14 +70,18 @@ if __name__ == "__main__":
         else:
             raise ValueError("Heuristic not available")
 
-    def post_processing(option):
+    def post_processing(option, folder=None):
         out = ".." + sep + "out" + sep + simulation_settings["population_file"].split('.')[0] + sep
-        latest = Standalones.get_last_folder(out)
+        if folder is None:
+            location = out + Standalones.get_last_folder(out)
+        else:
+            location = out + folder
+
         all_methods = [item[1] for item in PostProcessing.__dict__.items() if not item[0].startswith('__')]
 
         if option == 'All':
             for method in all_methods:
-                method(out + latest)
+                method(location)
 
         elif option == 'None':
             return
@@ -85,12 +89,15 @@ if __name__ == "__main__":
         else:
             specified_methods = option.split(',')
             for name in specified_methods:
+                found = False
                 for method in all_methods:
                     if method.__name__ == name.replace(' ', ''):
-                        method(out + latest)
+                        method(location)
+                        found = True
                         break
 
-                raise ValueError('Post processing method \'%s\' not found' % name.replace(' ', ''))
+                if not found:
+                    raise ValueError('Post processing method \'%s\' not found' % name.replace(' ', ''))
 
     args = sys.argv[1:]
 
@@ -100,6 +107,12 @@ if __name__ == "__main__":
     simulation_settings["mortality_probability_heuristic"] = heuristic(simulation_settings["mortality_probability_heuristic"])
     simulation_settings["vaccine_failure_probability_heuristic"] = heuristic(simulation_settings["vaccine_failure_probability_heuristic"])
 
-    sim = Scenarios.single_simulation(simulation_settings)
+    if args[1] == "-p":
+        try:
+            post_processing(simulation_settings["post_processing"], args[2])
+        except IndexError:
+            post_processing(simulation_settings["post_processing"])
 
-    post_processing(simulation_settings["post_processing"])
+    else:
+        sim = Scenarios.single_simulation(simulation_settings)
+        post_processing(simulation_settings["post_processing"])
