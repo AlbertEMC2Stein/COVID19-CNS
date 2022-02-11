@@ -899,7 +899,7 @@ class PostProcessing:
 
         plt.bar(*zip(*vaccination_data.items()))
         plt.xlabel("Vaccinations")
-        plt.ylabel("%%")
+        plt.ylabel("%")
         plt.savefig(folder + "Plots" + sep + "vaccine_quotas.png")
         plt.show()
 
