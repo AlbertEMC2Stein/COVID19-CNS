@@ -110,12 +110,10 @@ class Simulation:
                         n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
                         if self.arrange_lockdown:
-                            n_outer //= 2
-                            n_inner = round(1.5 * n_inner)
+                            n_inner, n_outer = np.random.poisson(3/2 * c_inner), np.random.poisson(1/2 * c_outer)
 
                         if member.quarantined:
-                            n_outer = 0
-                            n_inner = round(1.5 * n_inner)
+                            n_inner, n_outer = np.random.poisson(2 * c_inner), 0
 
                         gen_params = lambda: {
                             "infection_probability_heuristic": infection_heuristic,
