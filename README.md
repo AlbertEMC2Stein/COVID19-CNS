@@ -59,6 +59,7 @@ in time.
 ### Usage
 
 ![Product Name Screen Shot](images/terminal.png)
+![Product Name Screen Shot](images/post-processing.png)
 
 To start a simulation just use the ```python3 main.py SETTINGS_FILE_NAME.cfg``` command in your terminal from inside
 the src folder of the project. To only execute the in the config file specified post-processing methods on the specified 
