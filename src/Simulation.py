@@ -856,7 +856,7 @@ class PostProcessing:
         plt.show()
 
     @staticmethod
-    def vaccine_quatas(folder: str):
+    def vaccine_quotas(folder: str):
         """
         Creates a bar plot showing how many people have received how
         many shots of the vaccine.Plot is saved as folder/Plots/vaccine_quotas.png.
@@ -895,7 +895,7 @@ class PostProcessing:
 
         plt.bar(*zip(*vaccination_data.items()))
         plt.xlabel("Vaccinations")
-        plt.ylabel("#")
+        plt.ylabel("%%")
         plt.savefig(folder + "Plots" + sep + "vaccine_quotas.png")
         plt.show()
 
