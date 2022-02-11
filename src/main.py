@@ -107,7 +107,7 @@ if __name__ == "__main__":
     simulation_settings["mortality_probability_heuristic"] = heuristic(simulation_settings["mortality_probability_heuristic"])
     simulation_settings["vaccine_failure_probability_heuristic"] = heuristic(simulation_settings["vaccine_failure_probability_heuristic"])
 
-    if args[1] == "-p":
+    if len(args) > 1 and args[1] == "-p":
         try:
             post_processing(simulation_settings["post_processing"], args[2])
         except IndexError:
