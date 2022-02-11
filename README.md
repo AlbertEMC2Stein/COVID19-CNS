@@ -47,7 +47,7 @@
 
 This project gives the user the ability to simulate customizable 
 infection precesses using the many offered parameters that
-can be easily accessed (as seen in <a href="./src/Settings/Template.cfg">here</a>)
+can be easily accessed (as seen <a href="./src/Settings/Template.cfg">here</a>)
 and edited. Additionally, some post-processing methods are presented to
 analyze the outputted data, either directly after the simulation or at a later point
 in time.
