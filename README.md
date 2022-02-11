@@ -80,6 +80,8 @@ _For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-
     - Randomly picked interactions 
     - More measures like mask-duty
     - Hospitalisation and infection severity
+- Bigger populations (all of Germany?)
+- Different virus variants
 
 See the [open issues](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues) for a full list of proposed features (and known issues).
 
