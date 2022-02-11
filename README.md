@@ -31,7 +31,6 @@
     <li>
       <a href="#about-the-project">About this project</a>
       <ul>
-        <li><a href="#built-with">Built with</a></li>
         <li><a href="#usage">Usage</a></li>
         <li><a href="#roadmap">Roadmap</a></li>
       </ul>
