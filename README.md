@@ -73,12 +73,12 @@ _For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-
 <!-- ROADMAP -->
 ### Roadmap
 
-- [] More post-processing
-- [] More heuristics
-- [] More features
-    - [] Randomly picked interactions 
-    - [] More measures like mask-duty
-    - [] Hospitalisation and infection severity
+- More post-processing
+- More heuristics
+- More features
+    - Randomly picked interactions 
+    - More measures like mask-duty
+    - Hospitalisation and infection severity
 
 See the [open issues](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues) for a full list of proposed features (and known issues).
 
