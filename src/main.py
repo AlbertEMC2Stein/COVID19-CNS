@@ -56,8 +56,9 @@ def mortality_probability_heuristic(mem_props):
 def vaccine_failure_probability_heuristic(a, b):
     v_when = lambda member: member.properties["vaccinations"][-1][1]
     v_till = lambda member: member.properties["vaccinations"][-1][2]
+    v_nvacs = lambda member: 1 if len(member.properties["vaccinations"]) >= 2 else 2
     t = lambda member, tick: (tick - v_when(member)) / (v_till(member) - v_when(member))
-    return lambda member, tick: 1 - a * (1 - np.exp(b * (t(member, tick) - 1))) / (1 - np.exp(-b))
+    return lambda member, tick: 1 - a / v_nvacs(member) * (1 - np.exp(b * (t(member, tick) - 1))) / (1 - np.exp(-b))
 
 
 def heuristic(name):
