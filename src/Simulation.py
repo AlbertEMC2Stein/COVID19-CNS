@@ -275,6 +275,10 @@ class Simulation:
                 if result and not self.arrange_lockdown:
                     result = tick - self.lockdown_ended > self.settings["lockdown_gap"]
 
+                # Are most people vaccinated?
+                if self.groups["Vaccinated"].size >= 0.5 * self.population.size and not self.arrange_lockdown:
+                    result = False
+
                 self.lockdown_duration += result
 
                 return result
