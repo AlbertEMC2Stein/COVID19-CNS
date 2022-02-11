@@ -46,17 +46,12 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot](images/screenshot.png)](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info.
-
-<div align="right">(<a href="#top">back to top</a>)</div>
-
-
-
-### Built With
-
-* [Python](https://www.python.org/)
+This project gives the user the ability to simulate customizable 
+infection precesses using the many offered parameters that
+can be easily accessed (as seen in <a href="./src/Settings/Template.cfg">here</a>)
+and edited. Additionally, some post-processing methods are presented to
+analyze the outputted data, either directly after the simulation or at a later point
+in time.
 
 <div align="right">(<a href="#top">back to top</a>)</div>
 
@@ -64,7 +59,11 @@ Here's a blank template to get started: To avoid retyping too much info.
 
 ### Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+![Product Name Screen Shot](images/terminal.png)
+
+To start a simulation just use the ```python3 main.py SETTINGS_FILE_NAME.cfg``` command in your terminal from inside
+the src folder of the project. To only execute the in the config file specified post-processing methods on the specified 
+population use ```python3 main.py SETTINGS_FILE_NAME.cfg -p SIMULATION_NUMBER```.
 
 _For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/-/tree/master/docs)_
 
@@ -75,14 +74,17 @@ _For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-
 <!-- ROADMAP -->
 ### Roadmap
 
-- [] Feature 1
-- [] Feature 2
-- [] Feature 3
-    - [] Nested Feature
+- [] More post-processing
+- [] More heuristics
+- [] More features
+    - [] Randomly picked interactions 
+    - [] More measures like mask-duty
+    - [] Hospitalisation and infection severity
 
 See the [open issues](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues) for a full list of proposed features (and known issues).
 
 <div align="right">(<a href="#top">back to top</a>)</div>
+
 
 
 <!-- LICENSE -->
