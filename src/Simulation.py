@@ -58,7 +58,7 @@ class Simulation:
                       }
         self.arrange_lockdown = False
         self.lockdown_duration = 0
-        self.lockdown_ended = 0
+        self.lockdown_ended = -np.inf
 
     def start_iteration(self):
         """
@@ -336,6 +336,7 @@ class Simulation:
         c_tests = self.settings["tests_per_day"]
         t_wait_vac = self.settings["waiting_time_vaccination_until_new_vaccination"]
         t_wait_rec = self.settings["waiting_time_recovered_until_vaccination"]
+        t_vac_available = self.settings["vaccine_available_as_of"]
         max_t = self.settings["maximal_simulation_time_interval"]
 
         initialize_groups()
@@ -346,8 +347,8 @@ class Simulation:
 
         while True:
             tick += 1
-            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
-                        tick >= self.settings["vaccine_available_as_of"])
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size)
+            n_vacs = round(n_vacs * np.exp(-50 / (tick - t_vac_available)) if tick > t_vac_available else 0)
 
             self.arrange_lockdown = decide_measure("lockdown")
 
