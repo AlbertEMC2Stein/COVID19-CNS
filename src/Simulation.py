@@ -301,19 +301,13 @@ class Simulation:
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
-            print("\r\033[K", end="")
-            print(
-                color + "\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d"
-                % (tick,
-                   self.groups["Infected"].size,
-                   self.groups["Dead"].size,
-                   self.groups["Quarantined"].size,
-                   self.stats["new_infected"][-1],
-                   self.stats["new_recovered"][-1],
-                   self.stats["new_vaccinated"][-1],
-                   self.stats["test_results_+"][-1],
-                   self.stats["test_results_-"][-1],
-                   self.stats["seven_day_incidence"][-1]), end="")
+            print(color + "\rDay: %04d, #Infected: %d, #Vaccinated: %d, #Quarantined: %d, #Dead: %d, 7di: %d\033[K"
+                  % (tick,
+                     self.groups["Infected"].size,
+                     self.groups["Vaccinated"].size,
+                     self.groups["Quarantined"].size,
+                     self.groups["Dead"].size,
+                     self.stats["seven_day_incidence"][-1]), end="")
 
         print("\nInitializing simulation...")
 
