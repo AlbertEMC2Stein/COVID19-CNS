@@ -855,6 +855,50 @@ class PostProcessing:
         plt.savefig(folder + "Plots" + sep + "latency_periods.png")
         plt.show()
 
+    @staticmethod
+    def vaccine_quatas(folder: str):
+        """
+        Creates a bar plot showing how many people have received how
+        many shots of the vaccine.Plot is saved as folder/Plots/vaccine_quotas.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        """
+
+        def get_vaccination_data():
+            f = json.load(open(folder + "population.json"))
+
+            p = ProgressBar(0, len(f["members"]))
+            for member in f["members"]:
+                if "vaccinations" not in member.keys():
+                    p.update(1)
+                    continue
+
+                n = len(member["vaccinations"])
+                if n not in vaccination_data.keys():
+                    vaccination_data[n] = 0
+
+                vaccination_data[n] += 1
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + "Plots")
+
+        vaccination_data = {}
+        get_vaccination_data()
+
+        cumsum = np.sum(list(vaccination_data.values()))
+        vaccination_data = {n: 100 * vs / cumsum for n, vs in vaccination_data.items()}
+
+        plt.bar(*zip(*vaccination_data.items()))
+        plt.xlabel("Vaccinations")
+        plt.ylabel("#")
+        plt.savefig(folder + "Plots" + sep + "vaccine_quotas.png")
+        plt.show()
+
 ################################################################################################
 ################################################################################################
 ################################################################################################
