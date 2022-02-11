@@ -578,7 +578,7 @@ class Population(Group):
         """
         A representation of a larger set of people from several households.
         A subclass of Group, additionally consisting of a list of households.
-        
+
         Create a new population named 'name'.
 
         Parameters
