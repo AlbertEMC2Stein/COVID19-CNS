@@ -3,7 +3,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/AlbertEMC2Stein/COVID19-CNS">
-    <img src="/COVID19-CNS/images/logoV2.png" alt="Logo" width=50%>
+    <img src="./images/logoV2.png" alt="Logo" width=50%>
   </a>
 
 <h3 align="center">Spread of diseases in contact networks</h3>
