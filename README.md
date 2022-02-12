@@ -11,7 +11,7 @@
   <p align="center">
     A project modelling the spread of infectious diseases via contact networks
     <br />
-    <a href="https://albertemc2stein.github.io/docs"><strong>Explore the docs »</strong></a>
+    <a href="https://albertemc2stein.github.io/COVID19-CNS/docs"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="#usage">View Demo</a>
@@ -65,7 +65,7 @@ To start a simulation just use the ```python3 main.py SETTINGS_FILE_NAME.cfg``` 
 the src folder of the project. To only execute the in the config file specified post-processing methods on the specified 
 population use ```python3 main.py SETTINGS_FILE_NAME.cfg -p SIMULATION_NUMBER```.
 
-_For more examples, please refer to the [Documentation](https://albertemc2stein.github.io/docs)_
+_For more examples, please refer to the [Documentation](https://albertemc2stein.github.io/COVID19-CNS/docs)_
 
 <div align="right">(<a href="#top">back to top</a>)</div>
 
