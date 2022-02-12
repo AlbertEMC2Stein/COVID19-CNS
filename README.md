@@ -1,19 +1,19 @@
 <div id="top"></div>
 <!-- PROJECT LOGO -->
-<br />
+<br/>
 <div align="center">
   <a href="https://github.com/AlbertEMC2Stein/COVID19-CNS">
-    <img src="./images/logoV2.png" alt="Logo" width=50%>
+    <img src="images/logoV2.png" alt="Logo" width="50%">
   </a>
 
 <h3 align="center">Spread of diseases in contact networks</h3>
 
   <p align="center">
     A project modelling the spread of infectious diseases via contact networks
-    <br />
+    <br/>
     <a href="https://albertemc2stein.github.io/COVID19-CNS/docs"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
+    <br/>
+    <br/>
     <a href="#usage">View Demo</a>
     ·
     <a href="https://github.com/AlbertEMC2Stein/COVID19-CNS/issues">Report Bug</a>
