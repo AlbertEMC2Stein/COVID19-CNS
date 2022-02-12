@@ -555,6 +555,8 @@ class Scenarios:
         for (j, i), label in np.ndenumerate(max_infection_values):
             plt.text(i, j, int(label), ha='center', va='center')
 
+        Standalones.check_existence(".." + sep + "out" + sep + "general")
+
         plt.savefig("../out/general/c_inner_vs_c_outer_%dx%d.png" % (n, n))
         plt.show()
 
@@ -602,6 +604,8 @@ class Scenarios:
 
                 mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
                                          + 1 / run * max(sim.groups["Infected"].history)
+
+        Standalones.check_existence(".." + sep + "out" + sep + "general")
 
         plt.plot(interval, mitigation_interval, color='r')
         plt.title("Maximal infection numbers in relation to $c_{outer}$.")
@@ -693,7 +697,7 @@ class PostProcessing:
         folder : Folder with simulation data to process
         """
 
-        def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+        def make_plot(plotname: str, title: str, datasets: iter, colors: iter, labels: iter = []):
             _, ax = plt.subplots()
             days = np.arange(0, len(datasets[0]), 1)
 
@@ -706,6 +710,10 @@ class PostProcessing:
             ax.set_ylabel("#")
             ax.set_xlim(0, days[-1])
             ax.set_title(title)
+
+            if labels:
+                ax.legend(labels)
+
             plt.savefig(folder + "Plots" + sep + plotname)
             plt.show()
 
@@ -725,22 +733,26 @@ class PostProcessing:
                 data[key] += [int(value)]
 
         data = {column: np.array(data[column]) for column in data.keys()}
-        make_plot("SIRVD.png", "Total",
+        make_plot("SIRV.png", "Total",
                   [population_size - data["Infected"] - data["Recovered"] - data["Vaccinated"] - data["Dead"],
-                   data["Infected"], data["Recovered"], data["Vaccinated"], data["Dead"]],
-                  ['green', 'red', 'blue', 'cyan', 'black'])
+                   data["Infected"], data["Recovered"], data["Vaccinated"]],
+                  ['green', 'red', 'blue', 'cyan'],
+                  ["Susceptible", "Infected", "Recovered", "Vaccinated"])
 
         make_plot("NewI.png", "New Infections",
                   [data["new_infected"], data["ill_vaccinated"]],
-                  ['red', 'purple'])
+                  ['red', 'purple'],
+                  ["Regular", "Vaccinated"])
 
         make_plot("IR.png", "Infected & Recovered",
                   [data["Infected"], data["Recovered"]],
-                  ['red', 'blue'])
+                  ['red', 'blue'],
+                  ["Infected", "Recovered"])
 
         make_plot("V.png", "Vaccinated",
                   [data["Vaccinated"]],
-                  ['cyan'])
+                  ['cyan'],
+                  ["Vaccinated"])
 
         make_plot("7DI.png", "Seven Day Incidence",
                   [data["seven_day_incidence"]],
