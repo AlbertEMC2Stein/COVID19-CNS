@@ -101,7 +101,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Tim Prokosch - prokosch@rhrk.uni-kl.de </br>
+Tim Prokosch - prokosch@rhrk.uni-kl.de <br/>
 Tobias Roth - tproth@rhrk.uni-kl.de
 
 Project Link: [https://github.com/AlbertEMC2Stein/COVID19-CNS](https://github.com/AlbertEMC2Stein/COVID19-CNS)
