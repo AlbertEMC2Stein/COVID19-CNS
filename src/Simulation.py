@@ -346,7 +346,7 @@ class Simulation:
         while True:
             tick += 1
             n_vacs = min(np.random.poisson(c_vacs), self.population.size)
-            n_vacs = round(n_vacs * np.exp(-50 / (tick - t_vac_available)) if tick > t_vac_available else 0)
+            n_vacs = round(n_vacs * np.exp(-100 / (tick - t_vac_available)) if tick > t_vac_available else 0)
 
             self.arrange_lockdown = decide_measure("lockdown")
 
