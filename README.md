@@ -2,7 +2,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum">
+  <a href="https://github.com/AlbertEMC2Stein/COVID19-CNS">
     <img src="images/logoV2.png" alt="Logo" width=50%>
   </a>
 
@@ -11,14 +11,14 @@
   <p align="center">
     A project modelling the spread of infectious diseases via contact networks
     <br />
-    <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/-/tree/master/docs"><strong>Explore the docs »</strong></a>
+    <a href="https://albertemc2stein.github.io/docs"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="#usage">View Demo</a>
     ·
-    <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues">Report Bug</a>
+    <a href="https://github.com/AlbertEMC2Stein/COVID19-CNS/issues">Report Bug</a>
     ·
-    <a href="https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues">Request Feature</a>
+    <a href="https://github.com/AlbertEMC2Stein/COVID19-CNS/issues">Request Feature</a>
   </p>
 </div>
 
@@ -65,7 +65,7 @@ To start a simulation just use the ```python3 main.py SETTINGS_FILE_NAME.cfg``` 
 the src folder of the project. To only execute the in the config file specified post-processing methods on the specified 
 population use ```python3 main.py SETTINGS_FILE_NAME.cfg -p SIMULATION_NUMBER```.
 
-_For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/-/tree/master/docs)_
+_For more examples, please refer to the [Documentation](https://albertemc2stein.github.io/docs)_
 
 <div align="right">(<a href="#top">back to top</a>)</div>
 
@@ -83,7 +83,7 @@ _For more examples, please refer to the [Documentation](https://gitlab.rhrk.uni-
 - Bigger populations (all of Germany?)
 - Different virus variants
 
-See the [open issues](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/AlbertEMC2Stein/COVID19-CNS/issues) for a full list of proposed features (and known issues).
 
 <div align="right">(<a href="#top">back to top</a>)</div>
 
@@ -104,6 +104,6 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 Tim Prokosch - prokosch@rhrk.uni-kl.de </br>
 Tobias Roth - tproth@rhrk.uni-kl.de
 
-Project Link: [https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum](https://gitlab.rhrk.uni-kl.de/prokosch/fachpraktikum)
+Project Link: [https://github.com/AlbertEMC2Stein/COVID19-CNS](https://github.com/AlbertEMC2Stein/COVID19-CNS)
 
 <div align="right">(<a href="#top">back to top</a>)</div>
