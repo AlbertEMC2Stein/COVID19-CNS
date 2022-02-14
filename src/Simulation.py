@@ -915,6 +915,50 @@ class PostProcessing:
         plt.savefig(folder + "Plots" + sep + "vaccine_quotas.png")
         plt.show()
 
+    @staticmethod
+    def death_distribution(folder: str):
+        """
+        Creates a bar plot showing the age distribution of people
+        who died saves the resulting plot as folder/Plots/death_distribution.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        """
+
+        def get_death_data():
+            f = json.load(open(folder + "population.json"))
+
+            p = ProgressBar(0, len(f["members"]))
+            for member in f["members"]:
+                if "Death" not in member.keys():
+                    p.update(1)
+                    continue
+
+                else:
+                    age = member["age"]
+                    if age not in death_data.keys():
+                        death_data[age] = 0
+
+                    death_data[age] += 1
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + "Plots")
+
+        death_data = {}
+        get_death_data()
+
+        plt.bar(*zip(*death_data.items()))
+        plt.title("Deaths")
+        plt.xlabel("age")
+        plt.ylabel("#")
+        plt.savefig(folder + "Plots" + sep + "death_distribution.png")
+        plt.show()
+
 ################################################################################################
 ################################################################################################
 ################################################################################################
