@@ -35,17 +35,17 @@ def infection_probability_heuristic(mem_props):
 def mortality_probability_heuristic(mem_props):
     age = int(mem_props["age"])
     if 0 <= age <= 4:
-        result = 0.000059062155147 / 14
+        result = 0.000059062155147 / 7
     elif 5 <= age <= 14:
-        result = 0.0000124773674418 / 14
+        result = 0.0000124773674418 / 7
     elif 15 <= age <= 34:
-        result = 0.000111900272854 / 14
+        result = 0.000111900272854 / 7
     elif 35 <= age <= 59:
-        result = 0.00176127729351 / 14
+        result = 0.00176127729351 / 7
     elif 60 <= age <= 79:
-        result = 0.0338030065822 / 14
+        result = 0.0338030065822 / 7
     else:
-        result = 0.170387357522 / 14
+        result = 0.170387357522 / 7
 
     if "vaccinations" in mem_props.keys():
         return result / 2
