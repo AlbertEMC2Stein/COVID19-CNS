@@ -962,6 +962,74 @@ class PostProcessing:
         plt.savefig(folder + "Plots" + sep + "death_distribution.png")
         plt.show()
 
+    @staticmethod
+    def effective_reproduction_number(folder: str):
+        """
+        Creates a plot showing the effective reproduction number over time
+        and saves it as folder/Plots/latency_periods.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        """
+
+        def get_infection_data():
+            f = json.load(open(folder + "population.json"))
+
+            p = ProgressBar(0, len(f["members"]))
+            for member in f["members"]:
+                if "infections" not in member.keys():
+                    p.update(1)
+                    continue
+
+                for infection in member["infections"]:
+                    if infection[0] != member["id"]:
+                        if infection[0] not in infection_data.keys():
+                            infection_data[infection[0]] = []
+
+                        infection_data[infection[0]] += [int(infection[2])]
+
+                p.update(1)
+
+        def get_sim_data():
+            settings = Standalones.make_settings("settings.cfg", path=folder)
+            progression_data = np.genfromtxt(folder + "progression.csv", skip_header=1)
+
+            return settings["incubation_time"] + settings["infection_time"], progression_data.shape[0]
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + "Plots")
+
+        infection_data = {}
+        mean_infection_time, duration = get_sim_data()
+        get_infection_data()
+
+        effective_r_values = np.zeros((duration, 2))
+        for i, member in enumerate(infection_data.keys()):
+            timestamps = infection_data[member]
+            member_already_counted_on = []
+            for timestamp in timestamps:
+                mind = max(0, timestamp - mean_infection_time)
+                maxd = min(timestamp + mean_infection_time, duration)
+                for day in range(mind, maxd):
+                    if day not in member_already_counted_on:
+                        member_already_counted_on += [day]
+                        effective_r_values[day, 1] += 1
+
+                    effective_r_values[day, 0] += 1
+
+        effective_r_values[:, 0] /= effective_r_values[:, 1]
+
+        plt.plot(effective_r_values[:, 0], color='black')
+        plt.xlim([0, duration-1])
+        plt.xlabel("Day")
+        plt.ylabel("Effective Reproduction number")
+        plt.savefig(folder + "Plots" + sep + "effective_reproduction_number.png")
+        plt.show()
+
+
 ################################################################################################
 ################################################################################################
 ################################################################################################
