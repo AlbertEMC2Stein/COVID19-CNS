@@ -179,7 +179,9 @@ class Simulation:
             Group.move(new_members["newly_recovered"], self.groups["Infected"], self.groups["Recovered"])
 
             Group.move(new_members["new_dead"], self.groups["Infected"], self.groups["Dead"])
-            Group.move(new_members["new_dead"], self.groups["Quarantined"], self.groups["Dead"])
+            
+            for member in new_members["new_dead"]:
+                self.groups["Quarantined"].remove_member(member)
 
             for member in new_members["newly_infected"]:
                 self.groups["Infected"].add_member(member)
@@ -936,7 +938,7 @@ class PostProcessing:
                     continue
 
                 else:
-                    age = member["age"]
+                    age = int(member["age"])
                     if age not in death_data.keys():
                         death_data[age] = 0
 
@@ -954,6 +956,7 @@ class PostProcessing:
 
         plt.bar(*zip(*death_data.items()))
         plt.title("Deaths")
+        plt.xlim(left=-1)
         plt.xlabel("age")
         plt.ylabel("#")
         plt.savefig(folder + "Plots" + sep + "death_distribution.png")
