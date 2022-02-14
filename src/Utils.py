@@ -322,7 +322,7 @@ class Standalones:
             os.mkdir(path)
 
     @staticmethod
-    def make_settings(settings_file: str):
+    def make_settings(settings_file: str, path: str = "Settings" + sep):
         """
         Creates a settings-dictionary which is used to initialize simulations
         from a given .cfg file located in src/Settings.
@@ -331,10 +331,13 @@ class Standalones:
         ----------
         settings_file : str
             Path to the file containing the settings.
+
+        path : str
+            Path to the settings folder. Defaults to Settings/.
         """
 
         config = configparser.RawConfigParser()
-        config.read("Settings" + sep + settings_file)
+        config.read(path + settings_file)
 
         settings = {}
         for section in config.sections():
