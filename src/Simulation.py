@@ -179,7 +179,7 @@ class Simulation:
             Group.move(new_members["newly_recovered"], self.groups["Infected"], self.groups["Recovered"])
 
             Group.move(new_members["new_dead"], self.groups["Infected"], self.groups["Dead"])
-            
+
             for member in new_members["new_dead"]:
                 self.groups["Quarantined"].remove_member(member)
 
