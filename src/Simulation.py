@@ -768,7 +768,7 @@ class PostProcessing:
     def compare_inner_and_outer_infection_numbers(folder: str):
         """
         Creates a bar plot comparing the relative numbers of infections that
-        took place inside and outside of households and saves them as
+        took place inside and outside of households and saves it as
         folder/Plots/inner_vs_outer.png.
 
         Parameters
@@ -817,7 +817,7 @@ class PostProcessing:
     def mean_latency_period(folder: str):
         """
         Creates a bar plot comparing the latency periods and
-        evaluating the overall mean latency time and saves them as
+        evaluating the overall mean latency time and saves it as
         folder/Plots/latency_periods.png.
 
         Parameters
@@ -877,7 +877,7 @@ class PostProcessing:
     def vaccine_quotas(folder: str):
         """
         Creates a bar plot showing how many people have received how
-        many shots of the vaccine.Plot is saved as folder/Plots/vaccine_quotas.png.
+        many shots of the vaccine. Plot is saved as folder/Plots/vaccine_quotas.png.
 
         Parameters
         ----------
