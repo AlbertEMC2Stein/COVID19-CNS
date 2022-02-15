@@ -992,10 +992,18 @@ class PostProcessing:
                 p.update(1)
 
         def get_sim_data():
-            settings = Standalones.make_settings("settings.cfg", path=folder)
-            progression_data = np.genfromtxt(folder + "progression.csv", skip_header=1)
+            data_stream = csv.DictReader(open(folder + "progression.csv"))
+            data = {}
+            for row in data_stream:
+                for key, value in row.items():
+                    if key not in data.keys():
+                        data[key] = []
 
-            return settings["incubation_time"] + settings["infection_time"], progression_data.shape[0]
+                    data[key] += [int(value)]
+
+            settings = Standalones.make_settings("settings.cfg", path=folder)
+
+            return settings["incubation_time"] + settings["infection_time"], data["Infected"], len(data["Infected"])
 
         if folder[-1] != sep:
             folder += sep
@@ -1003,26 +1011,19 @@ class PostProcessing:
         Standalones.check_existence(folder + "Plots")
 
         infection_data = {}
-        mean_infection_time, duration = get_sim_data()
+        mean_infection_time, infection_numbers, duration = get_sim_data()
         get_infection_data()
 
         effective_r_values = np.zeros((duration, 2))
         for i, member in enumerate(infection_data.keys()):
             timestamps = infection_data[member]
-            member_already_counted_on = []
             for timestamp in timestamps:
                 mind = max(0, timestamp - mean_infection_time)
                 maxd = min(timestamp + mean_infection_time, duration)
                 for day in range(mind, maxd):
-                    if day not in member_already_counted_on:
-                        member_already_counted_on += [day]
-                        effective_r_values[day, 1] += 1
-
                     effective_r_values[day, 0] += 1
 
-        effective_r_values[:, 0] /= effective_r_values[:, 1]
-
-        plt.plot(effective_r_values[:, 0], color='black')
+        plt.plot(effective_r_values[:, 0] / np.array(infection_numbers), color='black')
         plt.xlim([0, duration-1])
         plt.xlabel("Day")
         plt.ylabel("Effective Reproduction number")
