@@ -1002,19 +1002,19 @@ class PostProcessing:
                 effective_r_values[day] += new_infection_numbers[timestamp]
 
         effective_r_values /= np.array(infection_numbers)
-        maxR = max(effective_r_values)
+        max_r = max(effective_r_values)
 
         points = np.array([np.arange(duration), effective_r_values]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
         cmap = ListedColormap(['g', 'orange', 'r'])
-        norm = BoundaryNorm([0, 0.8, 1.2, max(1.2, maxR)], cmap.N)
+        norm = BoundaryNorm([0, 0.8, 1.2, max(1.2, max_r)], cmap.N)
         lc = LineCollection(segments, cmap=cmap, norm=norm)
         lc.set_array(effective_r_values)
 
         plt.gca().add_collection(lc)
         plt.xlim([0, duration-1])
-        plt.ylim([0, maxR + 0.25])
+        plt.ylim([0, max_r + 0.25])
         plt.xlabel("Day")
         plt.ylabel("Effective Reproduction number")
         plt.savefig(folder + "Plots" + sep + "effective_reproduction_number.png")
