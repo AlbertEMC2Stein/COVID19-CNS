@@ -13,6 +13,7 @@ import shutil
 from os.path import sep
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
 import numpy as np
 from src.Network import Group, Population
 from src.Utils import ProgressBar, Standalones
@@ -974,24 +975,6 @@ class PostProcessing:
         """
 
         def get_infection_data():
-            f = json.load(open(folder + "population.json"))
-
-            p = ProgressBar(0, len(f["members"]))
-            for member in f["members"]:
-                if "infections" not in member.keys():
-                    p.update(1)
-                    continue
-
-                for infection in member["infections"]:
-                    if infection[0] != member["id"]:
-                        if infection[0] not in infection_data.keys():
-                            infection_data[infection[0]] = []
-
-                        infection_data[infection[0]] += [int(infection[2])]
-
-                p.update(1)
-
-        def get_sim_data():
             data_stream = csv.DictReader(open(folder + "progression.csv"))
             data = {}
             for row in data_stream:
@@ -1003,28 +986,35 @@ class PostProcessing:
 
             settings = Standalones.make_settings("settings.cfg", path=folder)
 
-            return settings["incubation_time"] + settings["infection_time"], data["Infected"], len(data["Infected"])
+            return settings["incubation_time"] + settings["infection_time"], data["Infected"], data["new_infected"], len(data["Infected"])
 
         if folder[-1] != sep:
             folder += sep
 
         Standalones.check_existence(folder + "Plots")
 
-        infection_data = {}
-        mean_infection_time, infection_numbers, duration = get_sim_data()
-        get_infection_data()
+        mean_infection_time, infection_numbers, new_infection_numbers, duration = get_infection_data()
 
-        effective_r_values = np.zeros((duration, 2))
-        for i, member in enumerate(infection_data.keys()):
-            timestamps = infection_data[member]
-            for timestamp in timestamps:
-                mind = max(0, timestamp - mean_infection_time)
-                maxd = min(timestamp + mean_infection_time, duration)
-                for day in range(mind, maxd):
-                    effective_r_values[day, 0] += 1
+        effective_r_values = np.zeros(duration)
+        for day in range(duration):
+            maxd = min(day + mean_infection_time, duration)
+            for timestamp in range(day, maxd):
+                effective_r_values[day] += new_infection_numbers[timestamp]
 
-        plt.plot(effective_r_values[:, 0] / np.array(infection_numbers), color='black')
+        effective_r_values /= np.array(infection_numbers)
+        maxR = max(effective_r_values)
+
+        points = np.array([np.arange(duration), effective_r_values]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+        cmap = ListedColormap(['g', 'orange', 'r'])
+        norm = BoundaryNorm([0, 0.8, 1.2, max(1.2, maxR)], cmap.N)
+        lc = LineCollection(segments, cmap=cmap, norm=norm)
+        lc.set_array(effective_r_values)
+
+        plt.gca().add_collection(lc)
         plt.xlim([0, duration-1])
+        plt.ylim([0, maxR + 0.25])
         plt.xlabel("Day")
         plt.ylabel("Effective Reproduction number")
         plt.savefig(folder + "Plots" + sep + "effective_reproduction_number.png")
