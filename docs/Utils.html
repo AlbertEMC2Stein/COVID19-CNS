@@ -352,7 +352,7 @@ class Standalones:
             os.mkdir(path)
 
     @staticmethod
-    def make_settings(settings_file: str):
+    def make_settings(settings_file: str, path: str = &#34;Settings&#34; + sep):
         &#34;&#34;&#34;
         Creates a settings-dictionary which is used to initialize simulations
         from a given .cfg file located in src/Settings.
@@ -361,10 +361,13 @@ class Standalones:
         ----------
         settings_file : str
             Path to the file containing the settings.
+
+        path : str
+            Path to the settings folder. Defaults to Settings/.
         &#34;&#34;&#34;
 
         config = configparser.RawConfigParser()
-        config.read(&#34;Settings&#34; + sep + settings_file)
+        config.read(path + settings_file)
 
         settings = {}
         for section in config.sections():
@@ -1097,7 +1100,7 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
             os.mkdir(path)
 
     @staticmethod
-    def make_settings(settings_file: str):
+    def make_settings(settings_file: str, path: str = &#34;Settings&#34; + sep):
         &#34;&#34;&#34;
         Creates a settings-dictionary which is used to initialize simulations
         from a given .cfg file located in src/Settings.
@@ -1106,10 +1109,13 @@ def generate_population_data_from_samplers(property_samplers: dict, n: int):
         ----------
         settings_file : str
             Path to the file containing the settings.
+
+        path : str
+            Path to the settings folder. Defaults to Settings/.
         &#34;&#34;&#34;
 
         config = configparser.RawConfigParser()
-        config.read(&#34;Settings&#34; + sep + settings_file)
+        config.read(path + settings_file)
 
         settings = {}
         for section in config.sections():
@@ -1217,7 +1223,7 @@ def get_last_folder(path: str):
 </details>
 </dd>
 <dt id="src.Utils.Standalones.make_settings"><code class="name flex">
-<span>def <span class="ident">make_settings</span></span>(<span>settings_file: str)</span>
+<span>def <span class="ident">make_settings</span></span>(<span>settings_file: str, path: str = 'Settings/')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a settings-dictionary which is used to initialize simulations
@@ -1226,13 +1232,15 @@ from a given .cfg file located in src/Settings.</p>
 <dl>
 <dt><strong><code>settings_file</code></strong> :&ensp;<code>str</code></dt>
 <dd>Path to the file containing the settings.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>Path to the settings folder. Defaults to Settings/.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def make_settings(settings_file: str):
+def make_settings(settings_file: str, path: str = &#34;Settings&#34; + sep):
     &#34;&#34;&#34;
     Creates a settings-dictionary which is used to initialize simulations
     from a given .cfg file located in src/Settings.
@@ -1241,10 +1249,13 @@ def make_settings(settings_file: str):
     ----------
     settings_file : str
         Path to the file containing the settings.
+
+    path : str
+        Path to the settings folder. Defaults to Settings/.
     &#34;&#34;&#34;
 
     config = configparser.RawConfigParser()
-    config.read(&#34;Settings&#34; + sep + settings_file)
+    config.read(path + settings_file)
 
     settings = {}
     for section in config.sections():

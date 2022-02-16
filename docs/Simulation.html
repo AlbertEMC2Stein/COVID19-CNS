@@ -47,6 +47,7 @@ import shutil
 from os.path import sep
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
 import numpy as np
 from src.Network import Group, Population
 from src.Utils import ProgressBar, Standalones
@@ -92,7 +93,7 @@ class Simulation:
                       }
         self.arrange_lockdown = False
         self.lockdown_duration = 0
-        self.lockdown_ended = 0
+        self.lockdown_ended = -np.inf
 
     def start_iteration(self):
         &#34;&#34;&#34;
@@ -144,12 +145,10 @@ class Simulation:
                         n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
                         if self.arrange_lockdown:
-                            n_outer //= 2
-                            n_inner = round(1.5 * n_inner)
+                            n_inner, n_outer = np.random.poisson(3/2 * c_inner), np.random.poisson(1/2 * c_outer)
 
                         if member.quarantined:
-                            n_outer = 0
-                            n_inner = round(1.5 * n_inner)
+                            n_inner, n_outer = np.random.poisson(2 * c_inner), 0
 
                         gen_params = lambda: {
                             &#34;infection_probability_heuristic&#34;: infection_heuristic,
@@ -215,7 +214,9 @@ class Simulation:
             Group.move(new_members[&#34;newly_recovered&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
 
             Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Dead&#34;])
-            Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Quarantined&#34;], self.groups[&#34;Dead&#34;])
+
+            for member in new_members[&#34;new_dead&#34;]:
+                self.groups[&#34;Quarantined&#34;].remove_member(member)
 
             for member in new_members[&#34;newly_infected&#34;]:
                 self.groups[&#34;Infected&#34;].add_member(member)
@@ -311,6 +312,10 @@ class Simulation:
                 if result and not self.arrange_lockdown:
                     result = tick - self.lockdown_ended &gt; self.settings[&#34;lockdown_gap&#34;]
 
+                # Are enough people vaccinated?
+                if self.groups[&#34;Vaccinated&#34;].size &gt;= self.settings[&#34;heard_immunity&#34;] * self.population.size:
+                    result = self.arrange_lockdown
+
                 self.lockdown_duration += result
 
                 return result
@@ -337,19 +342,13 @@ class Simulation:
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
-            print(&#34;\r\033[K&#34;, end=&#34;&#34;)
-            print(
-                color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
-                % (tick,
-                   self.groups[&#34;Infected&#34;].size,
-                   self.groups[&#34;Dead&#34;].size,
-                   self.groups[&#34;Quarantined&#34;].size,
-                   self.stats[&#34;new_infected&#34;][-1],
-                   self.stats[&#34;new_recovered&#34;][-1],
-                   self.stats[&#34;new_vaccinated&#34;][-1],
-                   self.stats[&#34;test_results_+&#34;][-1],
-                   self.stats[&#34;test_results_-&#34;][-1],
-                   self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
+            print(color + &#34;\rDay: %04d, #Infected: %d, #Vaccinated: %d, #Quarantined: %d, #Dead: %d, 7di: %d\033[K&#34;
+                  % (tick,
+                     self.groups[&#34;Infected&#34;].size,
+                     self.groups[&#34;Vaccinated&#34;].size,
+                     self.groups[&#34;Quarantined&#34;].size,
+                     self.groups[&#34;Dead&#34;].size,
+                     self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
 
         print(&#34;\nInitializing simulation...&#34;)
 
@@ -372,6 +371,7 @@ class Simulation:
         c_tests = self.settings[&#34;tests_per_day&#34;]
         t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
         t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
+        t_vac_available = self.settings[&#34;vaccine_available_as_of&#34;]
         max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
 
         initialize_groups()
@@ -382,8 +382,8 @@ class Simulation:
 
         while True:
             tick += 1
-            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
-                        tick &gt;= self.settings[&#34;vaccine_available_as_of&#34;])
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size)
+            n_vacs = round(n_vacs * np.exp(-100 / (tick - t_vac_available)) if tick &gt; t_vac_available else 0)
 
             self.arrange_lockdown = decide_measure(&#34;lockdown&#34;)
 
@@ -513,6 +513,10 @@ class Simulation:
         for stat in self.stats.keys():
             self.stats[stat] = [0]
 
+        self.arrange_lockdown = False
+        self.lockdown_duration = 0
+        self.lockdown_ended = -np.inf
+
 
 ################################################################################################
 ################################################################################################
@@ -592,6 +596,8 @@ class Scenarios:
         for (j, i), label in np.ndenumerate(max_infection_values):
             plt.text(i, j, int(label), ha=&#39;center&#39;, va=&#39;center&#39;)
 
+        Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
+
         plt.savefig(&#34;../out/general/c_inner_vs_c_outer_%dx%d.png&#34; % (n, n))
         plt.show()
 
@@ -639,6 +645,8 @@ class Scenarios:
 
                 mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
                                          + 1 / run * max(sim.groups[&#34;Infected&#34;].history)
+
+        Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
 
         plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
         plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
@@ -730,7 +738,7 @@ class PostProcessing:
         folder : Folder with simulation data to process
         &#34;&#34;&#34;
 
-        def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+        def make_plot(plotname: str, title: str, datasets: iter, colors: iter, labels: iter = []):
             _, ax = plt.subplots()
             days = np.arange(0, len(datasets[0]), 1)
 
@@ -743,6 +751,10 @@ class PostProcessing:
             ax.set_ylabel(&#34;#&#34;)
             ax.set_xlim(0, days[-1])
             ax.set_title(title)
+
+            if labels:
+                ax.legend(labels)
+
             plt.savefig(folder + &#34;Plots&#34; + sep + plotname)
             plt.show()
 
@@ -762,22 +774,26 @@ class PostProcessing:
                 data[key] += [int(value)]
 
         data = {column: np.array(data[column]) for column in data.keys()}
-        make_plot(&#34;SIRVD.png&#34;, &#34;Total&#34;,
+        make_plot(&#34;SIRV.png&#34;, &#34;Total&#34;,
                   [population_size - data[&#34;Infected&#34;] - data[&#34;Recovered&#34;] - data[&#34;Vaccinated&#34;] - data[&#34;Dead&#34;],
-                   data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;], data[&#34;Dead&#34;]],
-                  [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
+                   data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;]],
+                  [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;],
+                  [&#34;Susceptible&#34;, &#34;Infected&#34;, &#34;Recovered&#34;, &#34;Vaccinated&#34;])
 
         make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
                   [data[&#34;new_infected&#34;], data[&#34;ill_vaccinated&#34;]],
-                  [&#39;red&#39;, &#39;purple&#39;])
+                  [&#39;red&#39;, &#39;purple&#39;],
+                  [&#34;Regular&#34;, &#34;Vaccinated&#34;])
 
         make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
                   [data[&#34;Infected&#34;], data[&#34;Recovered&#34;]],
-                  [&#39;red&#39;, &#39;blue&#39;])
+                  [&#39;red&#39;, &#39;blue&#39;],
+                  [&#34;Infected&#34;, &#34;Recovered&#34;])
 
         make_plot(&#34;V.png&#34;, &#34;Vaccinated&#34;,
                   [data[&#34;Vaccinated&#34;]],
-                  [&#39;cyan&#39;])
+                  [&#39;cyan&#39;],
+                  [&#34;Vaccinated&#34;])
 
         make_plot(&#34;7DI.png&#34;, &#34;Seven Day Incidence&#34;,
                   [data[&#34;seven_day_incidence&#34;]],
@@ -791,7 +807,7 @@ class PostProcessing:
     def compare_inner_and_outer_infection_numbers(folder: str):
         &#34;&#34;&#34;
         Creates a bar plot comparing the relative numbers of infections that
-        took place inside and outside of households and saves them as
+        took place inside and outside of households and saves it as
         folder/Plots/inner_vs_outer.png.
 
         Parameters
@@ -840,7 +856,7 @@ class PostProcessing:
     def mean_latency_period(folder: str):
         &#34;&#34;&#34;
         Creates a bar plot comparing the latency periods and
-        evaluating the overall mean latency time and saves them as
+        evaluating the overall mean latency time and saves it as
         folder/Plots/latency_periods.png.
 
         Parameters
@@ -895,6 +911,153 @@ class PostProcessing:
         plt.ylabel(&#34;#&#34;)
         plt.savefig(folder + &#34;Plots&#34; + sep + &#34;latency_periods.png&#34;)
         plt.show()
+
+    @staticmethod
+    def vaccine_quotas(folder: str):
+        &#34;&#34;&#34;
+        Creates a bar plot showing how many people have received how
+        many shots of the vaccine. Plot is saved as folder/Plots/vaccine_quotas.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_vaccination_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;vaccinations&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                n = len(member[&#34;vaccinations&#34;])
+                if n not in vaccination_data.keys():
+                    vaccination_data[n] = 0
+
+                vaccination_data[n] += 1
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        vaccination_data = {}
+        get_vaccination_data()
+
+        cumsum = np.sum(list(vaccination_data.values()))
+        vaccination_data = {n: 100 * vs / cumsum for n, vs in vaccination_data.items()}
+
+        plt.bar(*zip(*vaccination_data.items()))
+        plt.xlabel(&#34;Vaccinations&#34;)
+        plt.ylabel(&#34;%&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;vaccine_quotas.png&#34;)
+        plt.show()
+
+    @staticmethod
+    def death_distribution(folder: str):
+        &#34;&#34;&#34;
+        Creates a bar plot showing the age distribution of people
+        who died saves the resulting plot as folder/Plots/death_distribution.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_death_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;Death&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                else:
+                    age = int(member[&#34;age&#34;])
+                    if age not in death_data.keys():
+                        death_data[age] = 0
+
+                    death_data[age] += 1
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        death_data = {}
+        get_death_data()
+
+        plt.bar(*zip(*death_data.items()))
+        plt.title(&#34;Deaths&#34;)
+        plt.xlim(left=-1)
+        plt.xlabel(&#34;age&#34;)
+        plt.ylabel(&#34;#&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;death_distribution.png&#34;)
+        plt.show()
+
+    @staticmethod
+    def effective_reproduction_number(folder: str):
+        &#34;&#34;&#34;
+        Creates a plot showing the effective reproduction number over time
+        and saves it as folder/Plots/latency_periods.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_infection_data():
+            data_stream = csv.DictReader(open(folder + &#34;progression.csv&#34;))
+            data = {}
+            for row in data_stream:
+                for key, value in row.items():
+                    if key not in data.keys():
+                        data[key] = []
+
+                    data[key] += [int(value)]
+
+            settings = Standalones.make_settings(&#34;settings.cfg&#34;, path=folder)
+
+            return settings[&#34;incubation_time&#34;] + settings[&#34;infection_time&#34;], data[&#34;Infected&#34;], data[&#34;new_infected&#34;], len(data[&#34;Infected&#34;])
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        mean_infection_time, infection_numbers, new_infection_numbers, duration = get_infection_data()
+
+        effective_r_values = np.zeros(duration)
+        for day in range(duration):
+            maxd = min(day + mean_infection_time, duration)
+            for timestamp in range(day, maxd):
+                effective_r_values[day] += new_infection_numbers[timestamp]
+
+        effective_r_values /= np.array(infection_numbers)
+        max_r = max(effective_r_values)
+
+        points = np.array([np.arange(duration), effective_r_values]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+        cmap = ListedColormap([&#39;g&#39;, &#39;orange&#39;, &#39;r&#39;])
+        norm = BoundaryNorm([0, 0.8, 1.2, max(1.2, max_r)], cmap.N)
+        lc = LineCollection(segments, cmap=cmap, norm=norm)
+        lc.set_array(effective_r_values)
+
+        plt.gca().add_collection(lc)
+        plt.xlim([0, duration-1])
+        plt.ylim([0, max_r + 0.25])
+        plt.xlabel(&#34;Day&#34;)
+        plt.ylabel(&#34;Effective Reproduction number&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;effective_reproduction_number.png&#34;)
+        plt.show()
+
 
 ################################################################################################
 ################################################################################################
@@ -1005,7 +1168,7 @@ class bcolors:
         folder : Folder with simulation data to process
         &#34;&#34;&#34;
 
-        def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+        def make_plot(plotname: str, title: str, datasets: iter, colors: iter, labels: iter = []):
             _, ax = plt.subplots()
             days = np.arange(0, len(datasets[0]), 1)
 
@@ -1018,6 +1181,10 @@ class bcolors:
             ax.set_ylabel(&#34;#&#34;)
             ax.set_xlim(0, days[-1])
             ax.set_title(title)
+
+            if labels:
+                ax.legend(labels)
+
             plt.savefig(folder + &#34;Plots&#34; + sep + plotname)
             plt.show()
 
@@ -1037,22 +1204,26 @@ class bcolors:
                 data[key] += [int(value)]
 
         data = {column: np.array(data[column]) for column in data.keys()}
-        make_plot(&#34;SIRVD.png&#34;, &#34;Total&#34;,
+        make_plot(&#34;SIRV.png&#34;, &#34;Total&#34;,
                   [population_size - data[&#34;Infected&#34;] - data[&#34;Recovered&#34;] - data[&#34;Vaccinated&#34;] - data[&#34;Dead&#34;],
-                   data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;], data[&#34;Dead&#34;]],
-                  [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
+                   data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;]],
+                  [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;],
+                  [&#34;Susceptible&#34;, &#34;Infected&#34;, &#34;Recovered&#34;, &#34;Vaccinated&#34;])
 
         make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
                   [data[&#34;new_infected&#34;], data[&#34;ill_vaccinated&#34;]],
-                  [&#39;red&#39;, &#39;purple&#39;])
+                  [&#39;red&#39;, &#39;purple&#39;],
+                  [&#34;Regular&#34;, &#34;Vaccinated&#34;])
 
         make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
                   [data[&#34;Infected&#34;], data[&#34;Recovered&#34;]],
-                  [&#39;red&#39;, &#39;blue&#39;])
+                  [&#39;red&#39;, &#39;blue&#39;],
+                  [&#34;Infected&#34;, &#34;Recovered&#34;])
 
         make_plot(&#34;V.png&#34;, &#34;Vaccinated&#34;,
                   [data[&#34;Vaccinated&#34;]],
-                  [&#39;cyan&#39;])
+                  [&#39;cyan&#39;],
+                  [&#34;Vaccinated&#34;])
 
         make_plot(&#34;7DI.png&#34;, &#34;Seven Day Incidence&#34;,
                   [data[&#34;seven_day_incidence&#34;]],
@@ -1066,7 +1237,7 @@ class bcolors:
     def compare_inner_and_outer_infection_numbers(folder: str):
         &#34;&#34;&#34;
         Creates a bar plot comparing the relative numbers of infections that
-        took place inside and outside of households and saves them as
+        took place inside and outside of households and saves it as
         folder/Plots/inner_vs_outer.png.
 
         Parameters
@@ -1115,7 +1286,7 @@ class bcolors:
     def mean_latency_period(folder: str):
         &#34;&#34;&#34;
         Creates a bar plot comparing the latency periods and
-        evaluating the overall mean latency time and saves them as
+        evaluating the overall mean latency time and saves it as
         folder/Plots/latency_periods.png.
 
         Parameters
@@ -1169,6 +1340,152 @@ class bcolors:
         plt.xlabel(&#34;Latency period (days)&#34;)
         plt.ylabel(&#34;#&#34;)
         plt.savefig(folder + &#34;Plots&#34; + sep + &#34;latency_periods.png&#34;)
+        plt.show()
+
+    @staticmethod
+    def vaccine_quotas(folder: str):
+        &#34;&#34;&#34;
+        Creates a bar plot showing how many people have received how
+        many shots of the vaccine. Plot is saved as folder/Plots/vaccine_quotas.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_vaccination_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;vaccinations&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                n = len(member[&#34;vaccinations&#34;])
+                if n not in vaccination_data.keys():
+                    vaccination_data[n] = 0
+
+                vaccination_data[n] += 1
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        vaccination_data = {}
+        get_vaccination_data()
+
+        cumsum = np.sum(list(vaccination_data.values()))
+        vaccination_data = {n: 100 * vs / cumsum for n, vs in vaccination_data.items()}
+
+        plt.bar(*zip(*vaccination_data.items()))
+        plt.xlabel(&#34;Vaccinations&#34;)
+        plt.ylabel(&#34;%&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;vaccine_quotas.png&#34;)
+        plt.show()
+
+    @staticmethod
+    def death_distribution(folder: str):
+        &#34;&#34;&#34;
+        Creates a bar plot showing the age distribution of people
+        who died saves the resulting plot as folder/Plots/death_distribution.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_death_data():
+            f = json.load(open(folder + &#34;population.json&#34;))
+
+            p = ProgressBar(0, len(f[&#34;members&#34;]))
+            for member in f[&#34;members&#34;]:
+                if &#34;Death&#34; not in member.keys():
+                    p.update(1)
+                    continue
+
+                else:
+                    age = int(member[&#34;age&#34;])
+                    if age not in death_data.keys():
+                        death_data[age] = 0
+
+                    death_data[age] += 1
+
+                p.update(1)
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        death_data = {}
+        get_death_data()
+
+        plt.bar(*zip(*death_data.items()))
+        plt.title(&#34;Deaths&#34;)
+        plt.xlim(left=-1)
+        plt.xlabel(&#34;age&#34;)
+        plt.ylabel(&#34;#&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;death_distribution.png&#34;)
+        plt.show()
+
+    @staticmethod
+    def effective_reproduction_number(folder: str):
+        &#34;&#34;&#34;
+        Creates a plot showing the effective reproduction number over time
+        and saves it as folder/Plots/latency_periods.png.
+
+        Parameters
+        ----------
+        folder : Folder with simulation data to process
+        &#34;&#34;&#34;
+
+        def get_infection_data():
+            data_stream = csv.DictReader(open(folder + &#34;progression.csv&#34;))
+            data = {}
+            for row in data_stream:
+                for key, value in row.items():
+                    if key not in data.keys():
+                        data[key] = []
+
+                    data[key] += [int(value)]
+
+            settings = Standalones.make_settings(&#34;settings.cfg&#34;, path=folder)
+
+            return settings[&#34;incubation_time&#34;] + settings[&#34;infection_time&#34;], data[&#34;Infected&#34;], data[&#34;new_infected&#34;], len(data[&#34;Infected&#34;])
+
+        if folder[-1] != sep:
+            folder += sep
+
+        Standalones.check_existence(folder + &#34;Plots&#34;)
+
+        mean_infection_time, infection_numbers, new_infection_numbers, duration = get_infection_data()
+
+        effective_r_values = np.zeros(duration)
+        for day in range(duration):
+            maxd = min(day + mean_infection_time, duration)
+            for timestamp in range(day, maxd):
+                effective_r_values[day] += new_infection_numbers[timestamp]
+
+        effective_r_values /= np.array(infection_numbers)
+        max_r = max(effective_r_values)
+
+        points = np.array([np.arange(duration), effective_r_values]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+        cmap = ListedColormap([&#39;g&#39;, &#39;orange&#39;, &#39;r&#39;])
+        norm = BoundaryNorm([0, 0.8, 1.2, max(1.2, max_r)], cmap.N)
+        lc = LineCollection(segments, cmap=cmap, norm=norm)
+        lc.set_array(effective_r_values)
+
+        plt.gca().add_collection(lc)
+        plt.xlim([0, duration-1])
+        plt.ylim([0, max_r + 0.25])
+        plt.xlabel(&#34;Day&#34;)
+        plt.ylabel(&#34;Effective Reproduction number&#34;)
+        plt.savefig(folder + &#34;Plots&#34; + sep + &#34;effective_reproduction_number.png&#34;)
         plt.show()</code></pre>
 </details>
 <h3>Static methods</h3>
@@ -1178,7 +1495,7 @@ class bcolors:
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a bar plot comparing the relative numbers of infections that
-took place inside and outside of households and saves them as
+took place inside and outside of households and saves it as
 folder/Plots/inner_vs_outer.png.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1193,7 +1510,7 @@ folder/Plots/inner_vs_outer.png.</p>
 def compare_inner_and_outer_infection_numbers(folder: str):
     &#34;&#34;&#34;
     Creates a bar plot comparing the relative numbers of infections that
-    took place inside and outside of households and saves them as
+    took place inside and outside of households and saves it as
     folder/Plots/inner_vs_outer.png.
 
     Parameters
@@ -1236,6 +1553,140 @@ def compare_inner_and_outer_infection_numbers(folder: str):
 
     plt.ylabel(&#39;Total&#39;)
     plt.savefig(folder + &#34;Plots&#34; + sep + &#34;inner_vs_outer.png&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.PostProcessing.death_distribution"><code class="name flex">
+<span>def <span class="ident">death_distribution</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a bar plot showing the age distribution of people
+who died saves the resulting plot as folder/Plots/death_distribution.png.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>folder</code></strong> :&ensp;<code>Folder with simulation data to process</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def death_distribution(folder: str):
+    &#34;&#34;&#34;
+    Creates a bar plot showing the age distribution of people
+    who died saves the resulting plot as folder/Plots/death_distribution.png.
+
+    Parameters
+    ----------
+    folder : Folder with simulation data to process
+    &#34;&#34;&#34;
+
+    def get_death_data():
+        f = json.load(open(folder + &#34;population.json&#34;))
+
+        p = ProgressBar(0, len(f[&#34;members&#34;]))
+        for member in f[&#34;members&#34;]:
+            if &#34;Death&#34; not in member.keys():
+                p.update(1)
+                continue
+
+            else:
+                age = int(member[&#34;age&#34;])
+                if age not in death_data.keys():
+                    death_data[age] = 0
+
+                death_data[age] += 1
+
+            p.update(1)
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    death_data = {}
+    get_death_data()
+
+    plt.bar(*zip(*death_data.items()))
+    plt.title(&#34;Deaths&#34;)
+    plt.xlim(left=-1)
+    plt.xlabel(&#34;age&#34;)
+    plt.ylabel(&#34;#&#34;)
+    plt.savefig(folder + &#34;Plots&#34; + sep + &#34;death_distribution.png&#34;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.PostProcessing.effective_reproduction_number"><code class="name flex">
+<span>def <span class="ident">effective_reproduction_number</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a plot showing the effective reproduction number over time
+and saves it as folder/Plots/latency_periods.png.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>folder</code></strong> :&ensp;<code>Folder with simulation data to process</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def effective_reproduction_number(folder: str):
+    &#34;&#34;&#34;
+    Creates a plot showing the effective reproduction number over time
+    and saves it as folder/Plots/latency_periods.png.
+
+    Parameters
+    ----------
+    folder : Folder with simulation data to process
+    &#34;&#34;&#34;
+
+    def get_infection_data():
+        data_stream = csv.DictReader(open(folder + &#34;progression.csv&#34;))
+        data = {}
+        for row in data_stream:
+            for key, value in row.items():
+                if key not in data.keys():
+                    data[key] = []
+
+                data[key] += [int(value)]
+
+        settings = Standalones.make_settings(&#34;settings.cfg&#34;, path=folder)
+
+        return settings[&#34;incubation_time&#34;] + settings[&#34;infection_time&#34;], data[&#34;Infected&#34;], data[&#34;new_infected&#34;], len(data[&#34;Infected&#34;])
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    mean_infection_time, infection_numbers, new_infection_numbers, duration = get_infection_data()
+
+    effective_r_values = np.zeros(duration)
+    for day in range(duration):
+        maxd = min(day + mean_infection_time, duration)
+        for timestamp in range(day, maxd):
+            effective_r_values[day] += new_infection_numbers[timestamp]
+
+    effective_r_values /= np.array(infection_numbers)
+    max_r = max(effective_r_values)
+
+    points = np.array([np.arange(duration), effective_r_values]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+    cmap = ListedColormap([&#39;g&#39;, &#39;orange&#39;, &#39;r&#39;])
+    norm = BoundaryNorm([0, 0.8, 1.2, max(1.2, max_r)], cmap.N)
+    lc = LineCollection(segments, cmap=cmap, norm=norm)
+    lc.set_array(effective_r_values)
+
+    plt.gca().add_collection(lc)
+    plt.xlim([0, duration-1])
+    plt.ylim([0, max_r + 0.25])
+    plt.xlabel(&#34;Day&#34;)
+    plt.ylabel(&#34;Effective Reproduction number&#34;)
+    plt.savefig(folder + &#34;Plots&#34; + sep + &#34;effective_reproduction_number.png&#34;)
     plt.show()</code></pre>
 </details>
 </dd>
@@ -1318,7 +1769,7 @@ def infection_graph(folder: str):
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a bar plot comparing the latency periods and
-evaluating the overall mean latency time and saves them as
+evaluating the overall mean latency time and saves it as
 folder/Plots/latency_periods.png.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1333,7 +1784,7 @@ folder/Plots/latency_periods.png.</p>
 def mean_latency_period(folder: str):
     &#34;&#34;&#34;
     Creates a bar plot comparing the latency periods and
-    evaluating the overall mean latency time and saves them as
+    evaluating the overall mean latency time and saves it as
     folder/Plots/latency_periods.png.
 
     Parameters
@@ -1416,7 +1867,7 @@ def progression_plots(folder: str):
     folder : Folder with simulation data to process
     &#34;&#34;&#34;
 
-    def make_plot(plotname: str, title: str, datasets: iter, colors: iter):
+    def make_plot(plotname: str, title: str, datasets: iter, colors: iter, labels: iter = []):
         _, ax = plt.subplots()
         days = np.arange(0, len(datasets[0]), 1)
 
@@ -1429,6 +1880,10 @@ def progression_plots(folder: str):
         ax.set_ylabel(&#34;#&#34;)
         ax.set_xlim(0, days[-1])
         ax.set_title(title)
+
+        if labels:
+            ax.legend(labels)
+
         plt.savefig(folder + &#34;Plots&#34; + sep + plotname)
         plt.show()
 
@@ -1448,22 +1903,26 @@ def progression_plots(folder: str):
             data[key] += [int(value)]
 
     data = {column: np.array(data[column]) for column in data.keys()}
-    make_plot(&#34;SIRVD.png&#34;, &#34;Total&#34;,
+    make_plot(&#34;SIRV.png&#34;, &#34;Total&#34;,
               [population_size - data[&#34;Infected&#34;] - data[&#34;Recovered&#34;] - data[&#34;Vaccinated&#34;] - data[&#34;Dead&#34;],
-               data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;], data[&#34;Dead&#34;]],
-              [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;, &#39;black&#39;])
+               data[&#34;Infected&#34;], data[&#34;Recovered&#34;], data[&#34;Vaccinated&#34;]],
+              [&#39;green&#39;, &#39;red&#39;, &#39;blue&#39;, &#39;cyan&#39;],
+              [&#34;Susceptible&#34;, &#34;Infected&#34;, &#34;Recovered&#34;, &#34;Vaccinated&#34;])
 
     make_plot(&#34;NewI.png&#34;, &#34;New Infections&#34;,
               [data[&#34;new_infected&#34;], data[&#34;ill_vaccinated&#34;]],
-              [&#39;red&#39;, &#39;purple&#39;])
+              [&#39;red&#39;, &#39;purple&#39;],
+              [&#34;Regular&#34;, &#34;Vaccinated&#34;])
 
     make_plot(&#34;IR.png&#34;, &#34;Infected &amp; Recovered&#34;,
               [data[&#34;Infected&#34;], data[&#34;Recovered&#34;]],
-              [&#39;red&#39;, &#39;blue&#39;])
+              [&#39;red&#39;, &#39;blue&#39;],
+              [&#34;Infected&#34;, &#34;Recovered&#34;])
 
     make_plot(&#34;V.png&#34;, &#34;Vaccinated&#34;,
               [data[&#34;Vaccinated&#34;]],
-              [&#39;cyan&#39;])
+              [&#39;cyan&#39;],
+              [&#34;Vaccinated&#34;])
 
     make_plot(&#34;7DI.png&#34;, &#34;Seven Day Incidence&#34;,
               [data[&#34;seven_day_incidence&#34;]],
@@ -1472,6 +1931,66 @@ def progression_plots(folder: str):
     make_plot(&#34;D.png&#34;, &#34;Dead&#34;,
               [data[&#34;Dead&#34;]],
               [&#39;black&#39;])</code></pre>
+</details>
+</dd>
+<dt id="src.Simulation.PostProcessing.vaccine_quotas"><code class="name flex">
+<span>def <span class="ident">vaccine_quotas</span></span>(<span>folder: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a bar plot showing how many people have received how
+many shots of the vaccine. Plot is saved as folder/Plots/vaccine_quotas.png.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>folder</code></strong> :&ensp;<code>Folder with simulation data to process</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def vaccine_quotas(folder: str):
+    &#34;&#34;&#34;
+    Creates a bar plot showing how many people have received how
+    many shots of the vaccine. Plot is saved as folder/Plots/vaccine_quotas.png.
+
+    Parameters
+    ----------
+    folder : Folder with simulation data to process
+    &#34;&#34;&#34;
+
+    def get_vaccination_data():
+        f = json.load(open(folder + &#34;population.json&#34;))
+
+        p = ProgressBar(0, len(f[&#34;members&#34;]))
+        for member in f[&#34;members&#34;]:
+            if &#34;vaccinations&#34; not in member.keys():
+                p.update(1)
+                continue
+
+            n = len(member[&#34;vaccinations&#34;])
+            if n not in vaccination_data.keys():
+                vaccination_data[n] = 0
+
+            vaccination_data[n] += 1
+            p.update(1)
+
+    if folder[-1] != sep:
+        folder += sep
+
+    Standalones.check_existence(folder + &#34;Plots&#34;)
+
+    vaccination_data = {}
+    get_vaccination_data()
+
+    cumsum = np.sum(list(vaccination_data.values()))
+    vaccination_data = {n: 100 * vs / cumsum for n, vs in vaccination_data.items()}
+
+    plt.bar(*zip(*vaccination_data.items()))
+    plt.xlabel(&#34;Vaccinations&#34;)
+    plt.ylabel(&#34;%&#34;)
+    plt.savefig(folder + &#34;Plots&#34; + sep + &#34;vaccine_quotas.png&#34;)
+    plt.show()</code></pre>
 </details>
 </dd>
 </dl>
@@ -1558,6 +2077,8 @@ def progression_plots(folder: str):
         for (j, i), label in np.ndenumerate(max_infection_values):
             plt.text(i, j, int(label), ha=&#39;center&#39;, va=&#39;center&#39;)
 
+        Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
+
         plt.savefig(&#34;../out/general/c_inner_vs_c_outer_%dx%d.png&#34; % (n, n))
         plt.show()
 
@@ -1605,6 +2126,8 @@ def progression_plots(folder: str):
 
                 mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
                                          + 1 / run * max(sim.groups[&#34;Infected&#34;].history)
+
+        Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
 
         plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
         plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
@@ -1683,6 +2206,8 @@ def c_inner_vs_c_outer(settings: dict, n: int = 5):
     for (j, i), label in np.ndenumerate(max_infection_values):
         plt.text(i, j, int(label), ha=&#39;center&#39;, va=&#39;center&#39;)
 
+    Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
+
     plt.savefig(&#34;../out/general/c_inner_vs_c_outer_%dx%d.png&#34; % (n, n))
     plt.show()
 
@@ -1758,6 +2283,8 @@ def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), s
 
             mitigation_interval[i] = (run - 1) / run * mitigation_interval[i] \
                                      + 1 / run * max(sim.groups[&#34;Infected&#34;].history)
+
+    Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
 
     plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
     plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
@@ -1867,7 +2394,7 @@ the simulation.</dd>
                       }
         self.arrange_lockdown = False
         self.lockdown_duration = 0
-        self.lockdown_ended = 0
+        self.lockdown_ended = -np.inf
 
     def start_iteration(self):
         &#34;&#34;&#34;
@@ -1919,12 +2446,10 @@ the simulation.</dd>
                         n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
                         if self.arrange_lockdown:
-                            n_outer //= 2
-                            n_inner = round(1.5 * n_inner)
+                            n_inner, n_outer = np.random.poisson(3/2 * c_inner), np.random.poisson(1/2 * c_outer)
 
                         if member.quarantined:
-                            n_outer = 0
-                            n_inner = round(1.5 * n_inner)
+                            n_inner, n_outer = np.random.poisson(2 * c_inner), 0
 
                         gen_params = lambda: {
                             &#34;infection_probability_heuristic&#34;: infection_heuristic,
@@ -1990,7 +2515,9 @@ the simulation.</dd>
             Group.move(new_members[&#34;newly_recovered&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
 
             Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Dead&#34;])
-            Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Quarantined&#34;], self.groups[&#34;Dead&#34;])
+
+            for member in new_members[&#34;new_dead&#34;]:
+                self.groups[&#34;Quarantined&#34;].remove_member(member)
 
             for member in new_members[&#34;newly_infected&#34;]:
                 self.groups[&#34;Infected&#34;].add_member(member)
@@ -2086,6 +2613,10 @@ the simulation.</dd>
                 if result and not self.arrange_lockdown:
                     result = tick - self.lockdown_ended &gt; self.settings[&#34;lockdown_gap&#34;]
 
+                # Are enough people vaccinated?
+                if self.groups[&#34;Vaccinated&#34;].size &gt;= self.settings[&#34;heard_immunity&#34;] * self.population.size:
+                    result = self.arrange_lockdown
+
                 self.lockdown_duration += result
 
                 return result
@@ -2112,19 +2643,13 @@ the simulation.</dd>
 
         def print_stats():
             color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
-            print(&#34;\r\033[K&#34;, end=&#34;&#34;)
-            print(
-                color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
-                % (tick,
-                   self.groups[&#34;Infected&#34;].size,
-                   self.groups[&#34;Dead&#34;].size,
-                   self.groups[&#34;Quarantined&#34;].size,
-                   self.stats[&#34;new_infected&#34;][-1],
-                   self.stats[&#34;new_recovered&#34;][-1],
-                   self.stats[&#34;new_vaccinated&#34;][-1],
-                   self.stats[&#34;test_results_+&#34;][-1],
-                   self.stats[&#34;test_results_-&#34;][-1],
-                   self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
+            print(color + &#34;\rDay: %04d, #Infected: %d, #Vaccinated: %d, #Quarantined: %d, #Dead: %d, 7di: %d\033[K&#34;
+                  % (tick,
+                     self.groups[&#34;Infected&#34;].size,
+                     self.groups[&#34;Vaccinated&#34;].size,
+                     self.groups[&#34;Quarantined&#34;].size,
+                     self.groups[&#34;Dead&#34;].size,
+                     self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
 
         print(&#34;\nInitializing simulation...&#34;)
 
@@ -2147,6 +2672,7 @@ the simulation.</dd>
         c_tests = self.settings[&#34;tests_per_day&#34;]
         t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
         t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
+        t_vac_available = self.settings[&#34;vaccine_available_as_of&#34;]
         max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
 
         initialize_groups()
@@ -2157,8 +2683,8 @@ the simulation.</dd>
 
         while True:
             tick += 1
-            n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
-                        tick &gt;= self.settings[&#34;vaccine_available_as_of&#34;])
+            n_vacs = min(np.random.poisson(c_vacs), self.population.size)
+            n_vacs = round(n_vacs * np.exp(-100 / (tick - t_vac_available)) if tick &gt; t_vac_available else 0)
 
             self.arrange_lockdown = decide_measure(&#34;lockdown&#34;)
 
@@ -2286,7 +2812,11 @@ the simulation.</dd>
             group.reset()
 
         for stat in self.stats.keys():
-            self.stats[stat] = [0]</code></pre>
+            self.stats[stat] = [0]
+
+        self.arrange_lockdown = False
+        self.lockdown_duration = 0
+        self.lockdown_ended = -np.inf</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -2424,7 +2954,11 @@ is overridden.</p></div>
         group.reset()
 
     for stat in self.stats.keys():
-        self.stats[stat] = [0]</code></pre>
+        self.stats[stat] = [0]
+
+    self.arrange_lockdown = False
+    self.lockdown_duration = 0
+    self.lockdown_ended = -np.inf</code></pre>
 </details>
 </dd>
 <dt id="src.Simulation.Simulation.start_iteration"><code class="name flex">
@@ -2488,12 +3022,10 @@ is reached.</p></div>
                     n_inner, n_outer = np.random.poisson(c_inner), np.random.poisson(c_outer)
 
                     if self.arrange_lockdown:
-                        n_outer //= 2
-                        n_inner = round(1.5 * n_inner)
+                        n_inner, n_outer = np.random.poisson(3/2 * c_inner), np.random.poisson(1/2 * c_outer)
 
                     if member.quarantined:
-                        n_outer = 0
-                        n_inner = round(1.5 * n_inner)
+                        n_inner, n_outer = np.random.poisson(2 * c_inner), 0
 
                     gen_params = lambda: {
                         &#34;infection_probability_heuristic&#34;: infection_heuristic,
@@ -2559,7 +3091,9 @@ is reached.</p></div>
         Group.move(new_members[&#34;newly_recovered&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Recovered&#34;])
 
         Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Infected&#34;], self.groups[&#34;Dead&#34;])
-        Group.move(new_members[&#34;new_dead&#34;], self.groups[&#34;Quarantined&#34;], self.groups[&#34;Dead&#34;])
+
+        for member in new_members[&#34;new_dead&#34;]:
+            self.groups[&#34;Quarantined&#34;].remove_member(member)
 
         for member in new_members[&#34;newly_infected&#34;]:
             self.groups[&#34;Infected&#34;].add_member(member)
@@ -2655,6 +3189,10 @@ is reached.</p></div>
             if result and not self.arrange_lockdown:
                 result = tick - self.lockdown_ended &gt; self.settings[&#34;lockdown_gap&#34;]
 
+            # Are enough people vaccinated?
+            if self.groups[&#34;Vaccinated&#34;].size &gt;= self.settings[&#34;heard_immunity&#34;] * self.population.size:
+                result = self.arrange_lockdown
+
             self.lockdown_duration += result
 
             return result
@@ -2681,19 +3219,13 @@ is reached.</p></div>
 
     def print_stats():
         color = bcolors.FAIL if self.arrange_lockdown else bcolors.OKGREEN
-        print(&#34;\r\033[K&#34;, end=&#34;&#34;)
-        print(
-            color + &#34;\rDay: %04d, #Infected: %d, #Dead: %d #Quarantined: %d, #newInf: %d, #newRec: %d, #newVac: %d, tests (+/-): (%d, %d), 7di: %d&#34;
-            % (tick,
-               self.groups[&#34;Infected&#34;].size,
-               self.groups[&#34;Dead&#34;].size,
-               self.groups[&#34;Quarantined&#34;].size,
-               self.stats[&#34;new_infected&#34;][-1],
-               self.stats[&#34;new_recovered&#34;][-1],
-               self.stats[&#34;new_vaccinated&#34;][-1],
-               self.stats[&#34;test_results_+&#34;][-1],
-               self.stats[&#34;test_results_-&#34;][-1],
-               self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
+        print(color + &#34;\rDay: %04d, #Infected: %d, #Vaccinated: %d, #Quarantined: %d, #Dead: %d, 7di: %d\033[K&#34;
+              % (tick,
+                 self.groups[&#34;Infected&#34;].size,
+                 self.groups[&#34;Vaccinated&#34;].size,
+                 self.groups[&#34;Quarantined&#34;].size,
+                 self.groups[&#34;Dead&#34;].size,
+                 self.stats[&#34;seven_day_incidence&#34;][-1]), end=&#34;&#34;)
 
     print(&#34;\nInitializing simulation...&#34;)
 
@@ -2716,6 +3248,7 @@ is reached.</p></div>
     c_tests = self.settings[&#34;tests_per_day&#34;]
     t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
     t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
+    t_vac_available = self.settings[&#34;vaccine_available_as_of&#34;]
     max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
 
     initialize_groups()
@@ -2726,8 +3259,8 @@ is reached.</p></div>
 
     while True:
         tick += 1
-        n_vacs = min(np.random.poisson(c_vacs), self.population.size) * (
-                    tick &gt;= self.settings[&#34;vaccine_available_as_of&#34;])
+        n_vacs = min(np.random.poisson(c_vacs), self.population.size)
+        n_vacs = round(n_vacs * np.exp(-100 / (tick - t_vac_available)) if tick &gt; t_vac_available else 0)
 
         self.arrange_lockdown = decide_measure(&#34;lockdown&#34;)
 
@@ -2784,9 +3317,12 @@ is reached.</p></div>
 <h4><code><a title="src.Simulation.PostProcessing" href="#src.Simulation.PostProcessing">PostProcessing</a></code></h4>
 <ul class="">
 <li><code><a title="src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers" href="#src.Simulation.PostProcessing.compare_inner_and_outer_infection_numbers">compare_inner_and_outer_infection_numbers</a></code></li>
+<li><code><a title="src.Simulation.PostProcessing.death_distribution" href="#src.Simulation.PostProcessing.death_distribution">death_distribution</a></code></li>
+<li><code><a title="src.Simulation.PostProcessing.effective_reproduction_number" href="#src.Simulation.PostProcessing.effective_reproduction_number">effective_reproduction_number</a></code></li>
 <li><code><a title="src.Simulation.PostProcessing.infection_graph" href="#src.Simulation.PostProcessing.infection_graph">infection_graph</a></code></li>
 <li><code><a title="src.Simulation.PostProcessing.mean_latency_period" href="#src.Simulation.PostProcessing.mean_latency_period">mean_latency_period</a></code></li>
 <li><code><a title="src.Simulation.PostProcessing.progression_plots" href="#src.Simulation.PostProcessing.progression_plots">progression_plots</a></code></li>
+<li><code><a title="src.Simulation.PostProcessing.vaccine_quotas" href="#src.Simulation.PostProcessing.vaccine_quotas">vaccine_quotas</a></code></li>
 </ul>
 </li>
 <li>
