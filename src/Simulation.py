@@ -479,6 +479,10 @@ class Simulation:
         for stat in self.stats.keys():
             self.stats[stat] = [0]
 
+        self.arrange_lockdown = False
+        self.lockdown_duration = 0
+        self.lockdown_ended = -np.inf
+
 
 ################################################################################################
 ################################################################################################
