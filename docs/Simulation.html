@@ -98,7 +98,7 @@ class Simulation:
     def start_iteration(self):
         &#34;&#34;&#34;
         Starts the simulation and runs it until infection numbers
-        drop to zero or time given in &#39;maximal_simulation_time_interval&#39;
+        drop to zero or time given in &#39;maximum_simulation_time_interval&#39;
         is reached.
         &#34;&#34;&#34;
 
@@ -293,13 +293,13 @@ class Simulation:
 
                 # If it is (not) prolonged, is it still in the allowed duration interval?
                 if result:
-                    if self.lockdown_duration &gt;= self.settings[&#34;maximal_lockdown_duration&#34;]:
+                    if self.lockdown_duration &gt;= self.settings[&#34;maximum_lockdown_duration&#34;]:
                         self.lockdown_duration = 0
                         self.lockdown_ended = tick
                         result = False
 
                 else:
-                    if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimal_lockdown_duration&#34;]:
+                    if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimum_lockdown_duration&#34;]:
                         result = True
 
                     else:
@@ -372,7 +372,7 @@ class Simulation:
         t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
         t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
         t_vac_available = self.settings[&#34;vaccine_available_as_of&#34;]
-        max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
+        max_t = self.settings[&#34;maximum_simulation_time_interval&#34;]
 
         initialize_groups()
 
@@ -587,7 +587,7 @@ class Scenarios:
 
         plt.figure(figsize=(10, 10))
         plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
-        plt.title(&#34;Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
+        plt.title(&#34;Maximum infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
         plt.xlabel(&#34;$c_{inner}$&#34;)
         plt.ylabel(&#34;$c_{outer}$&#34;)
         plt.xticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
@@ -649,9 +649,9 @@ class Scenarios:
         Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
 
         plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
-        plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
+        plt.title(&#34;Maximum infection numbers in relation to $c_{outer}$.&#34;)
         plt.xlabel(&#34;$c_{outer}$&#34;)
-        plt.ylabel(&#34;maximal infections&#34;)
+        plt.ylabel(&#34;maximum infections&#34;)
         plt.xticks(ticks=interval, labels=[&#34;%.2f&#34; % i for i in interval])
         plt.xlim(interval_boundaries)
         plt.grid()
@@ -2068,7 +2068,7 @@ def vaccine_quotas(folder: str):
 
         plt.figure(figsize=(10, 10))
         plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
-        plt.title(&#34;Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
+        plt.title(&#34;Maximum infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
         plt.xlabel(&#34;$c_{inner}$&#34;)
         plt.ylabel(&#34;$c_{outer}$&#34;)
         plt.xticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
@@ -2130,9 +2130,9 @@ def vaccine_quotas(folder: str):
         Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
 
         plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
-        plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
+        plt.title(&#34;Maximum infection numbers in relation to $c_{outer}$.&#34;)
         plt.xlabel(&#34;$c_{outer}$&#34;)
-        plt.ylabel(&#34;maximal infections&#34;)
+        plt.ylabel(&#34;maximum infections&#34;)
         plt.xticks(ticks=interval, labels=[&#34;%.2f&#34; % i for i in interval])
         plt.xlim(interval_boundaries)
         plt.grid()
@@ -2197,7 +2197,7 @@ def c_inner_vs_c_outer(settings: dict, n: int = 5):
 
     plt.figure(figsize=(10, 10))
     plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
-    plt.title(&#34;Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
+    plt.title(&#34;Maximum infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$&#34;, pad=10)
     plt.xlabel(&#34;$c_{inner}$&#34;)
     plt.ylabel(&#34;$c_{outer}$&#34;)
     plt.xticks(ticks=range(0, n), labels=[&#34;%.1f&#34; % i for i in np.linspace(0, 5, n)])
@@ -2287,9 +2287,9 @@ def mitigation_interval(settings: dict, interval_boundaries: tuple = (1.5, 3), s
     Standalones.check_existence(&#34;..&#34; + sep + &#34;out&#34; + sep + &#34;general&#34;)
 
     plt.plot(interval, mitigation_interval, color=&#39;r&#39;)
-    plt.title(&#34;Maximal infection numbers in relation to $c_{outer}$.&#34;)
+    plt.title(&#34;Maximum infection numbers in relation to $c_{outer}$.&#34;)
     plt.xlabel(&#34;$c_{outer}$&#34;)
-    plt.ylabel(&#34;maximal infections&#34;)
+    plt.ylabel(&#34;maximum infections&#34;)
     plt.xticks(ticks=interval, labels=[&#34;%.2f&#34; % i for i in interval])
     plt.xlim(interval_boundaries)
     plt.grid()
@@ -2399,7 +2399,7 @@ the simulation.</dd>
     def start_iteration(self):
         &#34;&#34;&#34;
         Starts the simulation and runs it until infection numbers
-        drop to zero or time given in &#39;maximal_simulation_time_interval&#39;
+        drop to zero or time given in &#39;maximum_simulation_time_interval&#39;
         is reached.
         &#34;&#34;&#34;
 
@@ -2594,13 +2594,13 @@ the simulation.</dd>
 
                 # If it is (not) prolonged, is it still in the allowed duration interval?
                 if result:
-                    if self.lockdown_duration &gt;= self.settings[&#34;maximal_lockdown_duration&#34;]:
+                    if self.lockdown_duration &gt;= self.settings[&#34;maximum_lockdown_duration&#34;]:
                         self.lockdown_duration = 0
                         self.lockdown_ended = tick
                         result = False
 
                 else:
-                    if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimal_lockdown_duration&#34;]:
+                    if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimum_lockdown_duration&#34;]:
                         result = True
 
                     else:
@@ -2673,7 +2673,7 @@ the simulation.</dd>
         t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
         t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
         t_vac_available = self.settings[&#34;vaccine_available_as_of&#34;]
-        max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
+        max_t = self.settings[&#34;maximum_simulation_time_interval&#34;]
 
         initialize_groups()
 
@@ -2966,7 +2966,7 @@ is overridden.</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>Starts the simulation and runs it until infection numbers
-drop to zero or time given in 'maximal_simulation_time_interval'
+drop to zero or time given in 'maximum_simulation_time_interval'
 is reached.</p></div>
 <details class="source">
 <summary>
@@ -2975,7 +2975,7 @@ is reached.</p></div>
 <pre><code class="python">def start_iteration(self):
     &#34;&#34;&#34;
     Starts the simulation and runs it until infection numbers
-    drop to zero or time given in &#39;maximal_simulation_time_interval&#39;
+    drop to zero or time given in &#39;maximum_simulation_time_interval&#39;
     is reached.
     &#34;&#34;&#34;
 
@@ -3170,13 +3170,13 @@ is reached.</p></div>
 
             # If it is (not) prolonged, is it still in the allowed duration interval?
             if result:
-                if self.lockdown_duration &gt;= self.settings[&#34;maximal_lockdown_duration&#34;]:
+                if self.lockdown_duration &gt;= self.settings[&#34;maximum_lockdown_duration&#34;]:
                     self.lockdown_duration = 0
                     self.lockdown_ended = tick
                     result = False
 
             else:
-                if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimal_lockdown_duration&#34;]:
+                if self.arrange_lockdown and self.lockdown_duration &lt; self.settings[&#34;minimum_lockdown_duration&#34;]:
                     result = True
 
                 else:
@@ -3249,7 +3249,7 @@ is reached.</p></div>
     t_wait_vac = self.settings[&#34;waiting_time_vaccination_until_new_vaccination&#34;]
     t_wait_rec = self.settings[&#34;waiting_time_recovered_until_vaccination&#34;]
     t_vac_available = self.settings[&#34;vaccine_available_as_of&#34;]
-    max_t = self.settings[&#34;maximal_simulation_time_interval&#34;]
+    max_t = self.settings[&#34;maximum_simulation_time_interval&#34;]
 
     initialize_groups()
 

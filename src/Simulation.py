@@ -64,7 +64,7 @@ class Simulation:
     def start_iteration(self):
         """
         Starts the simulation and runs it until infection numbers
-        drop to zero or time given in 'maximal_simulation_time_interval'
+        drop to zero or time given in 'maximum_simulation_time_interval'
         is reached.
         """
 
@@ -259,13 +259,13 @@ class Simulation:
 
                 # If it is (not) prolonged, is it still in the allowed duration interval?
                 if result:
-                    if self.lockdown_duration >= self.settings["maximal_lockdown_duration"]:
+                    if self.lockdown_duration >= self.settings["maximum_lockdown_duration"]:
                         self.lockdown_duration = 0
                         self.lockdown_ended = tick
                         result = False
 
                 else:
-                    if self.arrange_lockdown and self.lockdown_duration < self.settings["minimal_lockdown_duration"]:
+                    if self.arrange_lockdown and self.lockdown_duration < self.settings["minimum_lockdown_duration"]:
                         result = True
 
                     else:
@@ -338,7 +338,7 @@ class Simulation:
         t_wait_vac = self.settings["waiting_time_vaccination_until_new_vaccination"]
         t_wait_rec = self.settings["waiting_time_recovered_until_vaccination"]
         t_vac_available = self.settings["vaccine_available_as_of"]
-        max_t = self.settings["maximal_simulation_time_interval"]
+        max_t = self.settings["maximum_simulation_time_interval"]
 
         initialize_groups()
 
@@ -553,7 +553,7 @@ class Scenarios:
 
         plt.figure(figsize=(10, 10))
         plt.imshow(max_infection_values, cmap=custom, norm=LogNorm())
-        plt.title("Maximal infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$", pad=10)
+        plt.title("Maximum infection numbers in\nrelation to $c_{inner}$ and $c_{outer}$", pad=10)
         plt.xlabel("$c_{inner}$")
         plt.ylabel("$c_{outer}$")
         plt.xticks(ticks=range(0, n), labels=["%.1f" % i for i in np.linspace(0, 5, n)])
@@ -615,9 +615,9 @@ class Scenarios:
         Standalones.check_existence(".." + sep + "out" + sep + "general")
 
         plt.plot(interval, mitigation_interval, color='r')
-        plt.title("Maximal infection numbers in relation to $c_{outer}$.")
+        plt.title("Maximum infection numbers in relation to $c_{outer}$.")
         plt.xlabel("$c_{outer}$")
-        plt.ylabel("maximal infections")
+        plt.ylabel("maximum infections")
         plt.xticks(ticks=interval, labels=["%.2f" % i for i in interval])
         plt.xlim(interval_boundaries)
         plt.grid()

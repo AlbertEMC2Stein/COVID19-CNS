@@ -137,10 +137,10 @@ class ProgressBar:
         Parameters
         ----------
         minimum : int
-            Value of minimal progress.
+            Value of minimum progress.
 
         maximum : int
-            Value of maximal progress.
+            Value of maximum progress.
 
         Other Parameters
         ----------
