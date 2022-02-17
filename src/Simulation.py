@@ -335,7 +335,7 @@ class Simulation:
         c_vac_immunity = self.settings["vaccination_immunity_time"]
         c_vacs = self.settings["vaccinations_per_day"]
         c_tests = self.settings["tests_per_day"]
-        t_wait_vac = self.settings["waiting_time_vaccination_until_new_vaccination"]
+        t_wait_vac = self.settings["waiting_time_vaccinated_until_new_vaccination"]
         t_wait_rec = self.settings["waiting_time_recovered_until_vaccination"]
         t_vac_available = self.settings["vaccine_available_as_of"]
         max_t = self.settings["maximum_simulation_time_interval"]
