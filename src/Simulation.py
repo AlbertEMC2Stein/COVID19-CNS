@@ -916,11 +916,14 @@ class PostProcessing:
         cumsum = np.sum(list(vaccination_data.values()))
         vaccination_data = {n: 100 * vs / cumsum for n, vs in vaccination_data.items()}
 
-        plt.bar(*zip(*vaccination_data.items()))
-        plt.xlabel("Vaccinations")
-        plt.ylabel("%")
-        plt.savefig(folder + "Plots" + sep + "vaccine_quotas.png")
-        plt.show()
+        if cumsum != 0:
+            plt.bar(*zip(*vaccination_data.items()))
+            plt.xlabel("Vaccinations")
+            plt.ylabel("%")
+            plt.savefig(folder + "Plots" + sep + "vaccine_quotas.png")
+            plt.show()
+        else:
+            print("\rNo vaccinations were tracked.        ", end="")
 
     @staticmethod
     def death_distribution(folder: str):
@@ -959,13 +962,16 @@ class PostProcessing:
         death_data = {}
         get_death_data()
 
-        plt.bar(*zip(*death_data.items()))
-        plt.title("Deaths")
-        plt.xlim(left=-1)
-        plt.xlabel("age")
-        plt.ylabel("#")
-        plt.savefig(folder + "Plots" + sep + "death_distribution.png")
-        plt.show()
+        if death_data != {}:
+            plt.bar(*zip(*death_data.items()))
+            plt.title("Deaths")
+            plt.xlim(left=-1)
+            plt.xlabel("age")
+            plt.ylabel("#")
+            plt.savefig(folder + "Plots" + sep + "death_distribution.png")
+            plt.show()
+        else:
+            print("\rNo deaths were tracked.              ", end="")
 
     @staticmethod
     def effective_reproduction_number(folder: str):
