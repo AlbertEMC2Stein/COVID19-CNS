@@ -170,7 +170,7 @@ class ProgressBar:
             if self.printing:
                 self.printing = False
                 p_as_int = int(percentage)
-                print("\rProgress: %s%s (%s%%)" % (p_as_int // 5 * '#',
+                print("\rProgress: %s%s (%03d%%)" % (p_as_int // 5 * '#',
                                                    (20 - p_as_int // 5) * '|',
                                                    p_as_int), end="")
         else:
